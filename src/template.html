@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#ffffff">
+<meta name="color-scheme" content="light">
+<title>AstroChat · Bonus highlight prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Roboto:wght@500&display=swap" rel="stylesheet">
+<!-- dotLottie player for the low-balance loader. Unlike everything else in this file it is not
+     inlined, so the loader needs a network connection; the static wallet image stays in the
+     markup as a fallback and is hidden only once the component actually upgrades. -->
+<script type="module" src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.6.2/dist/dotlottie-wc.js"></script>
+<style>
+:root{
+  --brand:#EF6939;--brand-500:#F28761;
+  --g50:#F9FAFB;--g100:#F2F4F7;--g200:#EAECF0;--g300:#D0D5DD;--g400:#98A2B3;--g500:#667085;--g600:#475467;--g700:#344054;--g800:#1D2939;
+  --s50:#ECFDF3;--s200:#A6F4C5;--s500:#12B76A;--s600:#039855;--s700:#027A48;
+  --ab-bg:#EEF0F3;
+  --font:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#fff}
+body{font-family:var(--font);color:var(--g800);overflow:hidden;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;text-align:inherit}
+img{display:block}
+/* role=button divs (tiles, pay card) take :focus-visible on a mouse click in Chrome, which is
+   where the blue ring came from. Keyboard focus still shows, in a neutral grey, never blue. */
+:focus-visible{outline:2px solid rgba(16,24,40,.35);outline-offset:2px}
+:where(.tile,.ps-card,[role=button],[role=radio],button):focus:not(:focus-visible){outline:none}
+
+/* ---------- shell ---------- */
+.shell{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px}
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;max-width:760px;color:var(--g600);font-size:12px}
+.toolbar b{color:var(--g800);font-weight:600;margin-right:4px}
+.toolbar button{background:#2f2f33;border:1px solid #707076;color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;text-align:center}
+.toolbar button:hover{background:#3b3b40}
+.stage{position:relative;flex-shrink:0}
+.phone{position:absolute;left:0;top:0;width:360px;background:#fff;overflow:hidden;transform-origin:0 0;border-radius:18px;box-shadow:0 24px 70px rgba(0,0,0,.4)}
+.screen{position:absolute;inset:0;overflow:hidden}
+.hot-reveal [data-hot]{outline:2px solid rgba(16,24,40,.5)!important;outline-offset:-2px;background-color:rgba(16,24,40,.1)!important}
+.flows-btn{display:none}
+.flows-sheet{display:none}
+
+/* mobile: the prototype is the whole screen */
+body.mobile .shell{padding:0;gap:0;justify-content:flex-start;align-items:flex-start}
+body.mobile .toolbar{display:none}
+body.mobile .phone{border-radius:0;box-shadow:none}
+.flows-sheet.open{display:flex;position:fixed;inset:0;z-index:101;background:rgba(0,0,0,.45);align-items:flex-end}
+.flows-btn,.flows-sheet .panel{zoom:var(--ui,1)}
+.flows-sheet .panel{width:100%;background:#fff;border-radius:18px 18px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px;animation:up .25s ease-out}
+.flows-sheet h4{font-size:15px;font-weight:700;color:var(--g800);margin-bottom:4px}
+.flows-sheet .panel button{border:1px solid var(--g300);border-radius:12px;padding:12px 14px;font-size:14px;font-weight:500;color:var(--g700)}
+.flows-sheet .panel button small{display:block;font-weight:400;font-size:12px;color:var(--g500);margin-top:2px}
+@keyframes up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+
+/* ---------- photos (uploaded) / stand-ins ---------- */
+.photo{border-radius:50%;overflow:hidden;flex-shrink:0;position:relative}
+.photo img{width:100%;height:100%;object-fit:cover}
+.photo.ph{display:flex;align-items:center;justify-content:center;font-weight:700;color:#9a3412;background:radial-gradient(circle at 35% 30%,#ffe7d6,#f9c6a6 70%)}
+
+/* ---------- HOME ---------- */
+.home{display:flex;flex-direction:column;background:#fff}
+.home-head{border-bottom:1px solid var(--g300);flex-shrink:0;background:#fff}
+.topnav{height:64px;display:flex;align-items:center;gap:16px;padding-left:16px}
+.brand{display:flex;gap:7px;align-items:center}
+.logo{position:relative;width:95.4px;height:20px}
+.logo img,.logo span{position:absolute}
+.logo .a{left:0;top:0;width:38.8px;height:19.7px}
+.logo .b{left:38.8px;top:7px;width:12.6px;height:12.6px}
+.logo .c{left:52.2px;top:0;width:37.3px;height:19.7px}
+.logo span{left:89.4px;top:5px;height:15px;width:6px;display:flex;align-items:center;justify-content:center}
+.logo span i{transform:rotate(-90deg);font-style:normal;font-size:6.4px;line-height:6px;color:var(--brand);white-space:nowrap}
+.navright{flex:1;display:flex;gap:12px;align-items:center;justify-content:flex-end;padding-right:8px}
+.wpill{position:relative;background:var(--g700);display:flex;flex-direction:column;align-items:center;gap:3px;padding:2px 2px 4px;border-radius:16px 16px 12px 12px;overflow:hidden}
+.wpill .inner{background:#fff;border:1px solid var(--g300);border-radius:20px;display:flex;gap:8px;align-items:center;padding:3px 4px 3px 6px;position:relative;z-index:1}
+.wpill .inner p{font-size:14px;color:#2d2d2d}
+.wpill .cb{font-size:10px;color:#fff;letter-spacing:-.32px;white-space:nowrap;position:relative;z-index:1}
+/* light sweep: kept for the ASTRO50 coupon banner (both its timer and non-timer states).
+   The offer banner deliberately has none. */
+.sweep{position:absolute;inset:0;pointer-events:none;overflow:hidden;border-radius:inherit}
+.sweep::after{content:"";position:absolute;top:-20%;bottom:-20%;width:40%;left:-60%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-18deg);animation:sweep 2.8s ease-in-out infinite}
+@keyframes sweep{0%,40%{left:-60%}80%,100%{left:130%}}
+
+/* wallet chip: single row, gift <-> add alternating (option I) */
+.wchip{height:32px;display:flex;align-items:center;gap:6px;padding:0 3px 0 9px;background:#fff;border:1px solid var(--g300);border-radius:16px;white-space:nowrap;font-size:13px;font-weight:600;color:var(--g800);transition:transform .12s}
+.wchip:active{transform:scale(.96)}
+.wchip .bal{display:flex;align-items:center;gap:5px}
+.swap{position:relative;width:26px;height:26px;flex-shrink:0}
+.swap .lay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;border-radius:50%;animation-duration:6s;animation-iteration-count:infinite;animation-timing-function:cubic-bezier(.45,0,.25,1)}
+.swap .lg{background:var(--s50);border:1px solid #abefc6;animation-name:swapGift}
+.swap .lp{animation-name:swapPlus}
+.swap .lp img{width:24px;height:24px}
+@keyframes swapGift{0%,40%{opacity:1;transform:scale(1) rotate(0)}50%,90%{opacity:0;transform:scale(.3) rotate(-120deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
+@keyframes swapPlus{0%,40%{opacity:0;transform:scale(.3) rotate(120deg)}50%,90%{opacity:1;transform:scale(1) rotate(0)}100%{opacity:0;transform:scale(.3) rotate(120deg)}}
+.giftw{position:relative;display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;font-size:15px;line-height:1}
+.giftw .g{display:inline-block;transform-origin:50% 85%;animation:gift6 6s ease-in-out infinite}
+.giftw i{position:absolute;width:4px;height:4px;border-radius:50%;background:#fdb022;opacity:0;animation:spark6 6s ease-out infinite}
+.giftw i:nth-of-type(1){top:-1px;right:-2px}
+.giftw i:nth-of-type(2){top:3px;left:-3px;width:3px;height:3px;animation-delay:.1s;background:#12b76a}
+.giftw i:nth-of-type(3){bottom:0;right:-3px;width:3px;height:3px;animation-delay:.2s;background:#f472b6}
+@keyframes gift6{0%,10%,34%,100%{transform:rotate(0) scale(1)}14%{transform:translateY(-2px) rotate(-14deg) scale(1.18)}18%{transform:translateY(-2px) rotate(12deg) scale(1.18)}22%{transform:rotate(-8deg) scale(1.1)}26%{transform:rotate(5deg)}30%{transform:rotate(0)}}
+@keyframes spark6{0%,12%{opacity:0;transform:scale(.2)}17%{opacity:1;transform:scale(1.2)}28%,100%{opacity:0;transform:scale(.4) translateY(-4px)}}
+.chips{display:flex;gap:8px;padding:0 16px 12px;overflow-x:auto;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{height:32px;flex-shrink:0;display:flex;align-items:center;gap:4px;padding:3px 12px;border:1px solid var(--g300);border-radius:8px;background:#fff;box-shadow:0 1px 2px rgba(16,24,40,.05);font-size:12px;line-height:18px;color:var(--g700);white-space:nowrap}
+.vline{width:1px;height:32px;background:var(--g300);flex-shrink:0}
+.home-scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:12px 16px 16px;display:flex;flex-direction:column;gap:16px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.home-scroll::-webkit-scrollbar{display:none}
+.promo{flex-shrink:0;height:60px;border-radius:14px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;padding:0 8px 0 16px;background:linear-gradient(100deg,#8a5bd6 0%,#b48ae8 55%,#d9c4f7 100%);color:#fff}
+.promo.img{padding:0;background:none}
+.promo.img img{width:100%;height:100%;object-fit:contain}
+.promo h5{font-size:15px;font-weight:800;line-height:20px;white-space:nowrap}
+.promo p{font-size:11px;line-height:15px;opacity:.95;white-space:nowrap}
+.promo p b{font-weight:700}
+.promo .rn{white-space:nowrap;background:#fff;color:#7a45c9;font-weight:700;font-size:13px;border-radius:10px;padding:9px 10px;box-shadow:0 2px 8px rgba(60,20,120,.25)}
+.recent{flex-shrink:0;border-radius:12px;padding:12px 8px;display:flex;flex-direction:column;gap:8px;background:linear-gradient(112.5deg,#fefdf8 1.3%,#ffedd2 49.8%,#fefdf8 104%)}
+.recent-h{display:flex;justify-content:space-between;align-items:center}
+.recent-h p{font-weight:600;font-size:16px;line-height:24px;color:var(--g800)}
+.recent-h span{font-weight:600;font-size:12px;color:var(--brand)}
+.rc-row{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;margin:0 -8px;padding:4px 8px 10px}
+.rc-row::-webkit-scrollbar{display:none}
+.rc{background:#fff;flex-shrink:0;display:flex;gap:6px;padding:8px 6px;border-radius:16px;box-shadow:0 0 16px 2px rgba(16,24,40,.08),0 2px 4px -2px rgba(16,24,40,.06)}
+.rc-name{font-weight:600;font-size:16px;line-height:24px;color:var(--g700)}
+.price{display:flex;gap:6px;align-items:center;height:23px}
+.price s{font-weight:500;font-size:12px;color:var(--g400)}
+.price b{font-weight:600;font-size:14px;line-height:20px;color:var(--s700)}
+.rc-btns{display:flex;gap:6px;margin-top:5px}
+.btn-o,.btn-f{display:flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--brand);border-radius:8px;font-weight:600;font-size:12px;line-height:18px;box-shadow:0 1px 2px rgba(16,24,40,.05);white-space:nowrap}
+.btn-o{background:#fff;color:var(--brand);padding:6px 8px}
+.btn-f{background:var(--brand);color:#fff;padding:6px 14px;flex:1}
+.avwrap{position:relative;flex-shrink:0}
+.odot{position:absolute;border:solid #fff}
+.sec-title{font-weight:600;font-size:16px;line-height:24px;color:#41404d}
+.cards{display:flex;flex-direction:column;gap:12px}
+.card{background:#fff;height:238px;flex-shrink:0;padding:12px 12px 16px;border-radius:16px;display:flex;flex-direction:column;gap:12px;overflow:hidden;box-shadow:0 0 16px 2px rgba(16,24,40,.08),0 2px 4px -2px rgba(16,24,40,.06)}
+.card-top{flex:1;display:flex;gap:16px;align-items:center}
+.card-name{font-weight:700;font-size:20px;line-height:30px;color:var(--g700)}
+.meta{display:flex;align-items:center;gap:8px;margin-top:12px;font-weight:500;font-size:14px;line-height:20px;color:var(--g600)}
+.rating{display:flex;gap:4px;align-items:center;border:1px solid var(--g200);border-radius:4px;padding:2px 6px}
+.dot4{width:4px;height:4px;border-radius:50%;background:var(--g500);flex-shrink:0}
+.line{display:flex;gap:4px;align-items:center;font-weight:500;font-size:14px;line-height:20px;color:var(--g500)}
+.card-price{display:flex;gap:6px;align-items:center;line-height:28px}
+.card-price s{font-weight:500;font-size:14px;color:var(--g400)}
+.card-price b{font-weight:600;font-size:18px;color:var(--s700)}
+.card-btns{display:flex;gap:12px}
+.card-btns button{flex:1;display:flex;gap:8px;align-items:center;justify-content:center;background:var(--brand);border:1px solid var(--brand);border-radius:12px;padding:8px 14px;color:#fff;font-weight:600;font-size:14px;line-height:20px;box-shadow:0 1px 2px rgba(16,24,40,.05)}
+.tabbar{flex-shrink:0;display:flex;border-top:1px solid var(--g300);background:#fff;padding:0 16px}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px 8px 24px;font-size:11px;line-height:16px;color:var(--g500)}
+.tab.on{color:var(--brand-500);font-weight:600}
+
+/* ---------- ADD BALANCE ---------- */
+.ab{background:var(--ab-bg)}
+.ab-head{position:absolute;top:0;left:0;right:0;z-index:5;background:#fff}
+.ab-nav{height:64px;display:flex;align-items:center;justify-content:space-between;padding:8px 16px}
+.ab-title{display:flex;align-items:center;gap:2px;padding:2px 6px 2px 0}
+.ab-title .back{width:24px;height:24px;display:flex;align-items:center;justify-content:center}
+.ab-title p{font-weight:600;font-size:16px;line-height:24px;color:var(--g700);white-space:nowrap}
+.wbadge{background:var(--g100);border-radius:20px;display:flex;gap:8px;align-items:center;padding:4px 8px;font-weight:600;font-size:12px;line-height:18px;color:var(--g600)}
+.ab-body{position:absolute;top:64px;left:0;right:0;bottom:0;overflow-y:auto;padding:24px 16px 170px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.ab-body::-webkit-scrollbar{display:none}
+/* square bottom corners: the wallet card sits on top of them, so rounding there only showed
+   as two nicks of green either side of the card */
+.banner{position:relative;background:#039855;border-radius:16px 16px 0 0;overflow:hidden;margin-bottom:-20px;display:flex;gap:8px;align-items:center;padding:8px 16px 28px;color:#fff;font-size:12px;line-height:17px;font-weight:500;letter-spacing:.36px}
+/* Dark green whenever a countdown is shown; the non-timer states use the lighter #039855. */
+.banner.bn-dark{background:#027A48}
+.banner b{font-weight:800;font-size:14px;letter-spacing:.42px;color:#fff;font-variant-numeric:tabular-nums}
+.banner .bn-txt{position:relative;z-index:1;flex:1;min-width:0}
+/* decorative sparkle field tucked into the top-right corner, faded out towards the text.
+   White at .2 so the brightest star lands ~14% over the band and reads as twinkle, not dots. */
+.banner .bn-stars{position:absolute;top:0;right:0;width:236px;height:44px;object-fit:cover;object-position:right top;pointer-events:none;z-index:0;opacity:.2;
+  -webkit-mask-image:linear-gradient(to left,#000 8%,rgba(0,0,0,.45) 42%,transparent 78%);mask-image:linear-gradient(to left,#000 8%,rgba(0,0,0,.45) 42%,transparent 78%)}
+/* no margin: the two lines are separate <p>s, but must sit exactly as far apart as the two
+   wrapped lines of the green strip, which are spaced by line-height alone */
+.banner .bn-sub{font-size:12px;line-height:17px;font-weight:500;color:#fff}
+.banner .bn-sub b{font-weight:800;font-size:14px;letter-spacing:.42px;color:#fff}
+.banner .bn-sub s{opacity:.75}
+.banner .bn-icon{position:relative;z-index:1;flex:none;width:28px;height:28px;transform-origin:50% 50%;animation:seal 3.2s ease-in-out infinite}
+/* discount seal: rests, then gives one wobble-pop so it reads as a stamp, not an alert */
+@keyframes seal{0%,72%,100%{transform:scale(1) rotate(0)}79%{transform:scale(1.14) rotate(-9deg)}87%{transform:scale(1.14) rotate(9deg)}94%{transform:scale(1.05) rotate(0)}}
+/* entrance: the banner starts fully tucked behind the "Your Wallet Gets" card (the card is
+   z-index 2, the banner is not) and slides up out of it. Applied only on the first render —
+   rerenderAB() re-mounts the whole screen on every tile tap, so without the .bn-in gate the
+   banner would replay this and appear to jump each time a SKU is selected. */
+/* gentle: a long, evenly-decelerating glide rather than the earlier fast-out snap, with the
+   last few px eased almost to a stop and a short opacity ramp so it surfaces instead of popping */
+.banner.bn-in{animation:riseFromCard .72s cubic-bezier(.33,.9,.35,1) both;will-change:transform,opacity}
+@keyframes riseFromCard{
+  from{transform:translateY(100%);opacity:.55}
+  55%{opacity:1}
+  to{transform:translateY(0);opacity:1}}
+
+/* insufficient balance warning (Figma 4604:32678): rises from behind the card when ₹50 is picked */
+.warn-wrap{display:grid;grid-template-rows:0fr;margin-bottom:0;transition:grid-template-rows .45s cubic-bezier(.2,.8,.2,1),margin-bottom .45s cubic-bezier(.2,.8,.2,1)}
+.warn-wrap.open{grid-template-rows:1fr;margin-bottom:-20px}
+.warn-inner{min-height:0;overflow:hidden;border-radius:16px 16px 0 0}
+.warn{display:flex;gap:8px;align-items:center;padding:8px 16px 28px;border-radius:16px 16px 0 0;background:#FEF3F2;
+  background-image:linear-gradient(83.82deg,rgba(255,251,250,0) 4.67%,#F9DEDC 43.48%,#FFE4E2 67.28%,rgba(255,251,250,0) 107.86%);
+  transform:translateY(24px);opacity:0;transition:transform .45s cubic-bezier(.2,.8,.2,1),opacity .3s ease}
+.warn-wrap.open .warn{transform:none;opacity:1}
+.warn img{flex-shrink:0}
+.warn p{flex:1;font-size:12px;line-height:18px;color:#560000;font-weight:400}
+.warn b{font-weight:700}
+.receipt{position:relative;z-index:2;background:#fff;border-radius:20px;box-shadow:0 6px 18px rgba(16,24,40,.08);padding-bottom:16px}
+.receipt::before,.receipt::after{content:"";position:absolute;top:124px;width:28px;height:28px;border-radius:50%;background:var(--ab-bg);z-index:3}
+.receipt::before{left:-14px;box-shadow:inset -4px 0 6px rgba(16,24,40,.08)}
+.receipt::after{right:-14px;box-shadow:inset 4px 0 6px rgba(16,24,40,.08)}
+.hero{position:relative;height:185px;border-radius:20px;overflow:hidden;display:flex;flex-direction:column;align-items:center;gap:5px}
+.hero-top{position:relative;width:100%;height:118px;border:4px solid #fff;border-bottom:0;border-radius:20px 20px 0 0;padding:42px 2px 0;display:flex;flex-direction:column;align-items:center;gap:6px;background:linear-gradient(176.6deg,#f2f4f7 16.6%,#fff 87.3%);overflow:hidden}
+.burst{position:absolute;left:50%;top:78px;width:520px;height:520px;margin:-260px 0 0 -260px;pointer-events:none;
+  background:repeating-conic-gradient(from 0deg,rgba(152,162,179,.16) 0deg 5deg,transparent 5deg 15deg);
+  -webkit-mask:radial-gradient(circle,transparent 42px,#000 60px,#000 120px,transparent 200px);mask:radial-gradient(circle,transparent 42px,#000 60px,#000 120px,transparent 200px);
+  animation:spin 120s linear var(--spin-delay,0s) infinite}
+/* rays: grow from centre once per visit, only for ₹250+ */
+.burst.grow{animation:raysGrow 1.6s cubic-bezier(.33,.4,.3,1) var(--grow-delay,0s) both,spin 120s linear var(--spin-delay,0s) infinite}
+.burst.fadein{animation:raysIn .35s ease-out both,spin 120s linear var(--spin-delay,0s) infinite}
+.burst.out{animation:raysOut .3s ease-in both,spin 120s linear var(--spin-delay,0s) infinite}
+@keyframes raysGrow{from{clip-path:circle(8% at 50% 50%);opacity:0}15%{opacity:1}to{clip-path:circle(38% at 50% 50%);opacity:1}}
+@keyframes raysIn{from{opacity:0}to{opacity:1}}
+@keyframes raysOut{from{opacity:1}to{opacity:0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hero-top::after{content:"";position:absolute;left:0;right:0;bottom:0;height:56px;background:linear-gradient(to bottom,rgba(255,255,255,0),#fff 85%);pointer-events:none}
+/* "Your Wallet Gets" tab hanging from the card's top edge (Figma 4683:1267) */
+.hero-label{position:absolute;z-index:2;top:0;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:4px;padding:6px 12px;background:#fff;border-radius:0 0 12px 12px;box-shadow:inset 0 -4px 6px rgba(0,0,0,.1);font-weight:500;font-size:12px;line-height:18px;letter-spacing:0;color:#667085;white-space:nowrap}
+.hero-label img{width:14px;height:14px;flex-shrink:0}
+.amt{position:relative;z-index:1;display:flex;gap:0;align-items:baseline;justify-content:center;color:#1D2939;padding:0 8px}
+.amt::before{content:"";position:absolute;inset:-6px -46px;z-index:-1;pointer-events:none;border-radius:50%;opacity:0;
+  background:radial-gradient(closest-side,rgba(18,183,106,.30),rgba(18,183,106,.14) 55%,rgba(18,183,106,0))}
+.amt.land::before{animation:heroFlash .95s ease-out}
+.amt.land .n{animation:heroLand .6s cubic-bezier(.3,1.6,.5,1)}
+@keyframes heroFlash{0%{opacity:0;transform:scale(.6)}30%{opacity:1;transform:scale(1.04)}100%{opacity:0;transform:scale(1.18)}}
+@keyframes heroLand{0%{transform:scale(1)}35%{transform:scale(1.09)}70%{transform:scale(.98)}100%{transform:scale(1)}}
+/* Figma 4683:1302 (₹100 and above) */
+/* ₹ top-aligned with the digits: the flex line aligns the two baselines, then alignRupee()
+   lifts the ₹ by the cap-height difference. Line-height plays no part, which is what the old
+   half-leading maths got wrong — it left the ₹ sitting a few px low. */
+.amt .r{position:relative;width:auto;height:auto;font-weight:500;font-size:24px;line-height:24px;letter-spacing:-.48px;color:#344054}
+.amt .n{font-weight:700;font-size:42px;line-height:60px;letter-spacing:-2.1px;display:flex;white-space:nowrap}
+.amt .n .last{display:inline-block}
+/* Figma 4683:1307: 1.5px outside stroke, gradient white → white (45%) → green #059152. ₹50 (4683:1300) has no stroke. */
+.amt .n{position:relative;isolation:isolate}
+.amt .n .stk{position:absolute;left:-8px;top:-6px;padding:6px 10px 6px 8px;z-index:-1;white-space:nowrap;pointer-events:none;color:transparent;
+  -webkit-text-stroke:3px transparent;background:linear-gradient(118deg,#fff 0%,#fff 45%,#059152 100%);-webkit-background-clip:text;background-clip:text}
+.amt.s50 .n .stk{display:none}
+.amt.rolling .n .last{color:var(--g800);-webkit-text-stroke:1.5px rgba(3,152,85,.55);text-shadow:0 0 10px rgba(18,183,106,.35);animation:roll .12s linear infinite}
+@keyframes roll{0%{transform:translateY(-6%)}50%{transform:translateY(6%)}100%{transform:translateY(-6%)}}
+/* Figma 4683:1297 (₹50) */
+.amt.s50{gap:0}
+.amt.s50 .n{font-size:32px;letter-spacing:-1.6px}
+.strip-wrap{position:absolute;z-index:1;width:286px;display:flex;flex-direction:column;align-items:center;
+  /* centre of the strip sits on the notch centre (138px), whatever the strip height; 5.5px = half the pointer above it */
+  left:50%;top:138px;transform:translate(-50%,calc(-50% - 5.5px))}
+.strip-wrap .tip{width:15px;height:13px;margin-bottom:-2px}
+/* The gradient is drawn 170% of the pill's width and slowly panned back and forth, so the bright
+   core drifts across instead of sitting still. Every variant has to restate background-size:
+   each one re-declares the `background` shorthand, which resets size back to auto. */
+.strip{position:relative;width:100%;border-radius:12px;padding:9px 6px;text-align:center;font-weight:500;font-size:12px;line-height:16px;letter-spacing:.3px;color:var(--s600);overflow:hidden;
+  background:linear-gradient(90deg,rgba(231,246,238,.3) 0%,rgba(216,249,228,.76) 25%,rgba(166,244,197,.85) 50%,rgba(217,249,228,.75) 75%,rgba(231,246,238,.3) 100%) center/170% 100% no-repeat;
+  animation:drift 7s ease-in-out infinite alternate}
+@keyframes drift{from{background-position:0% 0}to{background-position:100% 0}}
+.strip::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 15%,rgba(255,255,255,.35) 50%,transparent 85%) 0 0/250% 100%;animation:shimmer 4.2s ease-in-out infinite}
+@keyframes shimmer{0%{background-position:150% 0}60%,100%{background-position:-60% 0}}
+.strip span{position:relative;z-index:1}
+.strip b{font-weight:800}
+
+
+/* green bonus strip (Figma 4573:1698) */
+.strip.gx{width:256px;padding:9px 5px;border-radius:12px;color:#027A48;font-size:12px;line-height:17px;font-weight:500;letter-spacing:.36px;text-align:center;white-space:normal;
+  background:linear-gradient(90deg,rgba(231,246,238,.3) 15.865%,rgba(216,249,228,.763) 38.462%,rgba(166,244,197,.6) 50%,rgba(217,249,228,.75) 62.981%,rgba(231,246,238,.3) 86.377%) center/170% 100% no-repeat}
+.strip.gx b{font-weight:800;font-size:14px;letter-spacing:.42px;color:#027A48}
+/* ₹50 no-bonus strip (Figma 4683:1287): amber band, hugs its text */
+.strip.nb50{width:auto;padding:9px 5px;border-radius:12px;color:#93370D;font-size:12px;line-height:16px;font-weight:500;letter-spacing:.36px;white-space:nowrap;
+  background:linear-gradient(90deg,rgba(254,240,199,.3) 15.865%,rgba(254,240,199,.763) 38.462%,#FEF0C7 50%,rgba(254,240,199,.75) 62.981%,rgba(254,240,199,.3) 86.377%) center/170% 100% no-repeat}
+.strip.nb50 b{font-weight:800;font-size:14px;letter-spacing:.42px}
+.strip.big{font-size:14px;line-height:20px;letter-spacing:.2px}
+/* the pop has to re-list drift, or selecting a tile would replace it and freeze the gradient */
+.strip.pulse{animation:pop .45s ease-out,drift 7s ease-in-out infinite alternate}
+@keyframes pop{0%{transform:scale(.94)}60%{transform:scale(1.03)}100%{transform:scale(1)}}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);column-gap:14px;row-gap:16px;padding:9px 16px 0}
+.tile-col{display:flex;flex-direction:column;align-items:center}
+.tile{position:relative;width:100%;height:auto;aspect-ratio:4/3;border:1px solid var(--g300);border-radius:14px;background:#fff;box-shadow:0 4px 8px rgba(0,0,0,.04);display:flex;align-items:center;justify-content:center;color:var(--g700);transition:transform .12s ease}
+.tile:active{transform:scale(.96)}
+.tile .val{position:relative;display:flex;align-items:flex-start;padding-bottom:4px}
+.tile .val i{font-style:normal;font-weight:700;font-size:12px;line-height:21px}
+.tile .val span{font-weight:600;font-size:20px;line-height:26px}
+.tile .sel{position:absolute;inset:-1px;width:calc(100% + 2px);height:calc(100% + 2px);pointer-events:none}
+.tile .sel.justpick{animation:selin .28s cubic-bezier(.2,.8,.2,1)}
+@keyframes selin{from{opacity:0;transform:translate(3px,-3px)}to{opacity:1;transform:none}}
+/* tick sits where it was drawn in the corner (centre 81.8/93, 10.3/70) */
+.tile .tick{position:absolute;z-index:3;left:calc((100% + 2px) * .8178 - 1px);top:calc((100% + 2px) * .0884 - 1px);width:calc((100% + 2px) * .1242);height:calc((100% + 2px) * .1184);pointer-events:none}
+.tile .tick.justpick{animation:tickSpin .5s cubic-bezier(.3,1.5,.5,1) .05s both}
+@keyframes tickSpin{from{opacity:0;transform:rotate(-120deg) scale(.3)}to{opacity:1;transform:none}}
+.tile.justpick{animation:tilePop .3s ease-out}
+@keyframes tilePop{0%{transform:scale(1)}45%{transform:scale(1.02)}100%{transform:scale(1)}}
+.coins{position:absolute;right:-6px;top:-6px;width:34px;height:64px;pointer-events:none}
+.coin{position:absolute;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe58a,#f5b82e 55%,#c98a10 100%);box-shadow:inset 0 -1px 0 rgba(120,70,0,.35),0 1px 2px rgba(120,70,0,.25)}
+.coin::after{content:"";position:absolute;inset:22%;border-radius:50%;border:1px solid rgba(255,240,180,.7)}
+.coin.c1{width:16px;height:16px;right:8px;top:2px;animation:bob 1.6s ease-in-out infinite}
+.coin.c2{width:20px;height:20px;right:0;top:22px;animation:bob 1.6s ease-in-out .3s infinite}
+.coin.c3{width:12px;height:12px;right:12px;top:46px;animation:bob 1.6s ease-in-out .6s infinite}
+@keyframes bob{0%,100%{transform:translateY(0) rotateY(0)}50%{transform:translateY(-3px) rotateY(60deg)}}
+
+.addfly{position:absolute;left:calc(100% + 6px);top:14px;white-space:nowrap;font-size:14px;line-height:20px;font-weight:700;letter-spacing:0;color:#027A48;background:var(--s50);border:1px solid #abefc6;border-radius:10px;padding:1px 7px;opacity:0;transform:translateY(10px) scale(.7);pointer-events:none;transition:opacity .25s ease-out,transform .4s cubic-bezier(.2,1.4,.4,1)}
+.addfly.in{opacity:1;transform:none}
+.addfly.merge{opacity:0;transform:translateX(-30px) scale(.5);transition:opacity .55s ease-in,transform .7s cubic-bezier(.5,0,.8,.4)}
+.bonus.nudge{border:0;cursor:pointer;font-size:11px;letter-spacing:0;padding:4px 7px;background:linear-gradient(180deg,#F79009,#DC6803);box-shadow:0 2px 6px rgba(220,104,3,.35);animation:nudge 2.4s ease-in-out infinite}
+@keyframes nudge{0%,70%,100%{transform:translateY(0)}78%{transform:translateY(-2px)}86%{transform:translateY(0)}92%{transform:translateY(-1px)}}
+.coinfall{position:absolute;inset:0;border-radius:13px;overflow:hidden;pointer-events:none;z-index:0;-webkit-mask-image:linear-gradient(90deg,#000 0 21%,transparent 24% 76%,#000 79% 100%);mask-image:linear-gradient(90deg,#000 0 21%,transparent 24% 76%,#000 79% 100%)}
+.coinfall .coin{position:absolute;top:0;opacity:0;animation:coinFall 3.6s linear infinite}
+.coinfall{opacity:1;transition:opacity .2s ease}
+.tile[aria-pressed="true"] .coinfall{opacity:0} /* selected tile: stop the coin shower */
+.coinfall .coin:nth-child(1){left:2%;width:15px;height:15px;animation-delay:0s}
+.coinfall .coin:nth-child(2){left:81%;width:15px;height:15px;animation-delay:.9s}
+.coinfall .coin:nth-child(3){left:4%;width:13px;height:13px;animation-delay:1.8s}
+.coinfall .coin:nth-child(4){left:83%;width:13px;height:13px;animation-delay:2.7s}
+.coinfall .coin:nth-child(5){left:1%;width:14px;height:14px;animation-delay:3.3s}
+@keyframes coinFall{0%{transform:translateY(-22px) rotate(0);opacity:0}12%{opacity:.95}80%{opacity:.95}100%{transform:translateY(82px) rotate(220deg);opacity:0}}
+.tile .val{z-index:1}
+.tile .sel{z-index:2}
+.bonus{position:relative;z-index:3;margin-top:-15px;padding:4px 8px;border-radius:12px;color:#fff;font-weight:600;font-size:12px;line-height:18px;letter-spacing:-.12px;white-space:nowrap;background:linear-gradient(-0.556deg,#05603A 10.094%,#027A48 23.329%,#027A48 83.868%,rgba(2,122,72,0) 109.72%);}
+.see{display:flex;justify-content:center;margin-top:20px}
+.see button{display:flex;align-items:center;padding:2px 4px 2px 12px;border:1px dashed var(--g300);border-radius:12px;font-size:12px;font-weight:500;line-height:18px;color:var(--g500)}
+.chev{width:22px;height:22px;display:block;transition:transform .45s cubic-bezier(.2,.8,.2,1)}
+.chev.up{transform:rotate(180deg)}
+.more-wrap{display:grid;grid-template-rows:0fr;transition:grid-template-rows .5s cubic-bezier(.2,.8,.2,1)}
+.more-wrap.open{grid-template-rows:1fr}
+.more-inner{min-height:0;overflow:hidden;margin:0 -8px;padding:0 8px}
+.tiles.more{padding-top:20px;padding-bottom:6px}
+.tiles.more .tile-col{opacity:0;transform:translateY(-10px) scale(.97);transition:opacity .2s ease-in,transform .25s ease-in}
+.more-wrap.open .tiles.more .tile-col{opacity:1;transform:none;transition:opacity .35s ease-out,transform .45s cubic-bezier(.2,.9,.3,1.15)}
+.more-wrap.open .tiles.more .tile-col:nth-child(1){transition-delay:.06s}
+.more-wrap.open .tiles.more .tile-col:nth-child(2){transition-delay:.10s}
+.more-wrap.open .tiles.more .tile-col:nth-child(3){transition-delay:.14s}
+.more-wrap.open .tiles.more .tile-col:nth-child(4){transition-delay:.18s}
+.more-wrap.open .tiles.more .tile-col:nth-child(5){transition-delay:.22s}
+.more-wrap.open .tiles.more .tile-col:nth-child(6){transition-delay:.26s}
+.more-wrap.open .tiles.more .tile-col:nth-child(7){transition-delay:.30s}
+
+
+/* ---- payment method sheet ---- */
+.pm-overlay{position:absolute;inset:0;z-index:40;pointer-events:none}
+.pm-overlay.open{pointer-events:auto}
+.pm-scrim{position:absolute;inset:0;background:rgba(16,24,40,.55);opacity:0;transition:opacity .3s ease}
+.pm-overlay.open .pm-scrim{opacity:1}
+.pm-sheet{position:absolute;left:0;right:0;bottom:0;height:min(732px,calc(100% - 68px));border-radius:32px 32px 0 0;overflow-x:hidden;overflow-y:auto;scrollbar-width:none;
+  background:linear-gradient(to bottom,#FBF1E2 4.211%,#fff 21.842%);box-shadow:0 -5px 10px rgba(0,0,0,.25);padding-bottom:128px;
+  transform:translateY(100%);transition:transform .38s cubic-bezier(.2,.9,.3,1)}
+.pm-sheet::-webkit-scrollbar{display:none}
+.pm-overlay.open .pm-sheet{transform:none}
+.pm-head{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:32px;padding:24px 16px 12px;background:#FCF4E9;border-radius:32px 32px 0 0}
+.pm-head p{flex:1;font-size:16px;font-weight:700;color:#344054;line-height:normal}
+.pm-x{width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:12px}
+.pm-x img{width:16px;height:16px}
+.pm-body{display:flex;flex-direction:column;gap:32px;padding:8px 16px 0}
+.pm-group{display:flex;flex-direction:column;gap:8px}
+.pm-gt{font-size:14px;font-weight:500;color:#344054;line-height:normal}
+.pm-card{background:#fff;border:1px solid #EAECF0;border-radius:18px;padding:12px;display:flex;flex-direction:column}
+.pm-list{gap:16px}
+.pm-row{display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+.pm-name{display:flex;align-items:center;gap:10px;font-size:14px;line-height:20px;font-weight:500;color:#475467}
+.pm-logo{display:flex;align-items:center;justify-content:center;border:1px solid #D0D5DD;flex-shrink:0;background:#fff}
+.pm-logo img{width:100%;height:100%;object-fit:cover;display:block}
+.pm-row .pm-logo-raw{width:32px;height:32px}
+.pm-radio{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:100px}
+.pm-radio img{width:20px;height:20px}
+.pm-row:active .pm-radio{background:rgba(239,105,57,.08)}
+.pm-div{display:block;height:1px;background:repeating-linear-gradient(90deg,#EAECF0 0 2px,transparent 2px 4px)}
+.pm-more{display:flex;align-items:center;gap:8px;padding:0 4px}
+/* dotted like .pm-div, with the fade moved to a mask so the dots stay crisp instead of
+   dissolving into a smear. Chip border matches See More Options on the wallet page. */
+.pm-grad{flex:1;height:1px;background:repeating-linear-gradient(90deg,#D0D5DD 0 2px,transparent 2px 4px)}
+.pm-grad.l{-webkit-mask-image:linear-gradient(90deg,transparent,#000);mask-image:linear-gradient(90deg,transparent,#000)}
+.pm-grad.r{-webkit-mask-image:linear-gradient(90deg,#000,transparent);mask-image:linear-gradient(90deg,#000,transparent)}
+.pm-chip{display:flex;align-items:center;height:26px;padding:0 4px 0 12px;border:1px dashed var(--g300);border-radius:12px;font-size:12px;line-height:18px;color:var(--g500);white-space:nowrap}
+.pm-chip img{width:22px;height:22px}
+.pm-cta{position:absolute;left:0;right:0;bottom:0;z-index:3;background:#fff;border:1px solid #D0D5DD;border-bottom:0;border-radius:12px 12px 0 0;box-shadow:0 -6px 20px rgba(0,0,0,.2);
+  transform:translateY(110%);transition:transform .38s cubic-bezier(.2,.9,.3,1) .04s}
+.pm-overlay.open .pm-cta{transform:none}
+/* same rule as the wallet summary row: only the amount is bold, the sentence around it stays
+   grey, and the amount only turns green when the wallet credit beats what is actually paid
+   (see `under` in summaryHTML). Previously "get" and "added" were green and the amount was
+   green unconditionally, so ₹110 read as a win next to a ₹118 charge. */
+.pm-credit{border:2px solid #fff;border-radius:12px 12px 0 0;padding:12px 12px 8px;text-align:center;font-size:14px;line-height:20px;color:#475467}
+.pm-credit .gb{font-weight:700;color:#027A48}
+.pm-credit.under .gb{color:#475467}
+.pm-btnwrap{padding:8px 16px 24px}
+.pm-btnwrap .paybtn.pm-pay{width:100%;display:block}
+.pp .pm-logo-raw{width:20px;height:20px;border-radius:4px}
+.pp .pm-logo{border-width:.6px}
+
+/* ---- payment summary ---- */
+/* option B row + option B3 button */
+.ps-card{padding:8px 8px 8px 12px}
+.ps-card.open{padding:12px}
+.ps-info{gap:6px;padding:0;color:#475467;font-size:14px;line-height:20px}
+.ps-info img{width:16px;height:16px;flex-shrink:0}
+.ps-info .amt-get{font-weight:700}
+.ps-info .amt-get{color:#027A48}
+.ps-card.under .ps-info .amt-get{color:#475467}
+/* same 12px as the "Pay with" label; the wallet line truncates when it runs out of room */
+.ps-link{display:flex;align-items:center;flex:none;font-size:12px;line-height:18px;font-weight:500;color:#667085;white-space:nowrap}
+
+.pay{border:1px solid #D0D5DD;border-bottom:0}
+.ps-wrap{padding:12px 16px;background:#fff}
+.ps-card{background:#fff;border:1px solid #EAECF0;border-radius:12px;padding:8px 4px;cursor:pointer;transition:padding .35s cubic-bezier(.2,.8,.2,1),border-radius .35s}
+.ps-card.open{padding:12px;border-radius:16px}
+.ps-top{display:flex;align-items:center;justify-content:space-between;gap:6px}
+/* the breakdown on the right is fixed-width; at ₹10,000 the wallet line yields instead of overflowing */
+.ps-info{display:flex;align-items:center;gap:2px;padding:0;min-width:0;white-space:nowrap;color:#475467;font-size:14px;line-height:20px}
+.ps-info>span{overflow:hidden;text-overflow:ellipsis}
+.ps-pay{font-weight:500;margin-right:4px}
+.ps-card.open .ps-pay{color:#475467}
+.ps-gst{font-size:12px;line-height:18px;margin-right:4px}
+.ps-gst .g-o{display:none}
+.ps-card.open .ps-gst .g-c{display:none}
+.ps-card.open .ps-gst .g-o{display:inline}
+.ps-get{transition:opacity .2s}
+.ps-get b{font-weight:700;color:#475467}
+.ps-card.plain .ps-get .amt-get{color:#475467}
+.ps-card.extra .ps-get .amt-get{color:#027A48}
+.ps-card.open .ps-get{opacity:0;width:0;overflow:hidden}
+/* same chevron as the See More Options control */
+.ps-chev{width:22px;height:22px;flex-shrink:0}
+.ps-details{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s cubic-bezier(.2,.8,.2,1)}
+.ps-card.open .ps-details{grid-template-rows:1fr}
+.ps-inner{min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:24px;opacity:0;transition:opacity .2s ease}
+.ps-card.open .ps-inner{opacity:1;transition:opacity .3s ease .1s;padding-top:12px}
+.ps-sec{display:flex;flex-direction:column;gap:12px}
+.ps-dash{display:block;height:1px;background:repeating-linear-gradient(90deg,var(--dc) 0 2px,transparent 2px 4px)}
+.ps-calc{display:flex;flex-direction:column;gap:2px;padding:0 12px}
+.ps-line{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ps-line span:first-child{font-size:12px;line-height:18px;color:#667085}
+.ps-line span:last-child{font-size:14px;line-height:20px}
+.ps-line.r1 span:last-child{color:#344054}
+.ps-line.r2 span:last-child{color:#1D2939}
+.ps-line.tot{padding:0 12px}
+.ps-line.tot span{font-size:14px!important;line-height:20px;font-weight:600;color:#1D2939!important}
+.ps-credit{display:flex;flex-direction:column}
+.ps-box{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #027A48;border-radius:12px;padding:8px 12px;color:#027A48}
+.ps-box span{font-size:12px;line-height:18px;font-weight:600}
+.ps-box b{font-size:14px;line-height:24px;font-weight:700}
+.ps-panel{margin:-12px 0 0;padding:24px 12px 12px;border-radius:0 0 12px 12px;background:#F2F4F7;display:flex;flex-direction:column;gap:8px}
+.ps-line.p1 span:last-child{color:#1D2939}
+.ps-line.pg span{color:#027A48!important}
+.ps-line.pt span:first-child{color:#475467}
+.ps-line.pt span:last-child{color:#344054}
+.pay-cta{padding:8px 16px 24px}
+
+.pay{position:absolute;left:0;right:0;bottom:0;z-index:6;background:#fff;border-radius:18px 18px 0 0;box-shadow:0 -3px 16px rgba(20,26,38,.09);overflow:hidden}
+.pay-sum{display:flex;align-items:center;gap:8px;padding:14px 12px 14px 18px;border-bottom:1px solid var(--g200);font-size:13.5px;line-height:18px;color:var(--g500)}
+.pay-sum p:first-child{flex:1}
+.pay-cta{display:flex;align-items:center;gap:16px;padding:8px 16px 24px}
+.payw{flex:1;display:flex;flex-direction:column;gap:2px}
+.payw .l{display:flex;align-items:center;font-size:12px;line-height:18px;color:var(--g600)}
+.pp{display:flex;gap:4px;align-items:center;font-weight:700;font-size:16px;color:var(--g700)}
+.pp > img{width:20px;height:20px;border-radius:4px;border:.6px solid var(--g300)}
+.paybtn{width:200px;border:1px solid #EF6939;border-radius:12px;background:var(--brand);padding:10px 18px;text-align:center;color:#fff;white-space:nowrap;box-shadow:0 1px 2px rgba(16,24,40,.05);transition:transform .1s}
+.paybtn:active{transform:scale(.98)}
+.paybtn b{font-weight:600;font-size:16px;line-height:24px}
+.paybtn small{font-size:12px;line-height:18px;margin-left:4px}
+
+/* ---------- LOW WALLET ---------- */
+.low{background:#fff;display:flex;align-items:center;justify-content:center}
+.low-in{display:flex;flex-direction:column;align-items:center;gap:32px;animation:fade .3s ease-out}
+.low-art{position:relative;width:160px;height:160px;display:flex;align-items:center;justify-content:center}
+.low-art dotlottie-wc{width:100%;height:100%}
+/* the still wallet shows until the player upgrades, then gets out of the way */
+.low-art img{width:124px;height:124px;border-radius:50%;object-fit:cover}
+.low-art dotlottie-wc:defined ~ img{display:none}
+@keyframes breathe{50%{transform:scale(1.05)}}
+.low-in h2{font-weight:700;font-size:20px;line-height:30px;color:var(--g600);text-align:center}
+.low-in > div{display:flex;flex-direction:column;align-items:center}
+.low-in p{margin-top:8px;width:268px;font-size:16px;line-height:24px;color:var(--g700);text-align:center}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+
+/* ---------- POPUP + CONFETTI ---------- */
+.overlay{position:absolute;inset:0;z-index:20;background:rgba(0,0,0,.8);animation:fade .25s ease-out;overflow:hidden}
+.confetti i{position:absolute;left:50%;top:38%;width:8px;height:12px;border-radius:2px;opacity:0;animation:burst 1.5s cubic-bezier(.15,.6,.3,1) forwards}
+@keyframes burst{0%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:0;transform:translate(var(--x),var(--y)) rotate(var(--r))}}
+.pop{position:absolute;left:50%;top:50%;width:278px;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;animation:popin .4s cubic-bezier(.2,1.3,.4,1)}
+@keyframes popin{from{transform:translate(-50%,-50%) scale(.8);opacity:0}to{transform:translate(-50%,-50%) scale(1);opacity:1}}
+.pop .badge{position:relative;z-index:2;width:52px;height:52px;margin-bottom:-26px;animation:wiggle 1.2s ease-in-out .3s}
+@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-14deg) scale(1.1)}50%{transform:rotate(10deg)}75%{transform:rotate(-5deg)}}
+.pop-card{width:100%;background:#fff;border-radius:16px;padding:4px 4px 24px;display:flex;flex-direction:column;gap:12px;align-items:center}
+.pop-title{width:100%;border-radius:12px 12px 0 0;padding:32px 12px 20px;text-align:center;font-weight:700;font-size:18px;line-height:28px;color:var(--g800);background:linear-gradient(118.9deg,#e3cffd 22.4%,#fff 81%)}
+.pop-body{padding:0 12px;text-align:center;font-size:16px;line-height:28px;color:var(--g600)}
+.pop-body b{font-weight:700;color:var(--g800)}
+.pop-body .semi{font-weight:600}
+.pop-body .g{color:#027A48}
+
+/* ---------- CHAT ---------- */
+.chat{background:#f6f4f1}
+.chat-head{position:absolute;top:0;left:0;right:0;z-index:4;background:#fff;box-shadow:0 1px 0 var(--g200)}
+.chat-nav{height:64px;display:flex;align-items:center;gap:10px;padding:0 16px 0 12px}
+.chat-nav .back{width:32px;height:32px;display:flex;align-items:center;justify-content:center}
+.chat-nav .back img{width:22px;height:22px}
+.chat-nav h3{font-weight:700;font-size:16px;line-height:24px;color:var(--g800)}
+.chat-nav .on{display:flex;align-items:center;gap:5px;font-weight:600;font-size:12px;color:#027A48}
+.chat-nav .on::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--s600)}
+.msgs{position:absolute;top:64px;left:0;right:0;bottom:0;overflow-y:auto;padding:12px 16px 210px;display:flex;flex-direction:column;gap:12px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.msgs::-webkit-scrollbar{display:none}
+.msg{max-width:268px;padding:8px 12px;border-radius:14px;font-size:14px;line-height:22px;color:var(--g800);display:flex;flex-wrap:wrap;align-items:flex-end;column-gap:8px}
+.msg time{font-size:10px;line-height:14px;color:var(--g500);margin-left:auto}
+.msg.in{background:#fff;align-self:flex-start;box-shadow:0 1px 2px rgba(16,24,40,.05)}
+.msg.out{background:#fde2d6;align-self:flex-end}
+.sys{background:var(--g100);border:1px solid var(--g300);border-radius:10px;padding:8px 12px;text-align:center;font-size:14px;line-height:22px;color:var(--g600)}
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:5;border-radius:16px 16px 0 0;padding:0 4px;background:linear-gradient(#7d58a1,#4a3460);display:flex;flex-direction:column;align-items:center;animation:sheetup .45s cubic-bezier(.2,.9,.3,1)}
+@keyframes sheetup{from{transform:translateY(100%)}to{transform:none}}
+.sheet-top{display:flex;gap:6px;align-items:center;justify-content:center;padding:6px 0 11px;color:#fff;font-weight:700;font-size:14px}
+.sheet-top img{width:19px;height:23px;animation:twinkle 1.6s ease-in-out infinite}
+@keyframes twinkle{0%,100%{transform:scale(1) rotate(0);opacity:1}50%{transform:scale(.8) rotate(12deg);opacity:.75}}
+.sheet-card{width:100%;margin-top:-3px;background:#fff;border-radius:24px 26px 0 0;padding:16px 16px 20px;display:flex;flex-direction:column;gap:12px}
+.sheet-row{display:flex;gap:12px;align-items:center;font-size:16px;line-height:24px;color:var(--g800)}
+.sheet-row b{font-weight:600;color:var(--s700)}
+.sheet-card > button{background:var(--brand);border:1px solid var(--brand);border-radius:12px;padding:8px 16px;text-align:center;color:#fff;font-weight:600;font-size:16px;line-height:24px;box-shadow:0 1px 3px rgba(16,24,40,.1),0 1px 2px rgba(16,24,40,.06)}
+
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+@media (prefers-reduced-motion:reduce){.swap .lp{display:none}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="toolbar" role="toolbar" aria-label="Jump to a path">
+    <b>Bonus highlight flow</b>
+    <button data-jump="home">Home</button>
+    <button data-jump="wallet">Wallet pill</button>
+    <button data-jump="listingChat">Listing → Chat</button>
+    <button data-jump="again">Chat again (coupon)</button>
+    <button data-jump="history">View history (offer)</button>
+    <button data-jump="post3">Post 3rd recharge</button>
+  </div>
+  <div class="stage" id="stage"><div class="phone" id="phone"></div></div>
+</div>
+<button class="flows-btn" id="flowsBtn" aria-haspopup="dialog">Flows ▾</button>
+<div class="flows-sheet" id="flowsSheet" role="dialog" aria-label="Jump to a path">
+  <div class="panel">
+    <h4>Jump to a path</h4>
+    <button data-jump="home">Home<small>Start of the flow</small></button>
+    <button data-jump="wallet">Wallet pill<small>Add Money to Wallet, standard bonuses</small></button>
+    <button data-jump="listingChat">Listing → Chat<small>Low balance → Add Money to Wallet</small></button>
+    <button data-jump="again">Chat again<small>Coupon applied → coupon bonuses</small></button>
+    <button data-jump="history">View history<small>Continue chat → ₹5/min offer</small></button>
+    <button data-jump="post3">Post 3rd recharge<small>Two rows of SKUs, coins on ₹500</small></button>
+  </div>
+</div>
+
+<script>
+const I = /*ICONS*/{}/*END*/;
+const P = /*PHOTOS*/{}/*END*/;
+
+const phone=document.getElementById('phone'), stage=document.getElementById('stage');
+let timers=[], ticker=null, H=768;
+const later=(fn,ms)=>timers.push(setTimeout(fn,ms));
+function clearTimers(){timers.forEach(clearTimeout);timers=[];if(typeof animSeq!=='undefined')animSeq++;if(ticker){clearInterval(ticker);ticker=null}}
+const fmt=n=>String(n);
+const RM=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- sizing: full-screen on phones, framed on desktop ---------- */
+function fit(){
+  const vw=window.innerWidth, vh=window.innerHeight;
+  // Phones: detect by touch + physical screen size, not just the frame width.
+  // The artifact viewer can lay the page out wider than the phone, which made it show the desktop frame.
+  const touch = window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
+  const smallScreen = Math.min(screen.width, screen.height) <= 600;
+  const forced = new URLSearchParams(location.search).get('view');
+  const mobile = forced ? forced === 'mobile' : (vw <= 560 || (touch && smallScreen));
+  document.body.classList.toggle('mobile',mobile);
+  let s;
+  if(mobile){ s=vw/360; H=Math.round(vh/s); }
+  else { H=768; s=Math.min(1,(vh-90)/H); }
+  phone.style.height=H+'px';
+  document.documentElement.style.setProperty('--ui', mobile ? s : 1);
+  phone.style.transform=`scale(${s})`;
+  stage.style.width=360*s+'px'; stage.style.height=H*s+'px';
+}
+window.addEventListener('resize',fit);
+window.visualViewport&&window.visualViewport.addEventListener('resize',fit);
+
+/* ---------- shared ---------- */
+const chev=up=>`<img class="chev ${up?'up':''}" src="${I.chevron}" alt="">`;
+function photo(key,size,initials){
+  return P[key]
+    ?`<span class="photo" style="width:${size}px;height:${size}px"><img src="${P[key]}" alt=""></span>`
+    :`<span class="photo ph" style="width:${size}px;height:${size}px;font-size:${Math.round(size*.34)}px" aria-hidden="true">${initials}</span>`;
+}
+
+/* ---------- HOME ---------- */
+// rate = what the user is actually charged; the struck-out original is always ₹5 more
+function card(rate){
+  return `<div class="card">
+    <div class="card-top">
+      <span class="avwrap">${photo('hemali',64,'AH')}<span class="odot" style="right:0;top:0;width:16px;height:16px;border-radius:8px;background:var(--s500);border-width:2.3px"></span></span>
+      <div><p class="card-name">Astro Hemali</p>
+        <div class="meta"><span class="rating">4.7 <img src="${I.star}" alt="" width="14" height="14"></span><span class="dot4"></span>1240 sessions</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div class="line"><img src="${I.skill}" alt="" width="16" height="16">Vedic, Tarot, Numerology</div>
+      <div class="line"><img src="${I.work}" alt="" width="14" height="14">8 yrs <span class="dot4" style="margin:0 2px"></span>Hindi, English, Gujarati</div>
+      <div class="card-price"><s>₹${rate+5}/min</s><b>₹${rate}/min</b></div>
+    </div>
+    <div class="card-btns">
+      <button><img src="${I.call}" alt="" width="20" height="20">Call</button>
+      <button data-hot data-go="listingChat" data-rate="${rate}"><img src="${I['chat-card']}" alt="" width="20" height="20">Chat</button>
+    </div>
+  </div>`;
+}
+function renderHome(){
+  const tabs=[['Today','tab-today'],['Experts','tab-experts'],['Timeline','tab-timeline'],['Explore','tab-explore']];
+  const chips=['Chat','Call','Available','Marriage','Love','Career','Health','Vedic','Tarot','Numerology'];
+  const promo=P.promo
+    ?`<div class="promo img"><img src="${P.promo}" alt="First Recharge Offer! Next chat: 5 min at ₹5/min. Recharge now"></div>`
+    :`<div class="promo"><div><h5>First Recharge Offer !</h5><p>Next chat: 5 min at <b>₹5/min</b></p></div><span class="rn">Recharge now</span></div>`;
+  return `<div class="screen home">
+    <div class="home-head">
+      <div class="topnav">
+        <div class="brand">
+          <img src="${I.hamburger}" alt="Menu" width="19.4" height="16">
+          <div class="logo" aria-label="astrochat.com"><img class="a" src="${I['logo-a']}" alt=""><img class="b" src="${I['logo-b']}" alt=""><img class="c" src="${I['logo-c']}" alt=""><span><i>.com</i></span></div>
+        </div>
+        <div class="navright">
+          <button class="wchip" data-hot data-go="wallet" aria-label="Wallet ₹0. Add money and get cashback">
+            <span class="bal"><img src="${I.wallet}" alt="" width="18" height="18">₹0</span>
+            <span class="swap"><span class="lay lg"><span class="giftw" aria-hidden="true"><span class="g">🎁</span><i></i><i></i><i></i></span></span><span class="lay lp"><img src="${I.plus}" alt=""></span></span>
+          </button>
+          <img src="${I['chat-top']}" alt="Messages" width="22" height="22">
+        </div>
+      </div>
+      <div class="chips"><span class="chip">Filter <img src="${I.filter}" alt="" width="17.5" height="12.5"></span><span class="vline"></span>${chips.map(c=>`<span class="chip">${c}</span>`).join('')}</div>
+    </div>
+    <div class="home-scroll">
+      ${promo}
+      <div class="recent">
+        <div class="recent-h"><p>Recent Chats</p><span>View All</span></div>
+        <div class="rc-row">
+          <div class="rc" style="width:286px">
+            <span class="avwrap">${photo('vippsana',56,'AV')}<span class="odot" style="right:0;top:0;width:14px;height:14px;border-radius:5px;background:var(--s700);border-width:1.7px"></span></span>
+            <div style="flex:1;min-width:0"><p class="rc-name">Astro Vippsana</p><div class="price"><s>₹25/min</s><b>₹20/min</b></div>
+              <div class="rc-btns"><button class="btn-o" data-hot data-go="history">View History</button><button class="btn-f" data-hot data-go="again" data-rate="20"><img src="${I.bubble}" alt="" width="18" height="18">Chat Again</button></div>
+            </div>
+          </div>
+          <div class="rc" style="width:312px">
+            <span class="avwrap">${photo('hemali',56,'AH')}<span class="odot" style="right:0;top:0;width:14px;height:14px;border-radius:5px;background:var(--g400);border-width:2.9px"></span></span>
+            <div style="flex:1;min-width:0"><p class="rc-name">Astro Hemali</p><div class="price"><s>₹30/min</s><b>₹25/min</b></div>
+              <div class="rc-btns"><button class="btn-o">View History</button><button class="btn-o" style="flex:1"><img src="${I.bubble}" alt="" width="18" height="18" style="filter:brightness(0) saturate(100%) invert(52%) sepia(70%) saturate(2400%) hue-rotate(345deg) brightness(98%)">Join Waitlist</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <p class="sec-title">Our Astrologers</p>
+        <div class="cards">${card(25)}${card(15)}${card(35)}</div>
+      </div>
+    </div>
+    <nav class="tabbar">${tabs.map(([t,k])=>`<div class="tab ${t==='Experts'?'on':''}"><img src="${I[k]}" alt="" width="24" height="24">${t}</div>`).join('')}</nav>
+  </div>`;
+}
+
+/* ---------- ADD BALANCE ---------- */
+/* bonus % must never fall as the amount rises, otherwise a bigger recharge buys a worse
+   per-minute rate (effective rate = rate / (1 + bonus/amount)). 40% is the ceiling. */
+const BASE=[[50,0],[100,10],[250,50],[500,150],[1000,400],[2000,800],[3000,1200],[4000,1600],[5000,2000],[10000,4000]];
+/* ASTRO50 is a flat ₹50 on top of the standing wallet bonus: ₹100 gives ₹10 + ₹50 = ₹60. */
+const COUPON_FLAT=50;
+let ab={mode:'default',sel:100,expanded:false,banner:false,shown:100,cd:0};
+const baseBonusFor=v=>((BASE.find(x=>x[0]===v)||[])[1])||0;
+const bonusFor=v=>{
+  const base=(BASE.find(x=>x[0]===v)||[])[1];
+  if(base==null) return base;
+  return ab.mode==='coupon' ? base+COUPON_FLAT : base;
+};
+
+// The astrologer's ₹/min, read off the card the user tapped — the price they will actually be
+// charged, so the discounted figure when a card strikes one out. null on the wallet chip, where
+// no astrologer is known: nothing that needs a rate may be shown there.
+let flowRate=null;
+const LOTTIE_LOW='https://lottie.host/5ddeccf5-8552-43a2-9652-64ffc3b467ac/K2ZA3CwRuI.lottie';
+let flowAstro='Astro Hemali';
+let flowType='wallet'; // 'insufficient' when the user came from an astrologer's Chat button with too little balance // astrologer the user is trying to reach (null when opened from the wallet)
+// How much CHEAPER each minute gets = (rate − effective rate) ÷ rate. Expanding that,
+// rate = A, credit = amount + bonus, minutes = credit/A, effective = amount/minutes = amount*A/credit,
+// so (A − amount*A/credit) / A = bonus / credit — the rate cancels out. That is why the line is
+// true on the wallet entry, where no astrologer and therefore no rate is known.
+// ₹250: 50/300 = 17%, matching (25 − 20.83)/25.
+function cheaperPct(bonus,amount){ return Math.round(100*bonus/(amount+bonus)) }
+function stripInner(){
+  const b=bonusFor(ab.sel);
+  if(ab.mode==='coupon'&&!ab.banner) return '';
+  if(b>0){ // Figma 4573:1698
+    // Wallet entry: just the extra. The "% cheaper" half is only shown when an astrologer is
+    // known, since it is a claim about their session.
+    if(!flowAstro) return `<div class="strip gx"><span>You get <b>₹${fmt(b)}</b>&nbsp;extra</span></div>`;
+    const nm = flowAstro.replace(/ /g,'&nbsp;'); // never split the astrologer's name across lines
+    return `<div class="strip gx"><span>You get <b>₹${fmt(b)}</b>&nbsp;extra + session <b>${cheaperPct(b,ab.sel)}%</b>&nbsp;cheaper with&nbsp;${nm}</span></div>`;
+  }
+  if(b===0) return `<div class="strip nb50"><span>92% users pick <b>₹250</b> &amp; get <b>₹${fmt(bonusFor(250))} extra</b></span></div>`;
+  return '';
+}
+function cdText(){
+  const s=ab.cd;
+  if(ab.mode==='coupon'){return `${Math.floor(s/3600)}:${String(Math.floor(s%3600/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`}
+  return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+}
+function heroDigits(v){const s=fmt(v);return `<span class="stk" aria-hidden="true">${s}</span>${s.slice(0,-1)}<span class="last">${s.slice(-1)}</span>`}
+function tileHTML(list){
+  return list.map(([v])=>{
+    // the badge includes the coupon, so under ASTRO50 a ₹50 tile shows +₹50 and ₹100 shows +₹60
+    const b=bonusFor(v), on=v===ab.sel;
+    const coins=(v===(ab.coin||250))?`<span class="coinfall" aria-hidden="true"><i class="coin"></i><i class="coin"></i><i class="coin"></i><i class="coin"></i><i class="coin"></i></span>`:'';
+    return `<div class="tile-col">
+      <button class="tile ${ab.justSel===v?'justpick':''}" data-hot data-tile="${v}" aria-pressed="${on}" aria-label="Recharge ₹${fmt(v)}${b?`, ₹${fmt(b)} bonus`:''}">
+        <span class="val"><i>₹</i><span>${fmt(v)}</span></span>
+        ${coins}${on?`<img class="sel ${ab.justSel===v?'justpick':''}" src="${I['tile-corner']}" alt=""><img class="tick ${ab.justSel===v?'justpick':''}" src="${I['tile-tick']}" alt="">`:''}
+      </button>
+      ${b?`<span class="bonus">+ ₹${fmt(b)}</span>`:''}
+    </div>`;
+  }).join('');
+}
+function tilesHTML(){
+  const n = ab.rows===2 ? 6 : 3;   // post-3rd-recharge shows a second row up front
+  return `<div class="tiles">${tileHTML(BASE.slice(0,n))}</div>
+    <div class="more-wrap ${ab.expanded?'open':''}" id="moreWrap" aria-hidden="${!ab.expanded}">
+      <div class="more-inner"><div class="tiles more">${tileHTML(BASE.slice(n))}</div></div>
+    </div>`;
+}
+function burstHTML(){
+  const on=ab.sel>=250, prev=!!ab.burstOn, now=performance.now();
+  ab.burstOn=on;
+  if(!on&&!prev) return '';
+  if(on&&!ab.burstT0) ab.burstT0=now;
+  const t=ab.burstT0?(now-ab.burstT0):0;
+  let cls='', grow=0;
+  if(on){ if(t<1600){cls='grow';grow=t} else if(!prev){cls='fadein'} }
+  else cls='out';
+  return `<span class="burst ${cls}" style="--spin-delay:-${(t/1000).toFixed(2)}s;--grow-delay:-${(grow/1000).toFixed(2)}s"></span>`;
+}
+
+/* Payment summary — collapsed: Figma 4691:13481 (no extra) / 4288:36470 (with extra)
+   expanded: 4288:39767 (no extra) / 4288:39850 (with extra, coupon row if applied) */
+function summaryHTML(gst){
+  const sel=ab.sel, pay=sel+gst;
+  const std=(BASE.find(x=>x[0]===sel)||[])[1]||0;
+  const total=sel+(bonusFor(sel)||0);
+  const coupon=ab.mode==='coupon' ? total-sel-std : 0;
+  const extra=total>sel;
+  const under=total<pay;
+  const open=!!ab.payOpen;
+  const dash=c=>`<span class="ps-dash" style="--dc:${c}"></span>`;
+  const row=(l,r,cls='')=>`<div class="ps-line ${cls}"><span>${l}</span><span>${r}</span></div>`;
+  return `<div class="ps-wrap">
+    <div class="ps-card ${open?'open':''} ${extra?'extra':'plain'} ${under?'under':''}" role="button" tabindex="0" data-hot data-paytoggle aria-expanded="${open}">
+      <div class="ps-top">
+        <p class="ps-info"><img src="${I['wallet-14']}" alt="" width="16" height="16"><span>You get <b class="amt-get">₹${fmt(total)}</b> in wallet</span></p>
+        <span class="ps-link">₹${fmt(sel)} + ₹${fmt(gst)} GST <img class="chev ps-chev ${open?'up':''}" src="${I.chevron}" alt=""></span>
+      </div>
+      <div class="ps-details"><div class="ps-inner">
+        <div class="ps-sec">
+          ${dash('#EAECF0')}
+          <div class="ps-calc">${row('Recharge amount',`₹${fmt(sel)}`,'r1')}${row('GST (18%)',`₹${fmt(gst)}`,'r2')}</div>
+          ${dash('#EAECF0')}
+          ${row('Total payable',`₹${fmt(pay)}`,'tot')}
+          ${dash('#EAECF0')}
+        </div>
+        <div class="ps-credit">
+          <div class="ps-box"><span>To be added in your wallet</span><b>₹${fmt(total)}</b></div>
+          ${extra?`<div class="ps-panel">
+            ${row('Recharge Added',`₹${fmt(sel)}`,'p1')}
+            ${std?row('Extra bonus',`+₹${fmt(std)}`,'pg'):''}
+            ${coupon?row('Coupon',`+₹${fmt(coupon)}`,'pg'):''}
+            ${dash('#D0D5DD')}
+            ${row('Total',`₹${fmt(total)}`,'pt')}
+          </div>`:''}
+        </div>
+      </div></div>
+    </div>
+  </div>`;
+}
+
+/* Select Payment Method sheet (Figma 4691:51403) */
+const PM=[{k:'phonepe',n:'PhonePe',r:0},{k:'gpay',n:'Gpay',r:30},{k:'paytm',n:'Paytm',r:7},{k:'cred',n:'Cred',r:7}];
+const pmCurrent=()=>PM.find(m=>m.k===(ab.pm||'phonepe'));
+function pmLogo(m,size){
+  if(m.k==='phonepe') return `<img class="pm-logo-raw" src="${I.phonepe}" alt="" width="${size}" height="${size}">`;
+  const pad=size>=32?2:1, rad=size>=32?8:4;
+  return `<span class="pm-logo" style="width:${size}px;height:${size}px;padding:${pad}px;border-radius:${rad}px"><img src="${I[m.k]}" alt="" style="border-radius:${size>=32?m.r:Math.round(m.r/2)}px"></span>`;
+}
+function pmRow(m){
+  const on=(ab.pm||'phonepe')===m.k;
+  return `<div class="pm-row" role="radio" aria-checked="${on}" tabindex="0" data-hot data-pmpick="${m.k}">
+    <span class="pm-name">${pmLogo(m,32)}<span>${m.n}</span></span>
+    <span class="pm-radio"><img src="${I[on?'radio-on':'radio-off']}" alt=""></span></div>`;
+}
+function pmSheetHTML(gst){
+  const sel=ab.sel, pay=sel+gst, total=sel+(bonusFor(sel)||0);
+  const others=PM.filter(m=>m.k!=='phonepe');
+  return `<div class="pm-overlay ${ab.pmOpen?'open':''}" id="pmOverlay" aria-hidden="${!ab.pmOpen}">
+    <div class="pm-scrim" data-pmclose></div>
+    <div class="pm-sheet" role="dialog" aria-label="Select Payment Method">
+      <div class="pm-head"><p>Select Payment Method</p><button class="pm-x" data-hot data-pmclose aria-label="Close"><img src="${I.close}" alt=""></button></div>
+      <div class="pm-body">
+        <div class="pm-group"><p class="pm-gt">Suggested</p><div class="pm-card">${pmRow(PM[0])}</div></div>
+        <div class="pm-group"><p class="pm-gt">Other UPI app</p>
+          <div class="pm-card pm-list">${others.map(pmRow).join('<span class="pm-div"></span>')}
+            <div class="pm-more"><span class="pm-grad l"></span><span class="pm-chip">See More ${chev()}</span><span class="pm-grad r"></span></div>
+          </div></div>
+      </div>
+    </div>
+    <div class="pm-cta">
+      <p class="pm-credit ${total<pay?'under':''}">Pay now &amp; get <b class="gb">₹${fmt(total)}</b> added in your wallet</p>
+      <div class="pm-btnwrap"><button class="paybtn pm-pay"><b>Pay ₹${fmt(pay)}</b><small>(GST incl.)</small></button></div>
+    </div>
+  </div>`;
+}
+function renderAB(){
+  const gst=Math.round(ab.sel*.18), strip=stripInner();
+  const label=ab.mode==='coupon'?'Coupon Offer Valid For':'Recharge Offer Valid For';
+  const bnIn=ab.banner&&!ab.bnSeen; if(ab.banner) ab.bnSeen=true;
+  // Dark green goes with a countdown; without one the banner takes the lighter green.
+  const bnTimer=ab.mode==='offer'?false:(ab.mode==='coupon'?!ab.noTimer:true);
+  return `<div class="screen ab">
+    <div class="ab-head">
+      <div class="ab-nav">
+        <button class="ab-title" data-hot data-go="home" aria-label="Back to home"><span class="back"><img src="${I.back}" alt="" width="18" height="18"></span><p>Add Money to Wallet</p></button>
+        <span class="wbadge"><img src="${I.wallet}" alt="" width="20" height="20">₹0</span>
+      </div>
+    </div>
+    <div class="ab-body" id="abBody">
+      ${ab.banner?`<div class="banner${bnTimer?' bn-dark':''}${bnIn?' bn-in':''}"><img class="bn-stars" src="${I.stars}" alt="" aria-hidden="true"><img class="bn-icon" src="${I.discount}" alt="" width="28" height="28"><div class="bn-txt">${ab.mode==='coupon'?`<p><b>ASTRO50</b> applied</p><p class="bn-sub">₹50 extra${ab.noTimer?'':` · ends in <b id="cd">${cdText()}</b>`}</p>`:ab.mode==='offer'?`<p>First 5 mins chat at <b>₹5/min</b> · <b>80% Off</b></p>`:`<p>${label} <b id="cd">${cdText()}</b></p>`}</div>${ab.mode==='coupon'?`<span class="sweep"></span>`:''}</div>`:''}
+      <div class="warn-wrap ${ab.warnShown?'open':''}" id="warnWrap" aria-hidden="${!ab.warnShown}"><div class="warn-inner">
+        <div class="warn"><img src="${I['warning-red']}" alt="" width="24" height="24"><p><b>To connect with ${flowAstro},</b><br>need wallet balance of <b>4 min (₹${fmt(4*(flowRate||0))})</b></p></div>
+      </div></div>
+      <div class="receipt">
+        <div class="hero">
+          <div class="hero-top">
+            ${burstHTML()}
+            <p class="hero-label"><img src="${I['wallet-14']}" alt="" width="14" height="14">Your Wallet Gets</p>
+            <div class="amt ${ab.sel<100?'s50':''}" id="amt"><span class="r">₹</span><span class="n" id="heroN">${heroDigits(ab.cur??ab.shown)}</span><span class="addfly ${ab.fly||''}" id="addfly">${ab.flyText||''}</span></div>
+          </div>
+          ${strip?`<div class="strip-wrap"><img class="tip" src="${I[strip.includes('nb50')?'strip-tip-amber':strip.includes('strip gx')?'strip-tip-green':'strip-tip']}" alt="">${strip}</div>`:''}
+        </div>
+        ${tilesHTML()}
+        <div class="see"><button data-hot data-toggle aria-expanded="${ab.expanded}" aria-controls="moreWrap"><span class="see-label">${ab.expanded?'See Less Options':'See More Options'}</span>${chev(ab.expanded)}</button></div>
+      </div>
+    </div>
+    ${pmSheetHTML(gst)}
+    <div class="pay">
+      ${summaryHTML(gst)}
+      <div class="pay-cta">
+        <div class="payw" role="button" tabindex="0" data-hot data-paymethod aria-haspopup="dialog"><span class="l">Pay with ${chev()}</span><span class="pp">${pmLogo(pmCurrent(),20)}${pmCurrent().n}</span></div>
+        <button class="paybtn"><b>Pay ₹${fmt(ab.sel+gst)}</b><small>(GST incl.)</small></button>
+      </div>
+    </div>
+  </div>`;
+}
+let animSeq=0;
+function heroTo(){
+  const sel=ab.sel, b=bonusFor(sel)||0, total=sel+b, from=ab.cur??ab.shown, token=++animSeq;
+  const setN=v=>{const n=document.getElementById('heroN');if(n){n.innerHTML=heroDigits(v);alignRupee();}};
+  const setFly=(cls,txt)=>{ab.fly=cls;if(txt!=null)ab.flyText=txt;const f=document.getElementById('addfly');if(f){f.className='addfly '+cls;if(txt!=null)f.textContent=txt}};
+  const setRoll=on=>{const a=document.getElementById('amt');if(a)a.classList.toggle('rolling',on)};
+  ab.seen=ab.seen||new Set();
+  const still = b===0; // ₹50 with no bonus never animates
+  if(RM||still||ab.seen.has(sel)){ab.shown=total;ab.cur=null;setN(total);setFly('');setRoll(false);const a=document.getElementById('amt');if(a)a.classList.remove('land');return}
+  ab.seen.add(sel);
+  const d1=from===sel?0:380, hold=b?420:0, d2=b?800:0, t0=performance.now();
+  const ease=p=>1-Math.pow(1-p,3), lerp=(a,z,p)=>Math.round(a+(z-a)*ease(p));
+  setFly('', b?`+₹${fmt(b)}`:'');
+  const step=t=>{ if(token!==animSeq) return;
+    const e=t-t0; let v;
+    if(e<d1){ v=lerp(from,sel,e/d1); setRoll(true); }
+    else if(e<d1+hold){ v=sel; setRoll(false); if(ab.fly!=='in') setFly('in'); }
+    else if(e<d1+hold+d2){ v=lerp(sel,total,(e-d1-hold)/d2); setRoll(true); if(ab.fly!=='merge') setFly('merge'); }
+    else { v=total; setRoll(false); setFly(''); ab.cur=null; ab.shown=total; setN(total);
+      const a=document.getElementById('amt'); if(a){a.classList.remove('land'); void a.offsetWidth; a.classList.add('land'); setTimeout(()=>a.classList.remove('land'),1000)}
+      return; }
+    ab.cur=v; setN(v); requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+function animateHero(to){
+  const el=document.getElementById('heroN'), amt=document.getElementById('amt');
+  if(!el||RM){ab.shown=to;if(el){el.innerHTML=heroDigits(to);alignRupee();}return}
+  const from=ab.shown, t0=performance.now(), dur=520, token=(ab.anim=(ab.anim||0)+1);
+  amt.classList.add('rolling');
+  const step=t=>{ if(token!==ab.anim) return;
+    const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,3),v=Math.round(from+(to-from)*e); ab.cur=v;
+    const n=document.getElementById('heroN'), a=document.getElementById('amt');
+    if(n){ n.innerHTML=heroDigits(v); alignRupee(); } if(a) a.classList.toggle('rolling',p<1);
+    if(p<1) requestAnimationFrame(step); else { ab.shown=to; ab.cur=null; } };
+  requestAnimationFrame(step);
+}
+function startCountdown(sec){
+  ab.cd=sec;
+  ticker=setInterval(()=>{ab.cd=Math.max(0,ab.cd-1);const el=document.getElementById('cd');if(el)el.textContent=cdText()},1000);
+}
+function rerenderAB(){
+  const top=document.getElementById('abBody')?.scrollTop||0;
+  mount(renderAB());
+  const nb=document.getElementById('abBody'); if(nb) nb.scrollTop=top;
+}
+
+/* ---------- LOW / POPUP / CHAT ---------- */
+function renderLow(){
+  const fallback=P.lowWallet?`<img src="${P.lowWallet}" alt="">`:`<img src="${I.wallet}" alt="">`;
+  const art=`<div class="low-art"><dotlottie-wc src="${LOTTIE_LOW}" autoplay loop></dotlottie-wc>${fallback}</div>`;
+  return `<div class="screen low"><div class="low-in">${art}<div><h2>Your wallet balance is low !</h2><p>Recharge wallet to keep chatting with astrologers</p></div></div></div>`;
+}
+function popup(kind){
+  const title=kind==='coupon'?'Coupon code Applied !':'Offer: First 5 min at ₹5/min !';
+  const body=kind==='coupon'?`You’ll get <b>₹50 extra</b> on your first wallet recharge`
+    :`<s>₹25/min</s> → <span class="semi">₹5/min</span><br><span class="g">80% Off • Save ₹100</span>`;
+  const colors=['#f472b6','#facc15','#a855f7','#fb923c','#34d399','#e879f9'];
+  let bits='';
+  if(!RM) for(let i=0;i<46;i++){
+    const a=Math.random()*Math.PI*2, d=90+Math.random()*170;
+    bits+=`<i style="background:${colors[i%colors.length]};--x:${Math.cos(a)*d}px;--y:${Math.sin(a)*d-60}px;--r:${Math.random()*720-360}deg;animation-delay:${Math.random()*.15}s;width:${5+Math.random()*6}px;height:${7+Math.random()*8}px"></i>`;
+  }
+  return `<div class="overlay" role="dialog" aria-label="${title}"><div class="confetti">${bits}</div>
+    <div class="pop"><img class="badge" src="${I['popup-badge']}" alt="">
+      <div class="pop-card"><p class="pop-title">${title}</p><p class="pop-body">${body}</p></div></div></div>`;
+}
+function renderChat(){
+  const m=(t,d)=>`<div class="msg ${d}">${t}<time>02:24 PM</time></div>`;
+  return `<div class="screen chat">
+    <div class="chat-head">
+      <div class="chat-nav">
+        <button class="back" data-hot data-go="home" aria-label="Back"><img src="${I.back}" alt=""></button>
+        ${photo('chat',44,'AV')}
+        <div><h3>Astro Vippasana</h3><span class="on">Available</span></div>
+      </div>
+    </div>
+    <div class="msgs">
+      ${m('Welcome to AstroChat!','in')}${m('Finding an astrologer for you','in')}${m('Meanwhile you can share your question on the chat','in')}
+      <div class="sys">Astrologer has joined to guide you</div>
+      ${m('Radhe Radhe Mansi ji','in')}${m('Hello Rekhaji','out')}${m('Will I have a healthy relationship with my partner?','out')}
+      <div class="sys">This is an automated message. Your chat ended as you ran out of free minutes. You may recharge and start the chat again. For any issues, contact customer support.</div>
+    </div>
+    <div class="sheet">
+      <div class="sheet-top"><img src="${I.sparkle}" alt=""><span>Next Free 2 Mins Chat In</span><span>14h : 23 m</span></div>
+      <div class="sheet-card">
+        <div class="sheet-row">${photo('chat',60,'AV')}<p>Hi mansi, continue this chat at discounted price of <b>₹5/min</b></p></div>
+        <button data-hot data-go="continue" data-rate="5">Continue Chat</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---------- router ---------- */
+function alignRupee(){
+  const amt=document.getElementById('amt'); if(!amt) return;
+  const r=amt.querySelector('.r'), n=amt.querySelector('.n');
+  const cx=(alignRupee.cv||(alignRupee.cv=document.createElement('canvas'))).getContext('2d');
+  const digits=(n.querySelector('.stk')?.textContent)||n.textContent.replace(/\D/g,'')||'0';
+  const metrics=(el,text)=>{ const c=getComputedStyle(el), size=parseFloat(c.fontSize), ls=parseFloat(c.letterSpacing)||0;
+    cx.font=`${c.fontWeight} ${size}px ${c.fontFamily}`;
+    return { size, m:cx.measureText(text), ls }; };
+  const R=metrics(r,'₹'), N=metrics(n,digits);
+  // 1. tops: the flex line already aligns the baselines, so lifting the ₹ by the cap-height
+  // difference puts the two cap tops on the same line. CAP is Inter's cap height, measured off
+  // rasterised glyphs (₹, 1 and H all give 0.7275em; 0 overshoots to 0.7375, as round glyphs do).
+  const CAP=0.7275;
+  r.style.marginTop='0px';
+  r.style.top=(-CAP*(N.size-R.size)).toFixed(2)+'px';
+  // 2. gap: visible space between the ₹ ink and the first digit's ink = INK_GAP
+  const INK_GAP=0.5;
+  const rupeeRightBearing=(R.m.width+R.ls)-R.m.actualBoundingBoxRight;
+  const first=metrics(n,digits[0]).m;
+  const digitLeftBearing=-first.actualBoundingBoxLeft;
+  r.style.marginRight=(INK_GAP-rupeeRightBearing-digitLeftBearing).toFixed(2)+'px';
+}
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(alignRupee);
+function syncWarn(){
+  const w=document.getElementById('warnWrap'); if(!w||!ab) return;
+  // any amount below 4 x the card rate, not a hardcoded ₹50 — the threshold moves with the rate
+  const want = flowType==='insufficient' && !!flowRate && ab.sel < 4*flowRate;
+  if(want===!!ab.warnShown) return;
+  ab.warnShown=want;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{ w.classList.toggle('open',want); w.setAttribute('aria-hidden',!want); }));
+}
+function mount(html, anim){
+  const old=[...phone.children];
+  const cur=phone.querySelector('.screen');
+  if(!anim||!cur||RM){ phone.innerHTML=html; alignRupee(); syncWarn(); return; }
+  const holder=document.createElement('div'); holder.innerHTML=html; const neu=holder.firstElementChild;
+  const ease='cubic-bezier(.2,.8,.2,1)', dur=340;
+  const cleanup=()=>{ old.forEach(n=>n.remove()); neu.style.boxShadow=''; };
+  if(anim==='in-right'){ // wallet page slides in from the right, over the current screen
+    neu.style.boxShadow='-8px 0 24px rgba(16,24,40,.18)';
+    phone.appendChild(neu);
+    cur.animate([{transform:'translateX(0)'},{transform:'translateX(-24%)'}],{duration:dur,easing:ease,fill:'forwards'});
+    neu.animate([{transform:'translateX(100%)'},{transform:'translateX(0)'}],{duration:dur,easing:ease}).onfinish=cleanup;
+  } else { // 'out-right': wallet page slides back out to the right, revealing the screen underneath
+    phone.insertBefore(neu, phone.firstChild);
+    cur.style.boxShadow='-8px 0 24px rgba(16,24,40,.18)';
+    old.filter(n=>n!==cur).forEach(n=>n.remove());
+    neu.animate([{transform:'translateX(-24%)'},{transform:'translateX(0)'}],{duration:dur,easing:ease});
+    cur.animate([{transform:'translateX(0)'},{transform:'translateX(100%)'}],{duration:dur,easing:ease,fill:'forwards'}).onfinish=()=>cur.remove();
+  }
+  alignRupee(); syncWarn();
+}
+function openAB(mode,sel,banner=false,auto=true,extra){ab={mode,sel,expanded:false,banner,shown:sel,cd:0,...extra};mount(renderAB(), phone.querySelector('.screen.ab')?null:'in-right');if(auto)later(heroTo,450)}
+function withPopup(kind,mode,onDone){
+  openAB(mode,50,false,false);
+  phone.insertAdjacentHTML('beforeend',popup(kind));
+  later(()=>{const o=phone.querySelector('.overlay');if(o){o.style.transition='opacity .25s';o.style.opacity='0';later(()=>{o.remove();onDone();heroTo()},250)}},2300);
+}
+function go(route,rate){
+  clearTimers();
+  flowRate = rate ? +rate : null; // whatever the tapped card charges; null when none was tapped
+  document.getElementById('flowsSheet').classList.remove('open');
+  switch(route){
+    case 'home': mount(renderHome(), phone.querySelector('.screen.ab')?'out-right':null); break;
+    case 'wallet': flowType='wallet'; flowAstro=''; openAB('default',100); break;
+    case 'listingChat': flowType='insufficient'; flowAstro='Astro Hemali'; flowRate=flowRate||15; mount(renderLow()); later(()=>openAB('default',100),1600); break;
+    case 'again': flowType='coupon'; flowAstro='Astro Vipasana'; flowRate=flowRate||5; mount(renderLow()); later(()=>withPopup('coupon','coupon',()=>later(()=>{ab.banner=true;startCountdown(5*3600);rerenderAB()},800)),1600); break;
+    case 'history': mount(renderChat()); break;
+    case 'post3': flowType='wallet'; flowAstro=''; openAB('default',100,false,true,{rows:2,coin:500}); break;
+    case 'continue': flowType='offer'; flowAstro='Astro Vipasana'; flowRate=flowRate||5; mount(renderLow()); later(()=>withPopup('offer','offer',()=>{ab.banner=true;startCountdown(5*60);rerenderAB()}),1600); break;
+  }
+}
+phone.addEventListener('click',e=>{
+  if(ab&&ab.payOpen&&!e.target.closest('.ps-card')&&!e.target.closest('#pmOverlay.open')){
+    ab.payOpen=false; const c=document.querySelector('.ps-card');
+    if(c){c.classList.remove('open');c.setAttribute('aria-expanded','false');const ch=c.querySelector('.ps-chev');if(ch)ch.classList.remove('up');}
+    if(!e.target.closest('[data-go],[data-tile],[data-toggle],[data-paymethod],[data-pmpick],[data-pmclose]')) return;
+  }
+  const t=e.target.closest('[data-go],[data-tile],[data-toggle],[data-paytoggle],[data-paymethod],[data-pmclose],[data-pmpick]');
+  if(!t){phone.classList.add('hot-reveal');setTimeout(()=>phone.classList.remove('hot-reveal'),450);return}
+  if(t.dataset.go) return go(t.dataset.go,t.dataset.rate);
+  if(t.dataset.tile){
+    const v=+t.dataset.tile; if(v===ab.sel) return;
+    const from=ab.cur??ab.shown; ab.sel=v; ab.shown=from; ab.cur=from; ab.fly=''; ab.justSel=v; rerenderAB(); ab.justSel=null; heroTo();
+    const s=phone.querySelector('.strip'); if(s) s.classList.add('pulse'); return;
+  }
+  if(t.hasAttribute('data-paymethod')){ ab.pmOpen=true; const o=document.getElementById('pmOverlay'); o.classList.add('open'); o.setAttribute('aria-hidden','false'); return; }
+  if(t.hasAttribute('data-pmclose')){ ab.pmOpen=false; const o=document.getElementById('pmOverlay'); o.classList.remove('open'); o.setAttribute('aria-hidden','true'); return; }
+  if(t.dataset.pmpick){
+    ab.pm=t.dataset.pmpick;
+    document.querySelectorAll('[data-pmpick]').forEach(r=>{const on=r.dataset.pmpick===ab.pm; r.setAttribute('aria-checked',on); r.querySelector('.pm-radio img').src=I[on?'radio-on':'radio-off'];});
+    const pp=document.querySelector('.payw .pp'); if(pp) pp.innerHTML=pmLogo(pmCurrent(),20)+pmCurrent().n;
+    return;
+  }
+  if(t.hasAttribute('data-paytoggle')){
+    if(e.target.closest('.ps-details')) return; // taps inside the open breakdown don't close it
+    ab.payOpen=!ab.payOpen; t.classList.toggle('open',ab.payOpen); t.setAttribute('aria-expanded',ab.payOpen);
+    t.querySelector('.ps-chev').classList.toggle('up',ab.payOpen); return;
+  }
+  if(t.hasAttribute('data-toggle')){
+    ab.expanded=!ab.expanded;
+    const w=document.getElementById('moreWrap'), body=document.getElementById('abBody');
+    w.classList.toggle('open',ab.expanded); w.setAttribute('aria-hidden',!ab.expanded);
+    t.setAttribute('aria-expanded',ab.expanded);
+    t.querySelector('.see-label').textContent=ab.expanded?'See Less Options':'See More Options';
+    t.querySelector('.chev').classList.toggle('up',ab.expanded);
+    if(ab.expanded&&body){ setTimeout(()=>{ const see=t.getBoundingClientRect(), pay=document.querySelector('.pay').getBoundingClientRect();
+      const hidden=see.bottom-pay.top+16; if(hidden>0) body.scrollBy({top:hidden,behavior:RM?'auto':'smooth'}); },380); }
+  }
+});
+document.querySelectorAll('[data-jump]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.jump)));
+document.getElementById('flowsBtn').addEventListener('click',()=>document.getElementById('flowsSheet').classList.add('open'));
+document.getElementById('flowsSheet').addEventListener('click',e=>{if(e.target.id==='flowsSheet')e.currentTarget.classList.remove('open')});
+
+fit();
+const start=new URLSearchParams(location.search).get('start');
+go(start||'home');
+</script>
+</body>
+</html>
