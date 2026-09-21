@@ -680,11 +680,12 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    out the way the green arc under the congratulations card is. */
 .am .rcpt{position:absolute;left:16px;right:16px;top:142px;height:229px;z-index:2}
 .am .rcptline{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
-/* 3/2 is not a taste call — it is exactly what Chrome draws for `1px dashed`, measured off
-   the original by rasterising a real dashed border and reading the run lengths. Don't retune
-   it by eye: anything longer or sparser immediately stops matching the notches and the
-   See More button, which are still real CSS dashed borders. */
-.am #rcptPath{fill:#fff;stroke:#C6CCD5;stroke-width:1;stroke-dasharray:3 2;stroke-linecap:butt}
+/* Was 3/2, which is exactly what Chrome draws for `1px dashed`; she asked for shorter dashes,
+   so the path is now 2/2. The notch below is still a real CSS dashed border and so is still
+   Chrome's 3/2 — CSS gives no way to set a dash length. It is a 20px half-circle butted into
+   the card edge, and at 1px the difference over that arc is not resolvable; replacing it with
+   a masked gradient ring loses the white fill that punches the bite out of the card. */
+.am #rcptPath{fill:#fff;stroke:#C6CCD5;stroke-width:1;stroke-dasharray:2 2;stroke-linecap:butt}
 .am .notch{position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;border:1px dashed #D0D5DD}
 .am .notch.l{left:-11px;clip-path:inset(0 0 0 50%)}
 .am .notch.r{right:-11px;clip-path:inset(0 50% 0 0)}
