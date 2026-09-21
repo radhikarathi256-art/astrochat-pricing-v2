@@ -1,7 +1,7 @@
 /* AstroChat · Add Money — interactive prototype (no build step) */
 
 // [amount, bonus]. Wallet credit = amount + bonus; GST = 18% of the amount only.
-const AMTS = [[50,0],[100,100],[250,50],[500,150],[1000,400],[2000,400],[3000,600],[5000,1000],[10000,2000],[20000,4000]];
+const AMTS = [[50,0],[100,150],[250,500],[500,300],[1000,500],[2000,800],[3000,1000],[4000,1200],[5000,1500],[10000,2000]];
 const GST_RATE = 0.18;
 const OFFER_SECONDS = 5 * 60;
 
@@ -30,7 +30,7 @@ const coinClock = performance.now();
 function coinfall(){
   const el = ((performance.now() - coinClock) / 1000) % COIN_CYCLE;
   return `<span class="coinfall" aria-hidden="true">${
-    COIN_OFF.map(o => `<i class="coin" style="animation-delay:${(o - el).toFixed(2)}s"><i></i></i>`).join('')}</span>`;
+    COIN_OFF.map(o => `<i class="coin" style="animation-delay:${(o - el).toFixed(2)}s"><i class="s"><b class="f"></b><b class="k"></b></i></i>`).join('')}</span>`;
 }
 function tile([v,b]){
   const on = v === state.sel;
@@ -239,7 +239,30 @@ function setOpen(on){
   else renderTiles();
 }
 $('openscroll').addEventListener('scroll', () => { layoutOpen(); flashBar(); }, { passive:true });
-addEventListener('resize', layoutOpen);
+addEventListener('resize', () => { layoutOpen(); drawRcpt(); });
+
+/* ---------- receipt outline ---------- */
+// Drawn at 1:1 so the dashes and the 1px stroke stay undistorted.
+// The bottom is a corner and a bow, deliberately kept as two jobs. Trying to do both with
+// one curve is what made every earlier version pinch: to swing the tangent from vertical to
+// horizontal inside a shallow dip, the curvature has to spike right where the side ends —
+// the old elliptical border-radius bottomed out at ry²/rx ≈ 3px there. So BR turns the
+// corner on its own generous circular radius, and only then does a very shallow cubic bow
+// across the middle, entering and leaving horizontally. Every join is tangent-continuous and
+// the tightest curvature anywhere along the bottom is BR itself.
+const R = 32, BR = 26, BOW = 14;
+function drawRcpt(){
+  const el = $('rcpt'), o = .5;                     // half the stroke, so it sits inside the box
+  const W = el.clientWidth - o, H = el.clientHeight - o;
+  const m = (W + o) / 2, B = H - BOW, c = (W - BR - m) * .55;
+  $('rcptLine').setAttribute('viewBox', `0 0 ${el.clientWidth} ${el.clientHeight}`);
+  $('rcptPath').setAttribute('d',
+    `M${o} ${R}A${R} ${R} 0 0 1 ${o + R} ${o}H${W - R}A${R} ${R} 0 0 1 ${W} ${R}` +
+    `V${B - BR}A${BR} ${BR} 0 0 1 ${W - BR} ${B}` +
+    `C${W - BR - c} ${B} ${m + c} ${H} ${m} ${H}` +
+    `C${m - c} ${H} ${o + BR + c} ${B} ${o + BR} ${B}` +
+    `A${BR} ${BR} 0 0 1 ${o} ${B - BR}Z`);
+}
 
 /* ---------- selection ---------- */
 function select(v){
@@ -272,5 +295,5 @@ screen.addEventListener('keydown', e => {
 });
 
 /* ---------- boot ---------- */
-renderTiles(); renderBand(); renderCard(false); renderSummary(); renderPM();
+renderTiles(); renderBand(); renderCard(false); renderSummary(); renderPM(); drawRcpt();
 if (document.fonts) document.fonts.ready.then(() => { alignCardRupee(); layoutOpen(); });
