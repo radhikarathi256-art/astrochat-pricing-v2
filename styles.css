@@ -36,7 +36,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:#EDEDEA;color:#1D2939;-
   background:linear-gradient(90deg,#039855 0%,#039855 52%,#2CB37B 74%,#8FDDBC 89%,#E6F8F0 100%)}
 /* The tops below are measured from the nav's real height (64px + 1px border = 65px).
    Change anything in .nav and all four must move with it. */
-.banner{position:absolute;top:89px;left:18px;right:23px;z-index:1}
+/* flush with the receipt card below it, which sits at 16px either side */
+.banner{position:absolute;top:89px;left:16px;right:16px;z-index:1}
 .bandin{display:flex;gap:10px;align-items:flex-start;padding:12px 16px 42px}
 .bandin img{width:26px;height:26px;flex-shrink:0;transition:filter .3s}
 /* the discount tag tips side to side every few seconds so the offer keeps a bit of life */
