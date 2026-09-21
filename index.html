@@ -616,8 +616,8 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    rather than as white dots. The sparkles are white, so LOWERING the opacity is what makes them
    read darker — they sink back towards the band's own green. Masked out towards the text so it
    never crowds the copy. Stretching it full-width at full strength was the "horrible" version. */
-.am .coupon .bn-stars{position:absolute;right:0;top:0;width:236px;height:44px;z-index:0;object-fit:cover;object-position:right top;pointer-events:none;opacity:.1;
-  -webkit-mask-image:linear-gradient(to left,#000 8%,rgba(0,0,0,.45) 42%,transparent 78%);mask-image:linear-gradient(to left,#000 8%,rgba(0,0,0,.45) 42%,transparent 78%)}
+.am .coupon .bn-stars{position:absolute;right:0;top:0;width:236px;height:44px;z-index:0;object-fit:cover;object-position:right top;pointer-events:none;opacity:.08;
+  -webkit-mask-image:linear-gradient(to left,#000 0%,rgba(0,0,0,.5) 26%,rgba(0,0,0,.12) 52%,transparent 72%);mask-image:linear-gradient(to left,#000 0%,rgba(0,0,0,.5) 26%,rgba(0,0,0,.12) 52%,transparent 72%)}
 .am .coupon .sweep{z-index:0;height:62px;bottom:auto}
 /* Astrologer flow, tile big enough: the rate the recharge buys, with the list price struck out.
    Both sit on ONE line, so this variant has no .l2 — the band is a single-line strip. */
@@ -632,12 +632,14 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    once and stay gone. renderBand() rewrites the band's innerHTML on every tile tap, so the
    animation restarts by itself on each SKU pick; nothing has to retrigger it. */
 .am .bandin .arrows img{position:absolute;width:24px;height:32px;opacity:0;animation:arrowDrift 1.15s cubic-bezier(.3,0,.5,1) both}
-/* THREE, in her reference's formation: the left one sits highest, the other two trail below it
-   and to the right. Sized to ~half the 62px the band actually shows, as in the reference.
-   Tightened: the group spans 44px (was 58) and is anchored hard to the band's right edge. */
-.am .bandin .arrows img:nth-child(1){right:48px;top:-34px;animation-delay:0s}
-.am .bandin .arrows img:nth-child(2){right:26px;top:-12px;animation-delay:.10s}
-.am .bandin .arrows img:nth-child(3){right:4px;top:-20px;animation-delay:.05s}
+/* THREE, falling as ONE LINE — her call. The staggered version (tops -34/-12/-20, delays
+   0/.10/.05) read as "two diagonally parallel and one in the centre" while in flight, because
+   BOTH the start offset and the delay pulled them out of line. So: identical top, identical
+   delay, differing only in x. Anchored hard to the band's right edge, spanning 44px. */
+.am .bandin .arrows img{top:-32px;animation-delay:0s}
+.am .bandin .arrows img:nth-child(1){right:48px}
+.am .bandin .arrows img:nth-child(2){right:26px}
+.am .bandin .arrows img:nth-child(3){right:4px}
 /* starts above the strip and leaves below it, so the fade in/out never shows a hard edge */
 @keyframes arrowDrift{
   0%{transform:translateY(0);opacity:0}
@@ -1317,11 +1319,14 @@ function flyBonus(b,delay,dur){
   Object.assign(fly.style,{left:(a.left-sr.left)+'px',top:(a.top-sr.top)+'px',width:a.width+'px',height:a.height+'px'});
   amRoot.appendChild(fly);
   const dx=(z.left+z.width/2)-(a.left+a.width/2), dy=(z.top+z.height/2)-(a.top+a.height/2);
+  // Scale only ever DECREASES — her call. It used to balloon to 1.3 at the top of the arc and
+  // shrink back; now it starts at full size and shrinks the whole way in, so the chip reads as
+  // being absorbed by the card rather than popping at the user. Keep every value <= 1.
   fly.animate([
-    {offset:0,  opacity:0,transform:'translate(0,0) scale(.9) rotate(0deg)',easing:'cubic-bezier(.12,.75,.3,1)'},
-    {offset:.28,opacity:1,transform:`translate(${dx*.03}px,-50px) scale(1.3) rotate(-9deg)`,easing:'cubic-bezier(.5,0,.92,.4)'},
-    {offset:.66,opacity:1,transform:`translate(${dx*.45}px,${dy*.36}px) scale(1.14) rotate(8deg)`,easing:'cubic-bezier(.3,.08,.2,1)'},
-    {offset:.9, opacity:1,transform:`translate(${dx}px,${dy}px) scale(.85) rotate(-5deg)`,easing:'ease-out'},
+    {offset:0,  opacity:0,transform:'translate(0,0) scale(1) rotate(0deg)',easing:'cubic-bezier(.12,.75,.3,1)'},
+    {offset:.28,opacity:1,transform:`translate(${dx*.03}px,-50px) scale(.92) rotate(-9deg)`,easing:'cubic-bezier(.5,0,.92,.4)'},
+    {offset:.66,opacity:1,transform:`translate(${dx*.45}px,${dy*.36}px) scale(.72) rotate(8deg)`,easing:'cubic-bezier(.3,.08,.2,1)'},
+    {offset:.9, opacity:1,transform:`translate(${dx}px,${dy}px) scale(.5) rotate(-5deg)`,easing:'ease-out'},
     {offset:1,  opacity:0,transform:`translate(${dx}px,${dy}px) scale(.3) rotate(0deg)`},
   ],{duration:dur,delay,easing:'linear',fill:'both'}).finished.then(()=>fly.remove(),()=>fly.remove());
 }
