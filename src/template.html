@@ -477,9 +477,14 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 
 /* ---------- POPUP + CONFETTI ---------- */
 .overlay{position:absolute;inset:0;z-index:20;background:rgba(0,0,0,.8);animation:fade .25s ease-out;overflow:hidden}
+/* Confetti sits ABOVE the black scrim and BELOW the card — both layers are positioned, so DOM
+   order alone decided it and any reorder would silently break it. Pinned explicitly. */
+.confetti{position:absolute;inset:0;z-index:1;pointer-events:none}
 .confetti i{position:absolute;left:50%;top:38%;width:8px;height:12px;border-radius:2px;opacity:0;animation:burst 1.5s cubic-bezier(.15,.6,.3,1) forwards}
-@keyframes burst{0%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:0;transform:translate(var(--x),var(--y)) rotate(var(--r))}}
-.pop{position:absolute;left:50%;top:50%;width:278px;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;animation:popin .4s cubic-bezier(.2,1.3,.4,1)}
+/* holds full opacity for most of the flight — fading from frame one made the pieces read as if
+   they were under the scrim rather than on top of it */
+@keyframes burst{0%{opacity:1;transform:translate(0,0) rotate(0)}70%{opacity:1}100%{opacity:0;transform:translate(var(--x),var(--y)) rotate(var(--r))}}
+.pop{position:absolute;left:50%;top:50%;width:278px;z-index:2;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;animation:popin .4s cubic-bezier(.2,1.3,.4,1)}
 @keyframes popin{from{transform:translate(-50%,-50%) scale(.8);opacity:0}to{transform:translate(-50%,-50%) scale(1);opacity:1}}
 .pop .badge{position:relative;z-index:2;width:52px;height:52px;margin-bottom:-26px;animation:wiggle 1.2s ease-in-out .3s}
 @keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-14deg) scale(1.1)}50%{transform:rotate(10deg)}75%{transform:rotate(-5deg)}}
@@ -536,22 +541,29 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    .openwrap at +14px, the closed pay sheet at +100%) and a transform still counts as
    scrollable overflow. overflow:hidden leaves the screen scrollable, so focusing a control
    near the bottom scrolls the whole phone off its own frame; overflow:clip cannot scroll. */
-.screen.am{overflow:clip}
+/* Opaque: mount() slides this screen in ON TOP of the one it came from, so without a background
+   the home screen shows straight through it for the whole 340ms. */
+.screen.am{overflow:clip;background:#fff}
 
 /* ---------- offer band ---------- */
-/* v1's flat greens, not v2's fade to white: the fade left the last word sitting on the pale
-   end and reading washed out. Dark green goes with a countdown, lighter green without one —
-   the class is set off the TIMER, not the mode (see renderBand). */
-.am .banner,.am .band3{color:#fff;background:#039855;border-radius:16px;transition:background .3s}
-.am .banner.bn-dark,.am .band3.bn-dark{background:#027A48}
+/* Light green fading out to WHITE ON THE RIGHT, dark green text. (Earlier passes were solid
+   #039855/#027A48 with white text; before that a v2 fade downward. This is the third and current
+   shape.) The fade runs left-to-right, so it never touches the text's left edge and the last word
+   still lands on a pale background — which is why the copy has to stay short enough not to reach
+   the white end. Keeps v1's timer rule: a countdown shows a stronger green, no countdown a softer
+   one, keyed on the TIMER and not the mode (see renderBand). */
+.am .banner,.am .band3{color:#05603A;background:linear-gradient(90deg,#E2FBEE 0%,#EBFDF4 40%,#F6FEFA 78%,#fff 100%);border-radius:32px 32px 0 0;transition:background .3s}
+.am .banner.bn-dark,.am .band3.bn-dark{background:linear-gradient(90deg,#CDF8E0 0%,#DEFBEB 40%,#F2FDF8 78%,#fff 100%)}
 /* The tops below are measured from the nav's real height (64px + 1px border = 65px).
    Change anything in .nav and all four must move with it. */
 /* flush with the receipt card below it, which sits at 16px either side */
 .am .banner{position:absolute;top:89px;left:16px;right:16px;z-index:1}
-/* Sized to its own content — the band no longer tucks 42px of filler under the receipt card,
-   so it reads as a standalone pill and its radius is even on all four corners.
+/* The band sits BEHIND the receipt card, not above it: 62px of it shows (151 − 89) and the
+   rest is hidden. So the bottom padding is deliberate filler, not spacing — it has to outrun
+   that 62px or a gap opens up. Top/side padding is what actually sizes the visible strip.
+   Square bottom corners for the same reason: the card covers them.
    The icon sits on the vertical centre of the two text lines, not on the first one. */
-.am .bandin{display:flex;gap:10px;align-items:center;padding:12px 16px}
+.am .bandin{position:relative;display:flex;gap:10px;align-items:center;padding:12px 16px 42px}
 .am .bandin img{width:26px;height:26px;flex-shrink:0;transition:filter .3s}
 /* the discount tag tips side to side every few seconds so the offer keeps a bit of life */
 .am .bandin .tag{transform-origin:50% 50%;animation:tagWiggle 3.4s ease-in-out infinite}
@@ -564,8 +576,77 @@ body.mobile .phone{border-radius:0;box-shadow:none}
   92%{transform:rotate(-2deg)}}
 .am .bandin .l1{font-size:13px;line-height:18px;font-weight:600;letter-spacing:.1px}
 .am .bandin .l1 b{font-weight:800;font-variant-numeric:tabular-nums}
-.am .bandin .l2{margin-top:1px;font-size:11.5px;line-height:16px;font-weight:500;color:#A6F4C5}
+.am .bandin .l2{margin-top:1px;font-size:11.5px;line-height:16px;font-weight:500;color:#027A48}
+/* Astrologer flow, tile too small to connect: same left-to-right fade, red. */
+.am .banner.red,.am .band3.red{color:#912018;background:linear-gradient(90deg,#FCE7E7 0%,#FDEEEE 40%,#FEF8F8 78%,#fff 100%)}
+.am .red .bandin .l1,.am .red .bandin .l2{color:#912018}
+/* Continue-chat flow (View History → Continue Chat): the first-5-minutes promo. The ONLY band
+   that is solid green with white text — every other one is a pale wash with dark text. The fade
+   still runs rightward and the copy must clear the white end, so keep this line short. */
+/* The ramp starts AFTER the copy ends (measured: the rate line runs to 86% of a 342px band), so
+   no word ever sits on the wash. An earlier 70% start put "(80% off)" on pale green and the band
+   read as damaged — the white end also swallowed its own rounded corner. Re-measure
+   `.rate`'s right edge against the band if this copy ever changes. */
+/* NAMED bn-promo, not promo: `.promo` is already v1's purple home-screen carousel card, which is
+   unscoped and sets height:60px + overflow:hidden. Naming this variant `.promo` silently clamped
+   the band to 60px so it stopped reaching under the receipt card. Any new band class has to be
+   checked against the v1 CSS above before it is used. */
+/* Seven stops, not four: three stops crammed into the last 12% banded visibly. The first two
+   steps are near-identical to #039855, so the copy (which ends at ~86%) still sits on what reads
+   as solid green — the "no word may sit on the gradient" rule is kept while the ramp gets longer
+   and therefore smoother. */
+.am .banner.bn-promo,.am .band3.bn-promo{color:#fff;background:linear-gradient(90deg,#039855 0%,#039855 80%,#0BA05C 86%,#3CB783 90%,#7CD0AC 94%,#BCE8D5 97%,#E9F9F2 99%,#fff 100%)}
+.am .bn-promo .bandin .l1{color:#fff;font-weight:600}
+.am .bn-promo .bandin .rate,.am .bn-promo .bandin .rate b{color:#fff}
+.am .bn-promo .bandin .rate s{opacity:.8}
+.am .bn-promo .bandin .rate .off{margin-left:6px;font-size:13px}
+/* she asked for the tag to tick over faster on this flow only */
+.am .bn-promo .bandin .tag{animation-duration:1.5s}
+/* Chat Again → ASTRO50. Deepest green of the set, carrying v1's sparkle field AND v1's light
+   sweep, with the countdown running. Identical on every tile. The stars and the sweep are
+   SIBLINGS of .bandin, not children, so they inherit the band's own 32px corners; .bandin is
+   lifted above them (everything here is positioned, so DOM order alone would put them on top). */
+.am .banner.coupon,.am .band3.coupon{color:#fff;background:linear-gradient(90deg,#065F41 0%,#066B44 88%,#3FA87A 94%,#AFE0CA 97.5%,#fff 100%)}
+.am .coupon .bandin{z-index:1}
+.am .coupon .bandin .l1,.am .coupon .bandin .l2{color:#fff}
+.am .coupon .bandin .l2{font-size:13px;line-height:18px;font-weight:600}
+.am .coupon .bandin .l2 b{font-size:15px;font-weight:800;letter-spacing:.3px;font-variant-numeric:tabular-nums}
+/* v1's exact treatment, which is what she asked for: anchored to the RIGHT, small (236px of a
+   342px band, not full-bleed), and barely-there at .1 so the brightest sparkle reads as twinkle
+   rather than as white dots. The sparkles are white, so LOWERING the opacity is what makes them
+   read darker — they sink back towards the band's own green. Masked out towards the text so it
+   never crowds the copy. Stretching it full-width at full strength was the "horrible" version. */
+.am .coupon .bn-stars{position:absolute;right:0;top:0;width:236px;height:44px;z-index:0;object-fit:cover;object-position:right top;pointer-events:none;opacity:.1;
+  -webkit-mask-image:linear-gradient(to left,#000 8%,rgba(0,0,0,.45) 42%,transparent 78%);mask-image:linear-gradient(to left,#000 8%,rgba(0,0,0,.45) 42%,transparent 78%)}
+.am .coupon .sweep{z-index:0;height:62px;bottom:auto}
+/* Astrologer flow, tile big enough: the rate the recharge buys, with the list price struck out.
+   Both sit on ONE line, so this variant has no .l2 — the band is a single-line strip. */
+.am .bandin .rate{margin-top:1px;font-size:11.5px;line-height:16px;font-weight:500;color:#027A48}
+.am .bandin .rate b{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;color:#05603A}
+.am .bandin .rate s{margin-left:6px;opacity:.65;font-weight:600}
+/* The arrows drift down the right-hand end, behind the text, to sell "the rate falls".
+   Clipped to the 62px that actually shows (see .bandin) so they never leak out behind the card;
+   they are decoration only, hence aria-hidden in the markup and no pointer events here. */
+.am .bandin .arrows{position:absolute;right:0;top:0;width:96px;height:62px;overflow:hidden;pointer-events:none}
+/* ONE pass, not a loop — her call. `both` holds the last frame, which is opacity:0, so they fall
+   once and stay gone. renderBand() rewrites the band's innerHTML on every tile tap, so the
+   animation restarts by itself on each SKU pick; nothing has to retrigger it. */
+.am .bandin .arrows img{position:absolute;width:24px;height:32px;opacity:0;animation:arrowDrift 1.15s cubic-bezier(.3,0,.5,1) both}
+/* THREE, in her reference's formation: the left one sits highest, the other two trail below it
+   and to the right. Sized to ~half the 62px the band actually shows, as in the reference.
+   Tightened: the group spans 44px (was 58) and is anchored hard to the band's right edge. */
+.am .bandin .arrows img:nth-child(1){right:48px;top:-34px;animation-delay:0s}
+.am .bandin .arrows img:nth-child(2){right:26px;top:-12px;animation-delay:.10s}
+.am .bandin .arrows img:nth-child(3){right:4px;top:-20px;animation-delay:.05s}
+/* starts above the strip and leaves below it, so the fade in/out never shows a hard edge */
+@keyframes arrowDrift{
+  0%{transform:translateY(0);opacity:0}
+  22%{opacity:.85}
+  60%{opacity:.85}
+  100%{transform:translateY(104px);opacity:0}}
 .am .banner.gold,.am .band3.gold{background:#FEF0C7}
+/* Wallet flow only: the gold strip fades out to white, rightward, matching the green band. */
+.am .banner.gold.gfade,.am .band3.gold.gfade{background:linear-gradient(90deg,#FEF0C7 0%,#FDF3D7 40%,#FEFBF0 78%,#fff 100%)}
 .am .gold .bandin .l1{color:#93370D;font-weight:700}
 .am .gold .bandin .l2{color:#B54708}
 .am .gold .bandin img{filter:hue-rotate(255deg) saturate(1.2)}
@@ -666,8 +747,8 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .am .openscroll{position:absolute;inset:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;padding:10px 16px 0}
 .am .openscroll::-webkit-scrollbar{display:none}
 .am .band3{position:relative;z-index:1;margin:0 4px}
-/* the -30px overlap existed to hide the band's filler padding; the band is content-sized now */
-.am .rc{position:relative;z-index:2;background:#fff;border:1px dashed #D0D5DD;border-radius:24px;margin-top:8px;padding:18px 16px}
+/* pulled up over the band's filler padding, the same way .rcpt covers it in the closed state */
+.am .rc{position:relative;z-index:2;background:#fff;border:1px dashed #D0D5DD;border-radius:24px;margin-top:-30px;padding:18px 16px}
 .am .rc .notch{bottom:58px}
 .am .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .am .seerow{display:flex;justify-content:center;margin-top:30px}
@@ -684,8 +765,19 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .am .arc{position:relative;z-index:2;display:block;width:100%;height:24px}
 .am .arc #arcLine{transition:opacity .3s}
 .am .payblock.gold #arcLine{opacity:0}
-/* overlay that fades the amounts behind the card; it ends exactly at Payment Summary */
+/* overlay that fades the amounts behind the card; it ends exactly at Payment Summary.
+   It also BLURS them — .payblock is z-index 3, above both the collapsed tiles and the open grid,
+   so backdrop-filter here picks them up. The mask is what makes it usable: a backdrop-filter
+   applies at full strength right to the element's top edge, which would draw a hard blur seam
+   across the tiles, so the mask ramps the blur in over the same stretch the tint ramps over.
+   (The mask fades the tint too, but the tint is near-transparent up there anyway.)
+   The ramp carries intermediate stops rather than going straight transparent->black: a plain
+   two-stop ramp still reads as a visible band where it starts. Keep the radius low — a big
+   radius makes the ramp itself obvious no matter how long it is. */
 .am .veilfade{position:absolute;left:0;right:0;bottom:0;height:250px;z-index:0;pointer-events:none;opacity:0;transition:opacity .3s;
+  -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);
+  -webkit-mask-image:linear-gradient(180deg,transparent 0,rgba(0,0,0,.14) 26%,rgba(0,0,0,.45) 48%,rgba(0,0,0,.8) 68%,#000 84%);
+  mask-image:linear-gradient(180deg,transparent 0,rgba(0,0,0,.14) 26%,rgba(0,0,0,.45) 48%,rgba(0,0,0,.8) 68%,#000 84%);
   background:linear-gradient(180deg,rgba(236,253,243,0) 0%,rgba(230,250,239,.30) 34%,rgba(214,244,229,.72) 66%,rgba(201,239,220,.94) 86%,#C6EEDB 100%)}
 .am .payblock.gold .veilfade{background:linear-gradient(180deg,rgba(251,246,234,0) 0%,rgba(250,243,228,.34) 34%,rgba(246,236,210,.74) 66%,rgba(242,230,200,.94) 86%,#F1E4C4 100%)}
 .screen.am.open .veilfade,.screen.am.sumopen .veilfade{opacity:1}
@@ -973,7 +1065,12 @@ function renderHome(){
    buys a worse per-minute rate — the opposite of v1's rule. Flagged, and chosen anyway. */
 const BASE=[[50,0],[100,150],[250,500],[500,300],[1000,500],[2000,800],[3000,1000],[4000,1200],[5000,1500],[10000,2000]];
 let ab={mode:'default',sel:100,banner:false,shown:null,cd:0};
-const bonusFor=v=>((BASE.find(x=>x[0]===v)||[])[1])||0;
+const baseBonusFor=v=>((BASE.find(x=>x[0]===v)||[])[1])||0;
+/* ASTRO50 is a flat ₹50 on TOP of the standing bonus — v1's settled rule, and her call here too.
+   Everything the user sees CREDITED reads this: tile badges, congrats card, payment summary. So on
+   the chat-again flow ₹50 stops being a dead tile — it earns ₹50 and takes the green card. */
+const COUPON_FLAT=50;
+const bonusFor=v=>baseBonusFor(v)+(ab.mode==='coupon'?COUPON_FLAT:0);
 
 // The astrologer's ₹/min, read off the card the user tapped — the price they will actually be
 // charged, so the discounted figure when a card strikes one out. null on the wallet chip, where
@@ -1091,8 +1188,10 @@ const CORNER = `<span class="corner"><svg width="38" height="38" viewBox="0 0 38
 const coinClock = performance.now();
 const SWEEP_CYCLE = 3.2;
 const sweepDelay = i => (-(((performance.now()-coinClock)/1000 + i*.38) % SWEEP_CYCLE)).toFixed(2);
-function amTile([v,b], i){
-  const on = v===ab.sel;
+// Takes the BASE row but deliberately ignores its bonus column: the badge must show what the
+// wallet will ACTUALLY be credited, which under ASTRO50 is the base bonus plus the flat ₹50.
+function amTile([v], i){
+  const on = v===ab.sel, b = bonusFor(v);
   return `<div class="col">
     <div class="opt" role="radio" tabindex="0" aria-checked="${on}" aria-label="₹${fmt(v)}${b?`, ₹${fmt(b)} extra`:''}" data-amt="${v}">
       <div class="box ${on?'on':''}"><div class="sku"><span class="r">₹</span><span class="n">${v}</span></div>${on?CORNER:''}</div>
@@ -1112,8 +1211,42 @@ function renderTiles(){
 }
 
 /* band */
+/* Astrologer flow only. A chat needs MIN_MINUTES of talk time in the wallet, so the rupee
+   threshold moves with whoever you tapped — 4 min is ₹100 at ₹25/min but ₹60 at ₹15/min.
+   Radhika's call: the minutes are the fixed rule, not the rupees. */
+const MIN_MINUTES=4;
+// The astrologer's standing rate, before any promo. The continue-chat flow sets flowRate to the
+// offered ₹5, so the struck-out figure and the "% off" both have to come from here.
+const LIST_RATE=25;
+const creditFor=v=>v+bonusFor(v);
+// what the wallet credit actually costs per minute: you pay `v`, you can talk for credit/rate.
+// Always ≤ the list rate, since the bonus is never negative — but it does NOT fall monotonically
+// across the tiles on this bonus table (₹250 is the cheapest, then it climbs again). Flagged;
+// she has seen the numbers and accepted "it will drop and rise".
+// v1's settled rule: the per-minute figure always reads the BASE bonus, never the coupon-inflated
+// one, so a coupon can never push the advertised rate back up. (Moot today — the coupon and
+// astrologer flows are different routes — but this is the bug that cost her a week in v1.)
+const effRate=v=>Math.round(flowRate*v/(v+baseBonusFor(v)));
+const minutesFor=v=>creditFor(v)/flowRate;
+const shortOfMin=()=>ab.cflow&&flowRate&&minutesFor(ab.sel)<MIN_MINUTES;
 function bandInner(){
+  // The astrologer bands come FIRST: on this flow ₹50 is a blocker, not a missed bonus, so it
+  // must not fall through to the gold "you're missing out" copy.
+  if(shortOfMin()) return `<div class="bandin"><img src="${I['warning-red']}" alt=""><div><p class="l1">To connect with <b>${flowAstro}</b>,</p><p class="l2">need wallet balance of <b>${MIN_MINUTES} min (₹${MIN_MINUTES*flowRate})</b></p></div></div>`;
+  // Continue-chat promo. Sits on EVERY tile including ₹50 — it advertises the first five minutes,
+  // not the recharge, so which amount is picked doesn't change a word of it.
+  if(ab.mode==='offer') return `<div class="bandin"><img class="tag" src="${I.discount}" alt=""><div><p class="l1">First 5 min with ${flowAstro} at</p><p class="rate"><b>₹${flowRate}/min</b><s>₹${LIST_RATE}/min</s><b class="off">(${Math.round((1-flowRate/LIST_RATE)*100)}% off)</b></p></div></div>`;
+  // ASTRO50. Same on every tile — the ₹50 is flat, so no figure here moves with the selection.
+  // The <b class="cd"> is what startCountdown()'s ticker rewrites each second.
+  if(ab.mode==='coupon') return `<div class="bandin"><img class="tag" src="${I.discount}" alt=""><div><p class="l1">ASTRO 50 applied, <b>₹${COUPON_FLAT} extra</b></p><p class="l2">valid for <b class="cd">${cdText()}</b></p></div></div><img class="bn-stars" src="${I.stars}" alt="" aria-hidden="true"><span class="sweep"></span>`;
+  if(ab.cflow&&flowRate){
+    const arrows=`<span class="arrows" aria-hidden="true">${`<img src="${I['arrow-drift']}" alt="">`.repeat(3)}</span>`;
+    return `<div class="bandin"><img class="tag" src="${I.discount}" alt=""><div><p class="l1">Connect with ${flowAstro} at</p><p class="rate"><b>₹${effRate(ab.sel)}/min</b><s>₹${flowRate}/min</s></p></div>${arrows}</div>`;
+  }
   if(isGold()) return `<div class="bandin"><img src="${I.warning}" alt=""><div><p class="l1">You're missing out on a bonus</p><p class="l2">Pick ₹100 or more to get extra</p></div></div>`;
+  // Wallet flow: one wrapping line naming the bonus the tapped amount actually earns, and NO
+  // countdown — so this band also reads as untimed and takes the lighter green (see renderBand).
+  if(ab.wflow) return `<div class="bandin"><img class="tag" src="${I.discount}" alt=""><div><p class="l1">Yay! you are earning <b>₹${bonusFor(ab.sel)} extra</b>, recharge more to earn more</p></div></div>`;
   const cd = `<b class="cd">${cdText()}</b>`;
   const l1 = ab.mode==='coupon' ? `<b>ASTRO50</b> applied${ab.noTimer?'':` · ends in ${cd}`}`
            : ab.mode==='offer'  ? `First 5 mins chat at <b>₹5/min</b> · <b>80% Off</b>`
@@ -1123,11 +1256,17 @@ function bandInner(){
   return `<div class="bandin"><img class="tag" src="${I.discount}" alt=""><div><p class="l1">${l1}</p><p class="l2">${l2}</p></div></div>`;
 }
 function renderBand(){
-  const g=isGold();
-  // v1's rule: dark green only while a countdown is showing, lighter green without one.
-  const timed = !g && ab.mode!=='offer' && !(ab.mode==='coupon'&&ab.noTimer);
+  const red=shortOfMin(), promo=ab.mode==='offer', coup=ab.mode==='coupon';
+  // The astrologer, promo and coupon variants own the band outright — no gold, no countdown tint.
+  // The promo one deliberately overrides gold too, so ₹50 keeps the offer copy; the coupon one
+  // doesn't need to, because with COUPON_FLAT applied ₹50 is no longer a zero-bonus tile.
+  const g=!red&&!promo&&!coup&&!(ab.cflow&&flowRate)&&isGold();
+  // v1's rule: deeper green only while a countdown is showing, lighter green without one.
+  // The wallet flow's copy carries no countdown, so it lands on the lighter one.
+  const timed = !g && !red && !promo && !coup && !ab.cflow && !ab.wflow;
   for(const el of [A('band'),A('band3')]){
-    el.className=(el.id==='band'?'banner':'band3')+(g?' gold':'')+(timed?' bn-dark':'');
+    // Only the wallet flow's ₹50 band fades out to white; every other flow keeps the flat gold.
+    el.className=(el.id==='band'?'banner':'band3')+(red?' red':'')+(promo?' bn-promo':'')+(coup?' coupon':'')+(g?' gold':'')+(g&&ab.wflow?' gfade':'')+(timed?' bn-dark':'');
     el.innerHTML=bandInner();
   }
 }
@@ -1427,8 +1566,12 @@ function go(route,rate){
   document.getElementById('flowsSheet').classList.remove('open');
   switch(route){
     case 'home': mount(renderHome(), phone.querySelector('.screen.am')?'out-right':null); break;
-    case 'wallet': flowType='wallet'; flowAstro=''; openAB('default',100); break;
-    case 'listingChat': flowType='insufficient'; flowAstro='Astro Hemali'; flowRate=flowRate||15; mount(renderLow()); later(()=>openAB('default',100),1600); break;
+    // wflow marks THIS route only — post3 also runs flowType 'wallet' but must not pick up the
+    // wallet band's copy or its gold fade. See bandInner()/renderBand().
+    case 'wallet': flowType='wallet'; flowAstro=''; openAB('default',100,false,true,{wflow:true}); break;
+    // cflow = came from an astrologer card, so the band talks about connecting to THEM: the
+    // red "not enough to connect" strip below the 4-min minimum, the green rate strip above it.
+    case 'listingChat': flowType='insufficient'; flowAstro='Astro Hemali'; flowRate=flowRate||15; mount(renderLow()); later(()=>openAB('default',100,false,true,{cflow:true}),1600); break;
     case 'again': flowType='coupon'; flowAstro='Astro Vipasana'; flowRate=flowRate||5; mount(renderLow()); later(()=>withPopup('coupon','coupon',()=>later(()=>{ab.banner=true;startCountdown(5*3600);renderBand()},800)),1600); break;
     case 'history': mount(renderChat()); break;
     case 'post3': flowType='wallet'; flowAstro=''; openAB('default',100,false,true,{rows:2,coin:500}); break;
