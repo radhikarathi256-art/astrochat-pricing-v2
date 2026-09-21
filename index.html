@@ -645,6 +645,18 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .am .coupon .bandin .l1,.am .coupon .bandin .l2{color:#fff}
 .am .coupon .bandin .l2{font-weight:600}
 .am .coupon .bandin .l2 b{font-weight:800;letter-spacing:.3px;font-variant-numeric:tabular-nums}
+/* Countdown chip. White on the deepest green in the set is the strongest contrast the band can
+   offer, which is the whole point of putting the timer in a chip at all.
+   INLINE, not absolutely positioned: it has to read as the object of "expires in", and anchoring
+   it to the band's right corner turned it into a detached clock with a sentence fragment beside it.
+   Flowing in the text also keeps it clear of the band's fade-to-white tail, so that gradient stays
+   at its original 88% — an absolute version needed the solid run widened to 95% to stay legible.
+   `vertical-align:middle` is doing real work: an inline-flex box otherwise sits on the text
+   baseline and the chip rides high against the cap height. */
+.am .coupon .cdpill{display:inline-flex;align-items:center;vertical-align:middle;margin-left:5px;
+  background:#fff;border-radius:999px;padding:1px 8px;box-shadow:0 1px 3px rgba(2,40,26,.3)}
+.am .coupon .cdpill b{font-size:12px;line-height:16px;font-weight:800;color:#065F41;
+  font-variant-numeric:tabular-nums;letter-spacing:.2px}
 /* v1's exact treatment: anchored to the RIGHT, small (236px of a 342px band, not full-bleed),
    masked out towards the text so it never crowds the copy. Stretching it full-width was the
    version she called "horrible".
@@ -1388,7 +1400,10 @@ function bandInner(){
   // The <b class="cd"> is what startCountdown()'s ticker rewrites each second.
   // discount-dark.svg is the same seal recoloured #065F41 — the coupon strip's own left-edge
   // green — because the default #039855 read as a brighter green sitting on a darker one.
-  if(ab.mode==='coupon') return `<div class="bandin"><img class="tag" src="${I['discount-dark']}" alt=""><div><p class="l1">ASTRO 50 applied, <b>₹${COUPON_FLAT} extra</b></p><p class="l2">valid for <b class="cd">${cdText()}</b></p></div></div><img class="bn-stars" src="${I.stars}" alt="" aria-hidden="true"><span class="sweep"></span>`;
+  // Countdown lifted out of plain copy into its own chip, sitting INLINE right after the words it
+  // belongs to — a corner-anchored version read as a detached clock. It keeps class `cd`, which is
+  // the only hook the ticker and renderBand()'s `.timed` check use.
+  if(ab.mode==='coupon') return `<div class="bandin"><img class="tag" src="${I['discount-dark']}" alt=""><div><p class="l1">ASTRO 50 expires in <span class="cdpill"><b class="cd">${cdText()}</b></span></p><p class="l2"><b>₹${COUPON_FLAT}</b> extra bonus</p></div></div><img class="bn-stars" src="${I.stars}" alt="" aria-hidden="true"><span class="sweep"></span>`;
   if(ab.cflow&&flowRate){
     const arrows=`<span class="arrows" aria-hidden="true">${`<img src="${I['arrow-drift']}" alt="">`.repeat(3)}</span>`;
     return `<div class="bandin"><img class="tag" src="${I.discount}" alt=""><div><p class="l1">Connect with ${flowAstro} at</p><p class="rate"><b>₹${effRate(ab.sel)}/min</b><s>₹${flowRate}/min</s></p></div>${arrows}</div>`;
@@ -1617,7 +1632,17 @@ function setOpen(on){
   amRoot.classList.add('switching');
   clearTimeout(amSwitchTimer);
   // the layers are mid-transform while switching, so re-measure once they have settled
-  amSwitchTimer=setTimeout(()=>{amRoot.classList.remove('switching');layoutOpen()},400);
+  amSwitchTimer=setTimeout(()=>{
+    amRoot.classList.remove('switching');
+    layoutOpen();
+    // Land at the BOTTOM of the list rather than the top — her call. Two things this depends on:
+    //  1. It must run AFTER layoutOpen(), which is what sizes #scrollpad. Before that, scrollHeight
+    //     is short by the pad and the scroll stops well above the end.
+    //  2. Assigning scrollTop, NOT scrollTo({behavior:'smooth'}). The sheet is still finishing its
+    //     own expand transition here, so a second, slower animation on top of it read as drift —
+    //     and a smooth scroll that is interrupted by a tap leaves the list stranded mid-way.
+    if(ab.open){const sc=A('openscroll');sc.scrollTop=sc.scrollHeight-sc.clientHeight}
+  },400);
   A('openwrap').setAttribute('aria-hidden',!on);
   A('seeMore').setAttribute('aria-expanded',on);
   if(on){A('openscroll').scrollTop=0;requestAnimationFrame(()=>{layoutOpen();flashBar(2000)})}
