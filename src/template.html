@@ -31,10 +31,13 @@ html,body{height:100%;background:#fff}
 body{font-family:var(--font);color:var(--g800);overflow:hidden;-webkit-font-smoothing:antialiased}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;text-align:inherit}
 img{display:block}
-/* role=button divs (tiles, pay card) take :focus-visible on a mouse click in Chrome, which is
-   where the blue ring came from. Keyboard focus still shows, in a neutral grey, never blue. */
-:focus-visible{outline:2px solid rgba(16,24,40,.35);outline-offset:2px}
-:where(.tile,.ps-card,[role=button],[role=radio],button):focus:not(:focus-visible){outline:none}
+/* The grey ring around a tapped tile. `:focus-visible` alone is NOT enough to keep it off a
+   pointer: Chrome hands focus-visible to role=button/role=radio divs on a plain click, because
+   its heuristic assumes a focusable non-widget element that took focus wants a ring. So the ring
+   is gated on an explicit `body.kbd`, set only by a Tab press and cleared by any pointer.
+   Keyboard users keep a visible focus ring; taps and clicks draw nothing at all. */
+:focus,:focus-visible{outline:none}
+body.kbd :focus-visible{outline:2px solid rgba(16,24,40,.35);outline-offset:2px}
 
 /* ---------- shell ---------- */
 .shell{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px}
@@ -1037,6 +1040,11 @@ const later=(fn,ms)=>timers.push(setTimeout(fn,ms));
 function clearTimers(){timers.forEach(clearTimeout);timers=[];animToken++;if(ticker){clearInterval(ticker);ticker=null}}
 const fmt=n=>String(n);
 const RM=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* Drives the `body.kbd` gate on the focus ring — see the :focus-visible rules in the CSS.
+   Capture phase on both, so a handler that stops propagation can't leave the flag stale. */
+addEventListener('keydown',e=>{if(e.key==='Tab')document.body.classList.add('kbd')},true);
+addEventListener('pointerdown',()=>document.body.classList.remove('kbd'),true);
 
 /* ---------- sizing: full-screen on phones, framed on desktop ---------- */
 function fit(){
