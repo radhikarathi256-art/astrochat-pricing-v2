@@ -532,6 +532,11 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 
 .am .chev{width:22px;height:22px;transition:transform .4s cubic-bezier(.2,.8,.2,1)}
 .am .chev.up{transform:rotate(180deg)}
+/* clip, not hidden: several layers here rest below the fold on a transform (the closed
+   .openwrap at +14px, the closed pay sheet at +100%) and a transform still counts as
+   scrollable overflow. overflow:hidden leaves the screen scrollable, so focusing a control
+   near the bottom scrolls the whole phone off its own frame; overflow:clip cannot scroll. */
+.screen.am{overflow:clip}
 
 /* ---------- offer band ---------- */
 /* v1's flat greens, not v2's fade to white: the fade left the last word sitting on the pale
