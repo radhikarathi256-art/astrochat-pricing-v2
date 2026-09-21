@@ -59,11 +59,11 @@ body{font-family:'Inter',system-ui,sans-serif;background:#EDEDEA;color:#1D2939;-
 
 /* ---------- collapsed receipt ---------- */
 .collapsed{position:absolute;inset:0;transition:opacity .3s cubic-bezier(.2,.8,.2,1),transform .36s cubic-bezier(.2,.8,.2,1)}
-.rcpt{position:absolute;left:16px;right:16px;top:151px;height:243px;background:#fff;border:1px dashed #C6CCD5;border-radius:24px;z-index:2}
+.rcpt{position:absolute;left:16px;right:16px;top:151px;height:243px;background:#fff;border:1px dashed #C6CCD5;border-radius:32px;z-index:2}
 .notch{position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;border:1px dashed #D0D5DD}
 .notch.l{left:-11px;clip-path:inset(0 0 0 50%)}
 .notch.r{right:-11px;clip-path:inset(0 50% 0 0)}
-.rcpt .notch{top:138px}
+.rcpt .notch{top:158px}
 /* same box as the receipt card, so "See More Options" can hang off its bottom edge */
 .stack{position:absolute;left:32px;right:32px;top:151px;height:243px;z-index:3}
 .skus{position:absolute;left:0;right:0;top:28px;height:96px;display:flex;gap:12px;align-items:flex-start}
