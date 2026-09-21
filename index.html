@@ -557,7 +557,11 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    still lands on a pale background — which is why the copy has to stay short enough not to reach
    the white end. Keeps v1's timer rule: a countdown shows a stronger green, no countdown a softer
    one, keyed on the TIMER and not the mode (see renderBand). */
-.am .banner,.am .band3{color:#05603A;background:linear-gradient(90deg,#E2FBEE 0%,#EBFDF4 40%,#F6FEFA 78%,#fff 100%);border-radius:32px 32px 0 0;transition:background .3s,transform .42s cubic-bezier(.2,.8,.2,1),margin-bottom .42s cubic-bezier(.2,.8,.2,1)}
+/* Lightened from #E2FBEE (Sep 21). Only the UNTIMED green moves — .bn-dark below is the
+   countdown variant and stays put, since the whole point of that pair is that a running timer
+   reads stronger than a static message. Each stop is pulled the same fraction of the way to
+   white, so the ramp keeps its shape and still clears the copy before the white end. */
+.am .banner,.am .band3{color:#05603A;background:linear-gradient(90deg,#E9FCF2 0%,#F0FDF6 40%,#F8FEFB 78%,#fff 100%);border-radius:32px 32px 0 0;transition:background .3s,transform .42s cubic-bezier(.2,.8,.2,1),margin-bottom .42s cubic-bezier(.2,.8,.2,1)}
 .am .banner.bn-dark,.am .band3.bn-dark{background:linear-gradient(90deg,#CDF8E0 0%,#DEFBEB 40%,#F2FDF8 78%,#fff 100%)}
 /* The tops below are measured from the nav's real height (64px + 1px border = 65px).
    Change anything in .nav and all four must move with it. */
@@ -666,19 +670,20 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    differ. Do not reintroduce per-arrow delays; the offsets alone already make them enter in a
    cascade, because each one clears the strip's top edge at a different moment.
    Spans 14-94px inside the 96px container and starts wholly above it (lowest top is -18, arrows
-   are 32 tall), so nothing pops in at the edge. */
+   are 32 tall), so nothing pops in at the edge.
+   NO per-arrow rotation: a -9/+5/-4deg spread was tried and read as crooked rather than scattered,
+   because the asset already carries its own diagonal and tilting it further just looks misaligned.
+   The offsets alone do the scattering. Keep all three upright. */
 .am .bandin .arrows img{animation-delay:0s}
-.am .bandin .arrows img:nth-child(1){right:58px;top:-46px;--r:-9deg}
-.am .bandin .arrows img:nth-child(2){right:30px;top:-18px;--r:5deg}
-.am .bandin .arrows img:nth-child(3){right:2px;top:-34px;--r:-4deg}
-/* starts above the strip and leaves below it, so the fade in/out never shows a hard edge.
-   The tilt has to be carried in the keyframes: transform is animated here, so a separate
-   `rotate` on the img would simply be overwritten. */
+.am .bandin .arrows img:nth-child(1){right:58px;top:-46px}
+.am .bandin .arrows img:nth-child(2){right:30px;top:-18px}
+.am .bandin .arrows img:nth-child(3){right:2px;top:-34px}
+/* starts above the strip and leaves below it, so the fade in/out never shows a hard edge */
 @keyframes arrowDrift{
-  0%{transform:translateY(0) rotate(var(--r,0deg));opacity:0}
+  0%{transform:translateY(0);opacity:0}
   22%{opacity:.85}
   60%{opacity:.85}
-  100%{transform:translateY(104px) rotate(var(--r,0deg));opacity:0}}
+  100%{transform:translateY(104px);opacity:0}}
 /* Lightened from #FEF0C7 (Sep 21). Its luminance already matched the green band's #E2FBEE almost
    exactly — what made it read as the heavier of the two was CHROMA: #FEF0C7 spans 55 between its
    max and min channel against the green's 25. So the blue channel is lifted and the other two are
