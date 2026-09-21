@@ -36,7 +36,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#EDEDEA;color:#1D2939;-
   background:linear-gradient(90deg,#039855 0%,#039855 52%,#2CB37B 74%,#8FDDBC 89%,#E6F8F0 100%)}
 /* The tops below are measured from the nav's real height (64px + 1px border = 65px).
    Change anything in .nav and all four must move with it. */
-.banner{position:absolute;top:75px;left:18px;right:23px;z-index:1}
+.banner{position:absolute;top:89px;left:18px;right:23px;z-index:1}
 .bandin{display:flex;gap:10px;align-items:flex-start;padding:12px 16px 42px}
 .bandin img{width:26px;height:26px;flex-shrink:0;transition:filter .3s}
 /* the discount tag tips side to side every few seconds so the offer keeps a bit of life */
@@ -58,12 +58,12 @@ body{font-family:'Inter',system-ui,sans-serif;background:#EDEDEA;color:#1D2939;-
 
 /* ---------- collapsed receipt ---------- */
 .collapsed{position:absolute;inset:0;transition:opacity .3s cubic-bezier(.2,.8,.2,1),transform .36s cubic-bezier(.2,.8,.2,1)}
-.rcpt{position:absolute;left:16px;right:16px;top:137px;height:223px;background:#fff;border:1px dashed #C6CCD5;border-radius:24px;z-index:2}
+.rcpt{position:absolute;left:16px;right:16px;top:151px;height:223px;background:#fff;border:1px dashed #C6CCD5;border-radius:24px;z-index:2}
 .notch{position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;border:1px dashed #D0D5DD}
 .notch.l{left:-11px;clip-path:inset(0 0 0 50%)}
 .notch.r{right:-11px;clip-path:inset(0 50% 0 0)}
 .rcpt .notch{top:138px}
-.stack{position:absolute;left:32px;right:32px;top:137px;height:220px;z-index:3}
+.stack{position:absolute;left:32px;right:32px;top:151px;height:220px;z-index:3}
 .skus{position:absolute;left:0;right:0;top:28px;height:96px;display:flex;gap:12px;align-items:flex-start}
 .see{position:absolute;left:0;right:0;top:164px;display:flex;justify-content:center}
 .seebtn{display:flex;align-items:center;border:.8px dashed #D0D5DD;border-radius:12px;padding:4px 4px 4px 12px}
