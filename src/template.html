@@ -557,7 +557,10 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 /* The tops below are measured from the nav's real height (64px + 1px border = 65px).
    Change anything in .nav and all four must move with it. */
 /* flush with the receipt card below it, which sits at 16px either side */
-.am .banner{position:absolute;top:89px;left:16px;right:16px;z-index:1}
+/* 16px below the 64px nav — her spacing. The receipt card's top MUST move with this by the same
+   amount, or the strip of band left showing above the card changes width (it is card.top minus
+   this, and is meant to stay 62). */
+.am .banner{position:absolute;top:80px;left:16px;right:16px;z-index:1}
 /* The band sits BEHIND the receipt card, not above it: 62px of it shows (151 − 89) and the
    rest is hidden. So the bottom padding is deliberate filler, not spacing — it has to outrun
    that 62px or a gap opens up. Top/side padding is what actually sizes the visible strip.
@@ -662,7 +665,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    at ry²/rx — about 3px here — which is the pinch that read as a sharp corner. The path in
    drawRcpt() leaves the side vertically and eases into the bow, so the curvature is spread
    out the way the green arc under the congratulations card is. */
-.am .rcpt{position:absolute;left:16px;right:16px;top:151px;height:229px;z-index:2}
+.am .rcpt{position:absolute;left:16px;right:16px;top:142px;height:229px;z-index:2}
 .am .rcptline{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 /* 3/2 is not a taste call — it is exactly what Chrome draws for `1px dashed`, measured off
    the original by rasterising a real dashed border and reading the run lengths. Don't retune
@@ -677,7 +680,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    the bottom arch starts (height - DROP = 173). */
 .am .rcpt .notch{top:148px}
 /* same box as the receipt card, so "See More Options" can hang off its bottom edge */
-.am .stack{position:absolute;left:32px;right:32px;top:151px;height:229px;z-index:3}
+.am .stack{position:absolute;left:32px;right:32px;top:142px;height:229px;z-index:3}
 .am .skus{position:absolute;left:0;right:0;top:28px;height:96px;display:flex;gap:12px;align-items:flex-start}
 /* Anchored from the top, not the bottom, so growing the card or deepening the arch below it
    leaves the button exactly where it is.
@@ -1072,11 +1075,14 @@ function renderHome(){
 const BASE=[[50,0],[100,150],[250,500],[500,300],[1000,500],[2000,800],[3000,1000],[4000,1200],[5000,1500],[10000,2000]];
 let ab={mode:'default',sel:100,banner:false,shown:null,cd:0};
 const baseBonusFor=v=>((BASE.find(x=>x[0]===v)||[])[1])||0;
-/* ASTRO50 is a flat ₹50 on TOP of the standing bonus — v1's settled rule, and her call here too.
-   Everything the user sees CREDITED reads this: tile badges, congrats card, payment summary. So on
-   the chat-again flow ₹50 stops being a dead tile — it earns ₹50 and takes the green card. */
+/* ASTRO50 is ITEMISED AT CHECKOUT, not folded into the bonus — her call Sep 21, reversing the
+   earlier one. So "bonus" everywhere means the standing bonus table only (tile badges, the
+   "Extra bonus" line), and the ₹50 gets its own "Coupon code applied" row in the payment summary.
+   It is still credited, so anything showing a wallet TOTAL must read creditFor(), which adds both
+   — never v+bonusFor(v), or the coupon silently goes missing from the total. */
 const COUPON_FLAT=50;
-const bonusFor=v=>baseBonusFor(v)+(ab.mode==='coupon'?COUPON_FLAT:0);
+const bonusFor=v=>baseBonusFor(v);
+const couponFor=()=>ab.mode==='coupon'?COUPON_FLAT:0;
 
 // The astrologer's ₹/min, read off the card the user tapped — the price they will actually be
 // charged, so the discounted figure when a card strikes one out. null on the wallet chip, where
@@ -1224,7 +1230,7 @@ const MIN_MINUTES=4;
 // The astrologer's standing rate, before any promo. The continue-chat flow sets flowRate to the
 // offered ₹5, so the struck-out figure and the "% off" both have to come from here.
 const LIST_RATE=25;
-const creditFor=v=>v+bonusFor(v);
+const creditFor=v=>v+bonusFor(v)+couponFor();
 // what the wallet credit actually costs per minute: you pay `v`, you can talk for credit/rate.
 // Always ≤ the list rate, since the bonus is never negative — but it does NOT fall monotonically
 // across the tiles on this bonus table (₹250 is the cheapest, then it climbs again). Flagged;
@@ -1280,7 +1286,9 @@ function renderBand(){
 /* card */
 let animToken=0;
 function renderCard(animate=true){
-  const v=ab.sel, b=bonusFor(v), total=v+b, g=isGold();
+  // The coupon counts towards the card even though it is no longer part of "bonus", so a ₹50
+  // under ASTRO50 still shows ₹100 and stays green rather than falling back to the gold card.
+  const v=ab.sel, b=bonusFor(v), cpn=couponFor(), total=v+b+cpn, g=(b+cpn)===0;
   A('card').className='ac '+(g?'gold':'green');
   A('payblock').classList.toggle('gold',g);
   A('cardE').hidden=g;                       // ₹50 earns no bonus; drop the eyebrow
@@ -1348,7 +1356,7 @@ function alignCardRupee(){
 
 /* payment summary */
 function renderSummary(){
-  const v=ab.sel, gst=gstFor(v), pay=v+gst, b=bonusFor(v), total=v+b;
+  const v=ab.sel, gst=gstFor(v), pay=v+gst, b=bonusFor(v), cpn=couponFor(), total=v+b+cpn;
   A('sumTxt').textContent=`₹${fmt(v)} + ₹${fmt(gst)} GST`;
   const dash=c=>`<span class="ps-dash" style="--dc:${c}"></span>`;
   const row=(l,r,cls='')=>`<div class="ps-line ${cls}"><span>${l}</span><span>${r}</span></div>`;
@@ -1361,10 +1369,11 @@ function renderSummary(){
       ${dash('#EAECF0')}
     </div>
     <div class="ps-credit">
-      <div class="ps-box ${b?'':'plain'}"><span>To be added in your wallet</span><b>₹${fmt(total)}</b></div>
-      ${b?`<div class="ps-panel">
+      <div class="ps-box ${b+cpn?'':'plain'}"><span>To be added in your wallet</span><b>₹${fmt(total)}</b></div>
+      ${b+cpn?`<div class="ps-panel">
         ${row('Recharge Added',`₹${fmt(v)}`,'p1')}
-        ${row('Extra bonus',`+₹${fmt(b)}`,'pg')}
+        ${b?row('Extra bonus',`+₹${fmt(b)}`,'pg'):''}
+        ${cpn?row('Coupon code applied',`+₹${fmt(cpn)}`,'pg'):''}
         ${dash('#D0D5DD')}
         ${row('Total',`₹${fmt(total)}`,'pt')}
       </div>`:''}
