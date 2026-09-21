@@ -25,7 +25,7 @@ const isGold = () => bonusFor(state.sel) === 0;
 const CORNER = `<span class="corner"><svg width="38" height="38" viewBox="0 0 38 38"><path d="M0 0H38V38Z" fill="#EF6939"/><path class="tick" d="M30.2 11.1L24.3 16.2L21.4 13.5L21.9 12.8L24.3 14.9L29.7 10.3L30.2 11.1Z" fill="#fff"/></svg></span>`;
 // Coin shower on the hero amount. Tiles are re-rendered from scratch on every tap, so each
 // coin gets a negative delay off a single clock — otherwise the shower restarts on each tap.
-const COIN_AMT = 100, COIN_CYCLE = 3.6, COIN_OFF = [0, .9, 1.8, 2.7, 3.3];
+const COIN_AMT = 250, COIN_CYCLE = 3.6, COIN_OFF = [0, .9, 1.8, 2.7, 3.3];
 const coinClock = performance.now();
 function coinfall(){
   const el = ((performance.now() - coinClock) / 1000) % COIN_CYCLE;
@@ -282,8 +282,9 @@ function select(v){
 
 /* ---------- events ---------- */
 screen.addEventListener('click', e => {
+  // With the payment summary open the amounts are locked — the tap just closes the summary.
   const opt = e.target.closest('[data-amt]');
-  if (opt) { select(+opt.dataset.amt); return; }
+  if (opt && !state.sumOpen) { select(+opt.dataset.amt); return; }
   if (e.target.closest('#seeMore')) { setOpen(true); return; }
   if (e.target.closest('#seeLess')) { setOpen(false); return; }
   if (e.target.closest('#sumToggle')) { setSumOpen(!state.sumOpen); return; }
@@ -295,7 +296,7 @@ screen.addEventListener('click', e => {
   if (state.sumOpen && !e.target.closest('.payblock')) setSumOpen(false);
 });
 screen.addEventListener('keydown', e => {
-  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[data-amt]')) { e.preventDefault(); select(+e.target.dataset.amt); }
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[data-amt]') && !state.sumOpen) { e.preventDefault(); select(+e.target.dataset.amt); }
   if (e.key === 'Escape') { if (state.pmOpen) setPM(false); else if (state.sumOpen) setSumOpen(false); }
 });
 
