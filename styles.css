@@ -128,8 +128,11 @@ body{font-family:'Inter',system-ui,sans-serif;background:#EDEDEA;color:#1D2939;-
    into whichever ₹250 tile is on screen.
    NO mask here, deliberately: v1's edge mask cannot come along. iOS rasterises a masked
    overflow:hidden layer once and never repaints it, which merely stuttered the old CSS coins
-   but would freeze a canvas on frame one. */
-.coinfall{position:absolute;inset:0;border-radius:14px;overflow:hidden;pointer-events:none;z-index:0;opacity:1;transition:opacity .2s ease}
+   but would freeze a canvas on frame one.
+   The layer stops 11px short of the card's bottom edge, which is exactly where the badge
+   starts (.chip's margin-top:-11px). Coins therefore never reach the badge's band, and
+   z-index 0 keeps them behind it in the 8px the card is wider than the pill. */
+.coinfall{position:absolute;left:0;right:0;top:0;bottom:11px;border-radius:14px;overflow:hidden;pointer-events:none;z-index:0;opacity:1;transition:opacity .2s ease}
 .box.on .coinfall{opacity:0}
 .coinfall canvas{display:block;width:100%;height:100%}
 
