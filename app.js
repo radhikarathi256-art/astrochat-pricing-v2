@@ -243,25 +243,30 @@ addEventListener('resize', () => { layoutOpen(); drawRcpt(); });
 
 /* ---------- receipt outline ---------- */
 // Drawn at 1:1 so the dashes and the 1px stroke stay undistorted.
-// The bottom is a corner and a bow, deliberately kept as two jobs. Trying to do both with
-// one curve is what made every earlier version pinch: to swing the tangent from vertical to
-// horizontal inside a shallow dip, the curvature has to spike right where the side ends —
-// the old elliptical border-radius bottomed out at ry²/rx ≈ 3px there. So BR turns the
-// corner on its own generous circular radius, and only then does a very shallow cubic bow
-// across the middle, entering and leaving horizontally. Every join is tangent-continuous and
-// the tightest curvature anywhere along the bottom is BR itself.
-const R = 32, BR = 26, BOW = 14;
+//
+// Each half of the bottom is ONE cubic from the side to the bottom centre. The previous
+// version glued a circular corner onto a shallow bow, which is tangent-continuous but not
+// curvature-continuous: roundness jumped from 26px to ~800px at the seam, and the eye reads
+// that jump as a crease even though there is no actual corner. A single cubic has no seam —
+// its curvature varies smoothly along its whole length.
+//
+// HV runs straight down from the shoulder, so the curve leaves the vertical side vertically;
+// HH is how far the second handle sits in from that side. Worth knowing before tuning: the
+// handles barely move the result (sweeping them spans 20.7-21.6px of roundness). DROP is what
+// governs it, because the bottom has to swing a full 90° from the vertical side to horizontal
+// at the centre, and the shallower the dip the tighter that turn has to be — roughly DROP/2.
+// So "make it rounder" and "make it deeper" are the same request. Measured: DROP 40 -> 21.6px,
+// 56 -> 27px, 72 -> 31.3px.
+const R = 32, DROP = 56;
 function drawRcpt(){
   const el = $('rcpt'), o = .5;                     // half the stroke, so it sits inside the box
   const W = el.clientWidth - o, H = el.clientHeight - o;
-  const m = (W + o) / 2, B = H - BOW, c = (W - BR - m) * .55;
+  const m = (W + o) / 2, B = H - DROP, HV = DROP, HH = (W - m) * .18;
   $('rcptLine').setAttribute('viewBox', `0 0 ${el.clientWidth} ${el.clientHeight}`);
   $('rcptPath').setAttribute('d',
     `M${o} ${R}A${R} ${R} 0 0 1 ${o + R} ${o}H${W - R}A${R} ${R} 0 0 1 ${W} ${R}` +
-    `V${B - BR}A${BR} ${BR} 0 0 1 ${W - BR} ${B}` +
-    `C${W - BR - c} ${B} ${m + c} ${H} ${m} ${H}` +
-    `C${m - c} ${H} ${o + BR + c} ${B} ${o + BR} ${B}` +
-    `A${BR} ${BR} 0 0 1 ${o} ${B - BR}Z`);
+    `V${B}C${W} ${B + HV} ${W - HH} ${H} ${m} ${H}` +
+    `C${o + HH} ${H} ${o} ${B + HV} ${o} ${B}Z`);
 }
 
 /* ---------- selection ---------- */

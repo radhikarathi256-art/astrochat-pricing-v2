@@ -65,17 +65,23 @@ body{font-family:'Inter',system-ui,sans-serif;background:#EDEDEA;color:#1D2939;-
    at ry²/rx — about 3px here — which is the pinch that read as a sharp corner. The path in
    drawRcpt() leaves the side vertically and eases into the bow, so the curvature is spread
    out the way the green arc under the congratulations card is. */
-.rcpt{position:absolute;left:16px;right:16px;top:151px;height:268px;z-index:2}
+.rcpt{position:absolute;left:16px;right:16px;top:151px;height:292px;z-index:2}
 .rcptline{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
-#rcptPath{fill:#fff;stroke:#C6CCD5;stroke-width:1;stroke-dasharray:5 4.5;stroke-linecap:butt}
+/* 3/2 is not a taste call — it is exactly what Chrome draws for `1px dashed`, measured off
+   the original by rasterising a real dashed border and reading the run lengths. Don't retune
+   it by eye: anything longer or sparser immediately stops matching the notches and the
+   See More button, which are still real CSS dashed borders. */
+#rcptPath{fill:#fff;stroke:#C6CCD5;stroke-width:1;stroke-dasharray:3 2;stroke-linecap:butt}
 .notch{position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;border:1px dashed #D0D5DD}
 .notch.l{left:-11px;clip-path:inset(0 0 0 50%)}
 .notch.r{right:-11px;clip-path:inset(0 50% 0 0)}
 .rcpt .notch{top:158px}
 /* same box as the receipt card, so "See More Options" can hang off its bottom edge */
-.stack{position:absolute;left:32px;right:32px;top:151px;height:268px;z-index:3}
+.stack{position:absolute;left:32px;right:32px;top:151px;height:292px;z-index:3}
 .skus{position:absolute;left:0;right:0;top:28px;height:96px;display:flex;gap:12px;align-items:flex-start}
-.see{position:absolute;left:0;right:0;bottom:20px;display:flex;justify-content:center}
+/* Anchored from the top, not the bottom, so growing the card or deepening the arch below it
+   leaves the button exactly where it is. */
+.see{position:absolute;left:0;right:0;top:222px;display:flex;justify-content:center}
 .seebtn{display:flex;align-items:center;border:.8px dashed #D0D5DD;border-radius:12px;padding:4px 4px 4px 12px}
 .seebtn p{font-size:12px;line-height:18px;color:#667085;white-space:nowrap}
 
