@@ -657,20 +657,28 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    once and stay gone. renderBand() rewrites the band's innerHTML on every tile tap, so the
    animation restarts by itself on each SKU pick; nothing has to retrigger it. */
 .am .bandin .arrows img{position:absolute;width:24px;height:32px;opacity:0;animation:arrowDrift 1.15s cubic-bezier(.3,0,.5,1) both}
-/* THREE, falling as ONE LINE — her call. The staggered version (tops -34/-12/-20, delays
-   0/.10/.05) read as "two diagonally parallel and one in the centre" while in flight, because
-   BOTH the start offset and the delay pulled them out of line. So: identical top, identical
-   delay, differing only in x. Anchored hard to the band's right edge, spanning 44px. */
-.am .bandin .arrows img{top:-32px;animation-delay:0s}
-.am .bandin .arrows img:nth-child(1){right:48px}
-.am .bandin .arrows img:nth-child(2){right:26px}
-.am .bandin .arrows img:nth-child(3){right:4px}
-/* starts above the strip and leaves below it, so the fade in/out never shows a hard edge */
+/* SCATTERED, not one line — Sep 21, she reversed the earlier "one line" call with a reference
+   image: three arrows sitting high-left, low-middle, mid-right.
+   The staggered attempt that was rejected before (tops -34/-12/-20, delays 0/.10/.05) failed
+   because it staggered the DELAYS too, which pulled the three apart in flight until there was no
+   shape left to read. The delay stays identical for all three here, so the constellation is rigid
+   and the whole cluster falls as one piece — only the start offsets and a few degrees of tilt
+   differ. Do not reintroduce per-arrow delays; the offsets alone already make them enter in a
+   cascade, because each one clears the strip's top edge at a different moment.
+   Spans 14-94px inside the 96px container and starts wholly above it (lowest top is -18, arrows
+   are 32 tall), so nothing pops in at the edge. */
+.am .bandin .arrows img{animation-delay:0s}
+.am .bandin .arrows img:nth-child(1){right:58px;top:-46px;--r:-9deg}
+.am .bandin .arrows img:nth-child(2){right:30px;top:-18px;--r:5deg}
+.am .bandin .arrows img:nth-child(3){right:2px;top:-34px;--r:-4deg}
+/* starts above the strip and leaves below it, so the fade in/out never shows a hard edge.
+   The tilt has to be carried in the keyframes: transform is animated here, so a separate
+   `rotate` on the img would simply be overwritten. */
 @keyframes arrowDrift{
-  0%{transform:translateY(0);opacity:0}
+  0%{transform:translateY(0) rotate(var(--r,0deg));opacity:0}
   22%{opacity:.85}
   60%{opacity:.85}
-  100%{transform:translateY(104px);opacity:0}}
+  100%{transform:translateY(104px) rotate(var(--r,0deg));opacity:0}}
 /* Lightened from #FEF0C7 (Sep 21). Its luminance already matched the green band's #E2FBEE almost
    exactly — what made it read as the heavier of the two was CHROMA: #FEF0C7 spans 55 between its
    max and min channel against the green's 25. So the blue channel is lifted and the other two are
@@ -751,9 +759,15 @@ body.mobile .phone{border-radius:0;box-shadow:none}
   background:linear-gradient(100deg,rgba(255,255,255,0),rgba(255,255,255,.4) 50%,rgba(255,255,255,0));
   animation:chipSweep 3.2s linear infinite;animation-delay:var(--sd,0s)}
 @keyframes chipSweep{0%{transform:translateX(-120%)}42%,100%{transform:translateX(300%)}}
-/* .timed is on the screen root while the band is showing a live countdown. The sweep is dropped
-   outright rather than paused: a paused sweep freezes mid-pill as a visible pale streak. */
-.am.timed #skus .chip::after{display:none}
+/* Two reasons to stand the sweep down, and in both cases it is dropped outright rather than
+   paused — a paused sweep freezes mid-pill as a visible pale streak.
+   1. `.timed`: a live countdown is on the band, and that is the one thing that should be moving.
+   2. `.lure`: the sweep is bait for a bonus you are NOT taking, so it only runs while the selected
+      amount earns nothing — ₹50 on every flow that has a zero-bonus tile. Pick ₹100 or more and
+      the badges go still; you have already taken the bonus, so there is nothing left to point at.
+   (2) happens to subsume (1) today, since renderBand can never set both at once. Both are kept
+   because they are separate decisions of hers and the flags they read are independent. */
+.am.timed #skus .chip::after,.am:not(.lure) #skus .chip::after{display:none}
 
 /* Coin shower — a dotLottie drawn onto one canvas, created once in initCoins() and re-parented
    into whichever ₹250 tile is on screen.
@@ -1381,6 +1395,8 @@ function renderBand(){
   // sweep stands down while it ticks. Read off the rendered band rather than re-deriving which
   // modes carry a timer — the copy is the only authority on whether a .cd is actually showing.
   amRoot.classList.toggle('timed', !!A('band').querySelector('.cd'));
+  // And the badges only sweep while the pick earns nothing — see the .lure rule in the CSS.
+  amRoot.classList.toggle('lure', isGold());
 }
 
 /* card */
