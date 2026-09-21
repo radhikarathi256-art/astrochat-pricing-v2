@@ -11,15 +11,15 @@ body{font-family:'Inter',system-ui,sans-serif;background:#EDEDEA;color:#1D2939;-
 .screen{position:relative;width:360px;height:768px;background:#fff;overflow:hidden;overflow:clip;border-radius:8px;
   box-shadow:0 1px 3px rgba(16,24,40,.09),0 12px 30px rgba(16,24,40,.12)}
 @media (max-width:480px){
+  /* On a phone the page fills the viewport, so the real status bar sits on the body.
+     White here (with the white theme-color) keeps that strip white instead of grey. */
+  body{background:#fff}
   .stage{padding:0;align-items:stretch}
   .screen{width:100%;height:100dvh;min-height:640px;border-radius:0;box-shadow:none}
 }
 
 /* ---------- header ---------- */
 .nav{position:absolute;left:0;right:0;top:0;border-bottom:1px solid #D0D5DD;background:#fff;z-index:5}
-.enbar{height:39px;display:flex;align-items:center;justify-content:space-between;padding:10px 18px}
-.enbar .t{font-family:'Roboto',sans-serif;font-weight:500;font-size:14px;line-height:20px;letter-spacing:.14px}
-.enbar .ic{display:flex;align-items:center;gap:6px}
 .topnav{height:64px;display:flex;align-items:center;padding:8px 16px}
 .topnav .ttl{flex:1;display:flex;align-items:center;gap:2px}
 .topnav .back{width:24px;height:24px;display:flex;align-items:center;justify-content:center;padding:4px}
@@ -32,7 +32,9 @@ body{font-family:'Inter',system-ui,sans-serif;background:#EDEDEA;color:#1D2939;-
 
 /* ---------- offer band ---------- */
 .banner,.band3{color:#fff;background:#039855;border-radius:16px 16px 0 0;transition:background-color .3s}
-.banner{position:absolute;top:114px;left:18px;right:23px;z-index:1}
+/* The tops below are measured from the nav's real height (64px + 1px border = 65px).
+   Change anything in .nav and all four must move with it. */
+.banner{position:absolute;top:75px;left:18px;right:23px;z-index:1}
 .bandin{display:flex;gap:10px;align-items:flex-start;padding:12px 16px 42px}
 .bandin img{width:26px;height:26px;flex-shrink:0;transition:filter .3s}
 .bandin .l1{font-size:13px;line-height:18px;font-weight:600;letter-spacing:.1px}
@@ -45,12 +47,12 @@ body{font-family:'Inter',system-ui,sans-serif;background:#EDEDEA;color:#1D2939;-
 
 /* ---------- collapsed receipt ---------- */
 .collapsed{position:absolute;inset:0;transition:opacity .3s cubic-bezier(.2,.8,.2,1),transform .36s cubic-bezier(.2,.8,.2,1)}
-.rcpt{position:absolute;left:16px;right:16px;top:176px;height:223px;background:#fff;border:1px dashed #C6CCD5;border-radius:24px;z-index:2}
+.rcpt{position:absolute;left:16px;right:16px;top:137px;height:223px;background:#fff;border:1px dashed #C6CCD5;border-radius:24px;z-index:2}
 .notch{position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;border:1px dashed #D0D5DD}
 .notch.l{left:-11px;clip-path:inset(0 0 0 50%)}
 .notch.r{right:-11px;clip-path:inset(0 50% 0 0)}
 .rcpt .notch{top:138px}
-.stack{position:absolute;left:32px;right:32px;top:176px;height:220px;z-index:3}
+.stack{position:absolute;left:32px;right:32px;top:137px;height:220px;z-index:3}
 .skus{position:absolute;left:0;right:0;top:28px;height:96px;display:flex;gap:12px;align-items:flex-start}
 .see{position:absolute;left:0;right:0;top:164px;display:flex;justify-content:center}
 .seebtn{display:flex;align-items:center;border:.8px dashed #D0D5DD;border-radius:12px;padding:4px 4px 4px 12px}
@@ -95,7 +97,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#EDEDEA;color:#1D2939;-
 /* ---------- open list ---------- */
 /* Collapsed and expanded are two stacked layers. They cross-dissolve, but each also
    moves a little in the direction of travel so the swap reads as one motion. */
-.openwrap{position:absolute;left:0;right:0;top:104px;bottom:0;z-index:1;visibility:hidden;opacity:0;transform:translateY(14px);
+.openwrap{position:absolute;left:0;right:0;top:65px;bottom:0;z-index:1;visibility:hidden;opacity:0;transform:translateY(14px);
   transition:opacity .3s cubic-bezier(.2,.8,.2,1),transform .36s cubic-bezier(.2,.8,.2,1),visibility 0s .36s}
 .screen.open .openwrap{visibility:visible;opacity:1;transform:none;
   transition:opacity .3s cubic-bezier(.2,.8,.2,1),transform .36s cubic-bezier(.2,.8,.2,1)}
