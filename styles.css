@@ -31,12 +31,23 @@ body{font-family:'Inter',system-ui,sans-serif;background:#EDEDEA;color:#1D2939;-
 .chev.up{transform:rotate(180deg)}
 
 /* ---------- offer band ---------- */
-.banner,.band3{color:#fff;background:#039855;border-radius:16px 16px 0 0;transition:background-color .3s}
+/* solid green under the text, then a soft fade out to white on the right */
+.banner,.band3{color:#fff;border-radius:16px 16px 0 0;transition:background .3s;
+  background:linear-gradient(90deg,#039855 0%,#039855 52%,#2CB37B 74%,#8FDDBC 89%,#E6F8F0 100%)}
 /* The tops below are measured from the nav's real height (64px + 1px border = 65px).
    Change anything in .nav and all four must move with it. */
 .banner{position:absolute;top:75px;left:18px;right:23px;z-index:1}
 .bandin{display:flex;gap:10px;align-items:flex-start;padding:12px 16px 42px}
 .bandin img{width:26px;height:26px;flex-shrink:0;transition:filter .3s}
+/* the discount tag tips side to side every few seconds so the offer keeps a bit of life */
+.bandin .tag{transform-origin:50% 22%;animation:tagWiggle 3.4s ease-in-out infinite}
+@keyframes tagWiggle{
+  0%,62%,100%{transform:rotate(0)}
+  68%{transform:rotate(-13deg) scale(1.08)}
+  74%{transform:rotate(10deg) scale(1.08)}
+  80%{transform:rotate(-7deg) scale(1.04)}
+  86%{transform:rotate(4deg)}
+  92%{transform:rotate(-2deg)}}
 .bandin .l1{font-size:13px;line-height:18px;font-weight:600;letter-spacing:.1px}
 .bandin .l1 b{font-weight:800;font-variant-numeric:tabular-nums}
 .bandin .l2{margin-top:1px;font-size:11.5px;line-height:16px;font-weight:500;color:#A6F4C5}
@@ -137,11 +148,12 @@ body{font-family:'Inter',system-ui,sans-serif;background:#EDEDEA;color:#1D2939;-
 .screen.sumopen .veilfade{height:420px}
 
 /* wallet card (B3) */
-.ac{position:relative;width:268px;height:108px;border-radius:18px;padding:1.5px;display:flex;align-items:center;justify-content:center;isolation:isolate;
+/* square along the bottom so the card sits flush on the sheet below it */
+.ac{position:relative;width:268px;height:108px;border-radius:18px 18px 0 0;padding:1.5px;display:flex;align-items:center;justify-content:center;isolation:isolate;
   box-shadow:0 6px 14px rgba(4,60,38,.16);transition:background .35s,box-shadow .35s}
 .ac.green{background:linear-gradient(150deg,rgba(255,255,255,.95),rgba(2,122,72,.45) 48%,rgba(255,255,255,.85))}
 .ac.gold{background:linear-gradient(150deg,rgba(255,255,255,.95),rgba(150,110,25,.42) 48%,rgba(255,255,255,.88));box-shadow:0 6px 14px rgba(80,58,10,.14)}
-.ac .skin{position:absolute;inset:1.5px;border-radius:16.5px;overflow:hidden;z-index:0}
+.ac .skin{position:absolute;inset:1.5px;border-radius:16.5px 16.5px 0 0;overflow:hidden;z-index:0}
 .ac.green .skin{background:radial-gradient(60% 90% at 50% 56%,rgba(255,255,255,.62),rgba(255,255,255,0) 60%),
   conic-gradient(from 190deg at 50% 56%,#CDEEDE,#86D3B2 30deg,#E6F8EF 60deg,#8AD4B4 96deg,#D9F3E8 132deg,#7FCDAC 168deg,#E6F8EF 204deg,#84D1B0 244deg,#D2F0E2 288deg,#8FD7B7 324deg,#CDEEDE 360deg)}
 .ac.gold .skin{background:radial-gradient(60% 90% at 50% 56%,rgba(255,255,255,.68),rgba(255,255,255,0) 60%),
@@ -163,14 +175,15 @@ body{font-family:'Inter',system-ui,sans-serif;background:#EDEDEA;color:#1D2939;-
 .ac.green .e{color:#05603A}
 .ac.gold .e{color:#8A6A24}
 .ac .amt{position:relative;width:fit-content;margin:6px auto 0;display:flex;align-items:flex-start;justify-content:center;gap:3px}
-/* the "+₹50" that appears once the recharge amount has counted up, then merges into it */
-.addfly{position:absolute;left:calc(100% + 8px);top:1px;white-space:nowrap;font-size:12px;line-height:16px;font-weight:700;
-  color:#027A48;background:#ECFDF3;border:1px solid #ABEFC6;border-radius:8px;padding:1px 6px;
-  opacity:0;transform:translateY(8px) scale(.75);pointer-events:none;
-  transition:opacity .25s ease-out,transform .4s cubic-bezier(.2,1.4,.4,1)}
-.addfly.in{opacity:1;transform:none}
-.addfly.merge{opacity:0;transform:translateX(-26px) scale(.5);
-  transition:opacity .5s ease-in,transform .6s cubic-bezier(.5,0,.8,.4)}
+/* the tile's "+₹50" chip lifts off, arcs down and drops into the card; the bonus starts
+   counting on at the moment it lands. Built in JS so it can measure both ends. */
+.flyer{position:absolute;z-index:8;pointer-events:none;display:flex;align-items:center;justify-content:center;
+  border-radius:12px;box-shadow:0 10px 20px rgba(4,60,38,.32);will-change:transform,opacity;
+  background:linear-gradient(-0.5deg,#027A48 10%,#039855 23%,#039855 84%,#04A85D 110%)}
+.flyer p{font-size:14px;font-weight:600;line-height:18px;letter-spacing:-.14px;color:#fff;white-space:nowrap}
+/* the amount takes the hit as the chip lands */
+.ac .amt.absorb{animation:absorb .52s cubic-bezier(.24,1.6,.36,1)}
+@keyframes absorb{0%{transform:none}24%{transform:scale(1.14)}58%{transform:scale(.975)}100%{transform:none}}
 .ac.green .amt{color:#04301F}
 .ac.gold .amt{color:#3F3417}
 .ac .amt .r{font-size:17px;font-weight:700;line-height:1}

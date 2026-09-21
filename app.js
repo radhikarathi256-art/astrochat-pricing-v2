@@ -57,7 +57,7 @@ let remaining = OFFER_SECONDS;
 const clock = s => `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
 function bandInner(){
   if (isGold()) return `<div class="bandin"><img src="assets/warning.svg" alt=""><div><p class="l1">You're missing out on a bonus</p><p class="l2">Pick ₹100 or more to get extra</p></div></div>`;
-  return `<div class="bandin"><img src="assets/warning.svg" alt=""><div><p class="l1">Recharge offer valid for <b class="cd">${clock(remaining)}</b></p><p class="l2">Extra credit lands in your wallet instantly</p></div></div>`;
+  return `<div class="bandin"><img class="tag" src="assets/discount.svg" alt=""><div><p class="l1">Recharge offer valid for <b class="cd">${clock(remaining)}</b></p><p class="l2">Extra credit lands in your wallet instantly</p></div></div>`;
 }
 function renderBand(){
   const g = isGold();
@@ -71,34 +71,72 @@ setInterval(() => {
 /* ---------- card ---------- */
 let animToken = 0;
 const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
-function renderCard(){
+function renderCard(animate = true){
   const v = state.sel, b = bonusFor(v), total = v + b, g = isGold();
   $('card').className = 'ac ' + (g ? 'gold' : 'green');
   $('payblock').classList.toggle('gold', g);
   $('cardE').textContent = g ? 'NO BONUS ON ₹50' : 'CONGRATULATIONS!';
-  const n = $('cardN'), fly = $('addfly'), token = ++animToken;
+  const n = $('cardN'), token = ++animToken;
   const setN = x => { state.shown = x; n.textContent = fmt(x); alignCardRupee(); };
-  const setFly = cls => { fly.className = 'addfly ' + cls; };
-  // The reveal replays on every pick. ₹50 earns no bonus, so it has nothing to add on.
-  if (reduced() || b === 0) { setN(total); setFly(''); return; }
-  // Two beats, as in the first prototype: count to the recharge amount, hold while the
-  // bonus chip appears, then count the bonus on top as the chip merges in.
+  // The reveal replays on every pick, but not on first paint. ₹50 earns no bonus, so it
+  // has nothing to add on.
+  if (!animate || reduced() || b === 0) { setN(total); return; }
+  // Three beats: count up to the recharge amount, fly the bonus chip off its tile and
+  // into the card, then count the bonus on from the frame it lands.
   const from = state.shown ?? v;
-  const d1 = from === v ? 0 : 380, hold = 420, d2 = 800, t0 = performance.now();
+  const d1 = from === v ? 0 : 360, flight = 640, d2 = 700, t0 = performance.now();
   const ease = p => 1 - Math.pow(1 - p, 3);
   const lerp = (a, z, p) => Math.round(a + (z - a) * ease(p));
-  fly.textContent = `+₹${fmt(b)}`;
-  setFly('');
+  flyBonus(b, d1, flight);
+  let landed = false;
   const step = t => {
     if (token !== animToken) return;
     const e = t - t0;
     if (e < d1) setN(lerp(from, v, e / d1));
-    else if (e < d1 + hold) { setN(v); if (!fly.classList.contains('in')) setFly('in'); }
-    else if (e < d1 + hold + d2) { setN(lerp(v, total, (e - d1 - hold) / d2)); if (!fly.classList.contains('merge')) setFly('merge'); }
-    else { setN(total); setFly(''); return; }
+    else if (e < d1 + flight) setN(v);
+    else if (e < d1 + flight + d2) {
+      if (!landed) { landed = true; thump(); }
+      setN(lerp(v, total, (e - d1 - flight) / d2));
+    }
+    else { setN(total); return; }
     requestAnimationFrame(step);
   };
   requestAnimationFrame(step);
+}
+// pop the amount at the instant the chip arrives
+function thump(){
+  const a = document.querySelector('.ac .amt'); if (!a) return;
+  a.classList.remove('absorb'); void a.offsetWidth; a.classList.add('absorb');
+}
+// Lift the chosen tile's "+₹X" chip off the tile and arc it into the card. Both ends are
+// measured at call time, so it works from the collapsed row and the open grid alike.
+function flyBonus(b, delay, dur){
+  const root = state.open ? $('grid') : $('skus');
+  const chip = root.querySelector(`[data-amt="${state.sel}"]`)?.closest('.col')?.querySelector('.chip');
+  const amt = document.querySelector('.ac .amt');
+  if (!chip || !amt) return;
+  const sr = screen.getBoundingClientRect(), a = chip.getBoundingClientRect(), z = amt.getBoundingClientRect();
+  const fly = document.createElement('div');
+  fly.className = 'flyer';
+  fly.innerHTML = `<p>+ ₹${fmt(b)}</p>`;
+  Object.assign(fly.style, {
+    left: (a.left - sr.left) + 'px', top: (a.top - sr.top) + 'px',
+    width: a.width + 'px', height: a.height + 'px',
+  });
+  screen.appendChild(fly);
+  const dx = (z.left + z.width / 2) - (a.left + a.width / 2);
+  const dy = (z.top + z.height / 2) - (a.top + a.height / 2);
+  // Each leg carries its own easing and the iteration stays linear, so the chip lands on
+  // the last frame of the flight rather than racing ahead of it: pop off the tile, arc
+  // down, settle into the card, squash into the number.
+  fly.animate([
+    { offset: 0,   opacity: 0, transform: 'translate(0,0) scale(.9) rotate(0deg)', easing: 'cubic-bezier(.2,.9,.3,1.35)' },
+    { offset: .16, opacity: 1, transform: `translate(${dx * .04}px,-22px) scale(1.26) rotate(-9deg)`, easing: 'cubic-bezier(.55,0,.8,.25)' },
+    { offset: .58, opacity: 1, transform: `translate(${dx * .42}px,${dy * .34}px) scale(1.12) rotate(9deg)`, easing: 'cubic-bezier(.25,.1,.2,1)' },
+    { offset: .88, opacity: 1, transform: `translate(${dx}px,${dy}px) scale(.85) rotate(-5deg)`, easing: 'ease-out' },
+    { offset: 1,   opacity: 0, transform: `translate(${dx}px,${dy}px) scale(.3) rotate(0deg)` },
+  ], { duration: dur, delay, easing: 'linear', fill: 'both' })
+    .finished.then(() => fly.remove(), () => fly.remove());
 }
 // Top-align the ₹ with the cap height of the number, using real glyph metrics.
 const cx = document.createElement('canvas').getContext('2d');
@@ -233,5 +271,5 @@ screen.addEventListener('keydown', e => {
 });
 
 /* ---------- boot ---------- */
-renderTiles(); renderBand(); renderCard(); renderSummary(); renderPM();
+renderTiles(); renderBand(); renderCard(false); renderSummary(); renderPM();
 if (document.fonts) document.fonts.ready.then(() => { alignCardRupee(); layoutOpen(); });
