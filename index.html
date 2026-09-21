@@ -841,9 +841,14 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .am .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .am .seerow{display:flex;justify-content:center;margin-top:30px}
 .am .scrollpad{height:0}
-/* scroll indicator */
+/* scroll indicator — 3px, persistent while the sheet is open.
+   It used to only flash: .on for 2s on open and 1.4s per scroll, then fade out. That is the iOS
+   convention, but here the sheet opens INTO a scrolled region with no other affordance, so by the
+   time you look at it the bar has already gone and the list reads as un-scrollable. `.am.open`
+   holds it up for as long as the sheet is open; .on is kept only so a scroll still re-asserts it
+   if something else has faded it. */
 .am .sbar{position:absolute;right:5px;top:14px;width:3px;border-radius:3px;background:rgba(16,24,40,.07);z-index:4;opacity:0;transition:opacity .35s}
-.am .sbar.on{opacity:1}
+.am .sbar.on,.screen.am.open .sbar{opacity:1}
 .am .sbar i{position:absolute;left:0;top:0;width:3px;border-radius:3px;background:rgba(16,24,40,.34)}
 
 /* ---------- bottom block ---------- */
@@ -1588,7 +1593,12 @@ function layoutOpen(){
   A('scrollpad').style.height=Math.max(0,wrap.clientHeight-cardTop+16)+'px';
   bar.style.height=Math.max(40,cardTop-28)+'px';
   const view=cardTop, total=sc.scrollHeight-(wrap.clientHeight-cardTop);
-  const trackH=bar.clientHeight, h=Math.max(28,Math.round(trackH*Math.min(1,view/total)));
+  // Capped at 78% of the track as well as floored at 28px. Strictly proportional is right in
+  // principle but useless here: the grid only overflows by ~32px, so the thumb came out at 94% of
+  // the track and travelled 6% of it — a static grey line that says nothing about scrollability.
+  // The floor and the cap are both lies about proportion; the cap is the one that earns its keep.
+  const trackH=bar.clientHeight;
+  const h=Math.max(28,Math.min(Math.round(trackH*.78),Math.round(trackH*Math.min(1,view/total))));
   const max=sc.scrollHeight-sc.clientHeight, p=max>0?sc.scrollTop/max:0;
   thumb.style.height=h+'px';
   thumb.style.transform=`translateY(${Math.round((trackH-h)*p)}px)`;
