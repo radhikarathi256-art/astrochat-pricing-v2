@@ -30,7 +30,7 @@ const coinClock = performance.now();
 function coinfall(){
   const el = ((performance.now() - coinClock) / 1000) % COIN_CYCLE;
   return `<span class="coinfall" aria-hidden="true">${
-    COIN_OFF.map(o => `<i class="coin" style="animation-delay:${(o - el).toFixed(2)}s"></i>`).join('')}</span>`;
+    COIN_OFF.map(o => `<i class="coin" style="animation-delay:${(o - el).toFixed(2)}s"><i></i></i>`).join('')}</span>`;
 }
 function tile([v,b]){
   const on = v === state.sel;
