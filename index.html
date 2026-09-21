@@ -557,7 +557,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    still lands on a pale background — which is why the copy has to stay short enough not to reach
    the white end. Keeps v1's timer rule: a countdown shows a stronger green, no countdown a softer
    one, keyed on the TIMER and not the mode (see renderBand). */
-.am .banner,.am .band3{color:#05603A;background:linear-gradient(90deg,#E2FBEE 0%,#EBFDF4 40%,#F6FEFA 78%,#fff 100%);border-radius:32px 32px 0 0;transition:background .3s}
+.am .banner,.am .band3{color:#05603A;background:linear-gradient(90deg,#E2FBEE 0%,#EBFDF4 40%,#F6FEFA 78%,#fff 100%);border-radius:32px 32px 0 0;transition:background .3s,transform .42s cubic-bezier(.2,.8,.2,1),margin-bottom .42s cubic-bezier(.2,.8,.2,1)}
 .am .banner.bn-dark,.am .band3.bn-dark{background:linear-gradient(90deg,#CDF8E0 0%,#DEFBEB 40%,#F2FDF8 78%,#fff 100%)}
 /* The tops below are measured from the nav's real height (64px + 1px border = 65px).
    Change anything in .nav and all four must move with it. */
@@ -566,6 +566,13 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    amount, or the strip of band left showing above the card changes width (it is card.top minus
    this, and is meant to stay 62). */
 .am .banner{position:absolute;top:80px;left:16px;right:16px;z-index:1}
+/* Wallet flow only: the band is the ₹50 nudge and nothing else, so it is parked behind the SKU
+   card and slides up only while ₹50 is selected. 62px is not a taste value — it is exactly the
+   strip of band that shows above the card (card top 142 − band top 80), so translating by it
+   leaves the band's top edge level with the card's and the whole thing hidden. If either top
+   moves, this moves with it. The card is z-index 2 with an opaque #fff fill, which is what makes
+   the band disappear behind it rather than under it. */
+.am .banner.bn-off{transform:translateY(62px)}
 /* The band sits BEHIND the receipt card, not above it: 62px of it shows (151 − 89) and the
    rest is hidden. So the bottom padding is deliberate filler, not spacing — it has to outrun
    that 62px or a gap opens up. Top/side padding is what actually sizes the visible strip.
@@ -778,8 +785,18 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .am .openscroll{position:absolute;inset:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;padding:10px 16px 0}
 .am .openscroll::-webkit-scrollbar{display:none}
 .am .band3{position:relative;z-index:1;margin:0 4px}
+/* Same slide inside the open "See More Options" sheet, where the band is in normal flow instead of
+   absolutely placed, so it has to close the space it leaves as well as move out of it.
+   57 = the band's 87px height minus the 30px .rc already overlaps it by, i.e. the strip actually
+   on show here. The gap is closed on .rc's OWN margin-top rather than a margin-bottom on the band:
+   adjacent siblings collapse their margins to the single most-negative value, not the sum, so a
+   -57 here and .rc's standing -30 would have given -57 and left 30px of empty sheet behind.
+   -87 takes .rc's top all the way up to where the band's box starts, and .rc is z-index 2 with an
+   opaque background, so the band ends up entirely inside it. */
+.am .band3.bn-off{transform:translateY(57px)}
+.am .band3.bn-off + .rc{margin-top:-87px}
 /* pulled up over the band's filler padding, the same way .rcpt covers it in the closed state */
-.am .rc{position:relative;z-index:2;background:#fff;border:1px dashed #D0D5DD;border-radius:24px;margin-top:-30px;padding:18px 16px}
+.am .rc{position:relative;z-index:2;background:#fff;border:1px dashed #D0D5DD;border-radius:24px;margin-top:-30px;padding:18px 16px;transition:margin-top .42s cubic-bezier(.2,.8,.2,1)}
 .am .rc .notch{bottom:58px}
 .am .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .am .seerow{display:flex;justify-content:center;margin-top:30px}
@@ -1328,12 +1345,11 @@ function bandInner(){
     const arrows=`<span class="arrows" aria-hidden="true">${`<img src="${I['arrow-drift']}" alt="">`.repeat(3)}</span>`;
     return `<div class="bandin"><img class="tag" src="${I.discount}" alt=""><div><p class="l1">Connect with ${flowAstro} at</p><p class="rate"><b>₹${effRate(ab.sel)}/min</b><s>₹${flowRate}/min</s></p></div>${arrows}</div>`;
   }
-  if(isGold()) return `<div class="bandin"><img src="${I.warning}" alt=""><div><p class="l1">You're missing out on a bonus</p><p class="l2">Pick ₹100 or more to get extra</p></div></div>`;
-  // Wallet flow: one wrapping line naming the bonus the tapped amount actually earns, and NO
-  // countdown — so this band also reads as untimed and takes the lighter green (see renderBand).
-  // Regular weight throughout except the figure itself — the ₹ and the number are the only bold
-  // thing on this line, so "extra" sits outside the <b>.
-  if(ab.wflow) return `<div class="bandin"><img class="tag" src="${I.discount}" alt=""><div><p class="l1 reg">Yay! you are earning <b>₹${bonusFor(ab.sel)}</b> extra, recharge more to earn more</p></div></div>`;
+  // The wallet flow gets this copy at EVERY amount, not just ₹50 — the green "Yay, you're earning
+  // ₹X extra" band it used to show above ₹50 is gone. Keeping the words and the colour fixed is
+  // what lets renderBand slide the strip in and out as one object; if it rewrote itself on the way
+  // down you would see it change its mind mid-slide. It is only ever on screen at ₹50.
+  if(isGold()||ab.wflow) return `<div class="bandin"><img src="${I.warning}" alt=""><div><p class="l1">You're missing out on a bonus</p><p class="l2">Pick ₹100 or more to get extra</p></div></div>`;
   const cd = `<b class="cd">${cdText()}</b>`;
   const l1 = ab.mode==='coupon' ? `<b>ASTRO50</b> applied${ab.noTimer?'':` · ends in ${cd}`}`
            : ab.mode==='offer'  ? `First 5 mins chat at <b>₹5/min</b> · <b>80% Off</b>`
@@ -1347,13 +1363,18 @@ function renderBand(){
   // The astrologer, promo and coupon variants own the band outright — no gold, no countdown tint.
   // The promo one deliberately overrides gold too, so ₹50 keeps the offer copy; the coupon one
   // doesn't need to, because with COUPON_FLAT applied ₹50 is no longer a zero-bonus tile.
-  const g=!red&&!promo&&!coup&&!(ab.cflow&&flowRate)&&isGold();
+  const special = red||promo||coup||(ab.cflow&&flowRate);
+  // The wallet flow is gold at every amount now, not just at ₹50, because its band has no other
+  // job — see bandInner. `off` is what actually decides whether you can see it: parked behind the
+  // SKU card unless ₹50 is the selection.
+  const g=!special&&(ab.wflow||isGold());
+  const off=!special&&ab.wflow&&!isGold();
   // v1's rule: deeper green only while a countdown is showing, lighter green without one.
   // The wallet flow's copy carries no countdown, so it lands on the lighter one.
   const timed = !g && !red && !promo && !coup && !ab.cflow && !ab.wflow;
   for(const el of [A('band'),A('band3')]){
-    // Only the wallet flow's ₹50 band fades out to white; every other flow keeps the flat gold.
-    el.className=(el.id==='band'?'banner':'band3')+(red?' red':'')+(promo?' bn-promo':'')+(coup?' coupon':'')+(g?' gold':'')+(g&&ab.wflow?' gfade':'')+(timed?' bn-dark':'');
+    // Only the wallet flow's band fades out to white; every other flow keeps the flat gold.
+    el.className=(el.id==='band'?'banner':'band3')+(red?' red':'')+(promo?' bn-promo':'')+(coup?' coupon':'')+(g?' gold':'')+(g&&ab.wflow?' gfade':'')+(timed?' bn-dark':'')+(off?' bn-off':'');
     el.innerHTML=bandInner();
   }
   // A running countdown is the one moving thing that should hold the eye, so the badges' light
