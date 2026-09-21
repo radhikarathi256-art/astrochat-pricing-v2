@@ -232,7 +232,9 @@ body{font-family:'Inter',system-ui,sans-serif;background:#EDEDEA;color:#1D2939;-
 .cta{position:relative;z-index:2;background:#fff;display:flex;align-items:center;gap:16px;padding:8px 16px 24px}
 .payw{flex:1;display:flex;flex-direction:column;gap:2px;align-items:flex-start}
 .payw .l{display:flex;align-items:center;font-size:12px;line-height:18px;color:#475467}
-.pp{display:flex;gap:4px;align-items:center;font-weight:700;font-size:16px;color:#344054}
+/* The logo is a full-bleed circle so its edge sits flush at 0, while the "P" of "Pay with"
+   above carries ~1px of side bearing. Nudge the row over so the two line up optically. */
+.pp{display:flex;gap:4px;align-items:center;font-weight:700;font-size:16px;color:#344054;margin-left:1px}
 .pp .logo{width:20px;height:20px;border:.6px solid #D0D5DD;border-radius:4px;padding:1px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .pp .logo img{width:100%;height:100%;object-fit:cover;border-radius:3px}
 .pp .logo.raw{border:0;padding:0}
