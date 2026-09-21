@@ -698,7 +698,16 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    at ry²/rx — about 3px here — which is the pinch that read as a sharp corner. The path in
    drawRcpt() leaves the side vertically and eases into the bow, so the curvature is spread
    out the way the green arc under the congratulations card is. */
-.am .rcpt{position:absolute;left:16px;right:16px;top:142px;height:229px;z-index:2}
+.am .rcpt{position:absolute;left:16px;right:16px;top:142px;height:229px;z-index:2;transition:top .42s cubic-bezier(.2,.8,.2,1)}
+/* Wallet flow with the nudge band hidden: the card takes the band's place instead of leaving a
+   hole under the nav. 80px is the band's own top, so the card ends up exactly where the band
+   started and the 15px breathing room below the nav is preserved.
+   This has to move in step with .banner.bn-off, and the two are deliberately the same duration
+   and curve: the band travels +62 while the card travels −62, so they close on each other and
+   meet halfway. That is what makes it read as the card rising and swallowing the band, rather
+   than two separate things moving. The band stays covered throughout — past the halfway point
+   the card's top is above the band's, and the card is z-index 2 over the band's 1. */
+.am.bandoff .rcpt,.am.bandoff .stack{top:80px}
 .am .rcptline{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 /* Was 3/2, which is exactly what Chrome draws for `1px dashed`; she asked for shorter dashes,
    so the path is now 2/2. The notch below is still a real CSS dashed border and so is still
@@ -714,7 +723,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    the bottom arch starts (height - DROP = 173). */
 .am .rcpt .notch{top:148px}
 /* same box as the receipt card, so "See More Options" can hang off its bottom edge */
-.am .stack{position:absolute;left:32px;right:32px;top:142px;height:229px;z-index:3}
+.am .stack{position:absolute;left:32px;right:32px;top:142px;height:229px;z-index:3;transition:top .42s cubic-bezier(.2,.8,.2,1)}
 .am .skus{position:absolute;left:0;right:0;top:28px;height:96px;display:flex;gap:12px;align-items:flex-start}
 /* Anchored from the top, not the bottom, so growing the card or deepening the arch below it
    leaves the button exactly where it is.
@@ -1397,6 +1406,8 @@ function renderBand(){
   amRoot.classList.toggle('timed', !!A('band').querySelector('.cd'));
   // And the badges only sweep while the pick earns nothing — see the .lure rule in the CSS.
   amRoot.classList.toggle('lure', isGold());
+  // With the band hidden the SKU card slides up into its place rather than leaving a gap.
+  amRoot.classList.toggle('bandoff', off);
 }
 
 /* card */
