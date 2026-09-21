@@ -682,7 +682,12 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    because the asset already carries its own diagonal and tilting it further just looks misaligned.
    The offsets alone do the scattering. Keep all three upright. */
 .am .bandin .arrows img{animation-delay:0s}
-.am .bandin .arrows img:nth-child(1){right:58px;top:-46px}
+/* Sep 21: the left-hand arrow was at right:58px, which put it 20px clear of its neighbour and
+   spread the three into an evenly-pitched row — a line, which is exactly what the cluster was
+   meant to stop being. Pulling it in to 48px overlaps it ~6px with the middle arrow. They sit
+   28px apart vertically so the overlap reads as depth, not collision, and the group finally
+   reads as a triangle. Keep this one TIGHTER than the 28px gap between the other two. */
+.am .bandin .arrows img:nth-child(1){right:48px;top:-46px}
 .am .bandin .arrows img:nth-child(2){right:30px;top:-18px}
 .am .bandin .arrows img:nth-child(3){right:2px;top:-34px}
 /* starts above the strip and leaves below it, so the fade in/out never shows a hard edge */
