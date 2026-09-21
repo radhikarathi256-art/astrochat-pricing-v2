@@ -852,15 +852,6 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    time you look at it the bar has already gone and the list reads as un-scrollable. `.am.open`
    holds it up for as long as the sheet is open; .on is kept only so a scroll still re-asserts it
    if something else has faded it. */
-/* Lightened Sep 21. The thumb was .34 alpha, which on white is a mid grey — too assertive for an
-   indicator that is only there to say "there is more below". .18 keeps it legible against the
-   white card while dropping out of the reading order. The track goes .07 -> .05 with it, so the
-   thumb still sits about 3.5x the track and the contrast BETWEEN them is preserved; lightening
-   only the thumb would have flattened the two into one grey line. */
-.am .sbar{position:absolute;right:5px;top:14px;width:3px;border-radius:3px;background:rgba(16,24,40,.05);z-index:4;opacity:0;transition:opacity .35s}
-.am .sbar.on,.screen.am.open .sbar{opacity:1}
-.am .sbar i{position:absolute;left:0;top:0;width:3px;border-radius:3px;background:rgba(16,24,40,.18)}
-
 /* ---------- bottom block ---------- */
 .am .payblock{position:absolute;left:0;right:0;bottom:0;z-index:3}
 .am .cardwrap{position:relative;display:flex;flex-direction:column;align-items:center;perspective:900px}
@@ -1228,7 +1219,6 @@ function renderAB(){
         </div>
         <div class="scrollpad" id="scrollpad"></div>
       </div>
-      <span class="sbar" id="sbar"><i id="sthumb"></i></span>
     </section>
 
     <section class="payblock" id="payblock">
@@ -1597,10 +1587,10 @@ function setPM(on){
 }
 
 /* open list + scroll indicator */
-let amHideTimer, amSwitchTimer;
+let amSwitchTimer;
 function layoutOpen(){
   if(!amRoot) return;
-  const wrap=A('openwrap'), sc=A('openscroll'), bar=A('sbar'), thumb=A('sthumb');
+  const wrap=A('openwrap');
   const wrapTop=wrap.getBoundingClientRect().top;
   const cardTop=A('card').getBoundingClientRect().top-wrapTop;   // visible height above the card
   // The pad is the strip of the wrap hidden BEHIND the card, plus the breathing room we want above
@@ -1609,21 +1599,6 @@ function layoutOpen(){
   // button all but touching the card. 80px is her call.
   const SAFE_ABOVE_CARD = 80;
   A('scrollpad').style.height=Math.max(0,wrap.clientHeight-cardTop+SAFE_ABOVE_CARD)+'px';
-  bar.style.height=Math.max(40,cardTop-28)+'px';
-  const view=cardTop, total=sc.scrollHeight-(wrap.clientHeight-cardTop);
-  // Capped at 78% of the track as well as floored at 28px. Strictly proportional is right in
-  // principle but useless here: the grid only overflows by ~32px, so the thumb came out at 94% of
-  // the track and travelled 6% of it — a static grey line that says nothing about scrollability.
-  // The floor and the cap are both lies about proportion; the cap is the one that earns its keep.
-  const trackH=bar.clientHeight;
-  const h=Math.max(28,Math.min(Math.round(trackH*.78),Math.round(trackH*Math.min(1,view/total))));
-  const max=sc.scrollHeight-sc.clientHeight, p=max>0?sc.scrollTop/max:0;
-  thumb.style.height=h+'px';
-  thumb.style.transform=`translateY(${Math.round((trackH-h)*p)}px)`;
-}
-function flashBar(ms=1400){
-  const bar=A('sbar'); bar.classList.add('on');
-  clearTimeout(amHideTimer); amHideTimer=setTimeout(()=>bar.classList.remove('on'),ms);
 }
 function setOpen(on){
   ab.open=on;
@@ -1645,7 +1620,7 @@ function setOpen(on){
   },400);
   A('openwrap').setAttribute('aria-hidden',!on);
   A('seeMore').setAttribute('aria-expanded',on);
-  if(on){A('openscroll').scrollTop=0;requestAnimationFrame(()=>{layoutOpen();flashBar(2000)})}
+  if(on){A('openscroll').scrollTop=0;requestAnimationFrame(layoutOpen)}
   else renderTiles();
 }
 
@@ -1683,7 +1658,7 @@ function initAM(root){
   // Once per page; on a remount the surviving canvas is re-parented into the new root by
   // mountCoins(), which renderTiles() has just called.
   initCoins();
-  A('openscroll').addEventListener('scroll',()=>{layoutOpen();flashBar()},{passive:true});
+  A('openscroll').addEventListener('scroll',layoutOpen,{passive:true});
   root.addEventListener('click',e=>{
     // With the payment summary open the amounts are locked — the tap just closes the summary.
     const opt=e.target.closest('[data-amt]');
