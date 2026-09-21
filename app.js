@@ -1,7 +1,7 @@
 /* AstroChat · Add Money — interactive prototype (no build step) */
 
 // [amount, bonus]. Wallet credit = amount + bonus; GST = 18% of the amount only.
-const AMTS = [[50,0],[100,10],[250,50],[500,150],[1000,400],[2000,400],[3000,600],[5000,1000],[10000,2000],[20000,4000]];
+const AMTS = [[50,0],[100,100],[250,50],[500,150],[1000,400],[2000,400],[3000,600],[5000,1000],[10000,2000],[20000,4000]];
 const GST_RATE = 0.18;
 const OFFER_SECONDS = 5 * 60;
 
@@ -25,7 +25,7 @@ const isGold = () => bonusFor(state.sel) === 0;
 const CORNER = `<span class="corner"><svg width="38" height="38" viewBox="0 0 38 38"><path d="M0 0H38V38Z" fill="#EF6939"/><path class="tick" d="M30.2 11.1L24.3 16.2L21.4 13.5L21.9 12.8L24.3 14.9L29.7 10.3L30.2 11.1Z" fill="#fff"/></svg></span>`;
 // Coin shower on the hero amount. Tiles are re-rendered from scratch on every tap, so each
 // coin gets a negative delay off a single clock — otherwise the shower restarts on each tap.
-const COIN_AMT = 250, COIN_CYCLE = 3.6, COIN_OFF = [0, .9, 1.8, 2.7, 3.3];
+const COIN_AMT = 100, COIN_CYCLE = 3.6, COIN_OFF = [0, .9, 1.8, 2.7, 3.3];
 const coinClock = performance.now();
 function coinfall(){
   const el = ((performance.now() - coinClock) / 1000) % COIN_CYCLE;

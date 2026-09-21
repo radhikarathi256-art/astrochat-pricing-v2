@@ -95,15 +95,23 @@ body{font-family:'Inter',system-ui,sans-serif;background:#EDEDEA;color:#1D2939;-
   -webkit-mask-image:linear-gradient(90deg,#000 0 21%,transparent 24% 76%,#000 79% 100%);
   mask-image:linear-gradient(90deg,#000 0 21%,transparent 24% 76%,#000 79% 100%)}
 .box.on .coinfall{opacity:0}
+/* A flat milled disc, not a sphere: a raking metallic sheen across the face, a bright rim
+   and a darker inner edge. The rotateY in the fall spins it edge-on, which is what really
+   sells it as a coin rather than a ball. */
 .coinfall .coin{position:absolute;top:0;border-radius:50%;opacity:0;animation:coinFall 3.6s linear infinite;
-  background:radial-gradient(circle at 35% 30%,#ffe58a,#f5b82e 55%,#c98a10 100%);
-  box-shadow:inset 0 -1px 0 rgba(120,70,0,.35),0 1px 2px rgba(120,70,0,.25)}
+  background:linear-gradient(145deg,#FFF3C4 4%,#FBD24E 30%,#E09E12 58%,#FFE083 78%,#C07F0C 100%);
+  box-shadow:inset 0 0 0 1px rgba(255,249,219,.9),inset 0 0 0 2px rgba(172,112,6,.5),
+    inset 0 -2px 3px rgba(133,82,4,.4),inset 0 2px 3px rgba(255,255,255,.45),0 1px 2px rgba(120,70,0,.28)}
+/* the raised inner face */
+.coinfall .coin::before{content:"";position:absolute;inset:3px;border-radius:50%;
+  border:1px solid rgba(255,250,224,.55);
+  background:radial-gradient(circle at 50% 36%,rgba(255,255,255,.5),rgba(255,255,255,0) 72%)}
 .coinfall .coin:nth-child(1){left:2%;width:15px;height:15px}
 .coinfall .coin:nth-child(2){left:81%;width:15px;height:15px}
 .coinfall .coin:nth-child(3){left:4%;width:13px;height:13px}
 .coinfall .coin:nth-child(4){left:83%;width:13px;height:13px}
 .coinfall .coin:nth-child(5){left:1%;width:14px;height:14px}
-@keyframes coinFall{0%{transform:translateY(-22px) rotate(0);opacity:0}12%{opacity:.95}80%{opacity:.95}100%{transform:translateY(78px) rotate(220deg);opacity:0}}
+@keyframes coinFall{0%{transform:translateY(-22px) rotate(0) rotateY(0);opacity:0}12%{opacity:.95}80%{opacity:.95}100%{transform:translateY(78px) rotate(200deg) rotateY(1080deg);opacity:0}}
 
 /* ---------- open list ---------- */
 /* Collapsed and expanded are two stacked layers. They cross-dissolve, but each also
