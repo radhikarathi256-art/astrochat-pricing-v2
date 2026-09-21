@@ -725,8 +725,11 @@ body.mobile .phone{border-radius:0;box-shadow:none}
   background:linear-gradient(100deg,rgba(255,255,255,0),rgba(255,255,255,.4) 50%,rgba(255,255,255,0));
   animation:chipSweep 3.2s linear infinite;animation-delay:var(--sd,0s)}
 @keyframes chipSweep{0%{transform:translateX(-120%)}42%,100%{transform:translateX(300%)}}
+/* .timed is on the screen root while the band is showing a live countdown. The sweep is dropped
+   outright rather than paused: a paused sweep freezes mid-pill as a visible pale streak. */
+.am.timed #skus .chip::after{display:none}
 
-/* Coin shower — a dotLottie drawn onto one canvas, created once in app.js and re-parented
+/* Coin shower — a dotLottie drawn onto one canvas, created once in initCoins() and re-parented
    into whichever ₹250 tile is on screen.
    NO mask here, deliberately: v1's edge mask cannot come along. iOS rasterises a masked
    overflow:hidden layer once and never repaints it, which merely stuttered the old CSS coins
@@ -1299,7 +1302,9 @@ function bandInner(){
   if(ab.mode==='offer') return `<div class="bandin"><img class="tag" src="${I.discount}" alt=""><div><p class="l1">First 5 min with ${flowAstro} at</p><p class="rate"><b>₹${flowRate}/min</b><s>₹${LIST_RATE}/min</s><b class="off">(${Math.round((1-flowRate/LIST_RATE)*100)}% off)</b></p></div></div>`;
   // ASTRO50. Same on every tile — the ₹50 is flat, so no figure here moves with the selection.
   // The <b class="cd"> is what startCountdown()'s ticker rewrites each second.
-  if(ab.mode==='coupon') return `<div class="bandin"><img class="tag" src="${I.discount}" alt=""><div><p class="l1">ASTRO 50 applied, <b>₹${COUPON_FLAT} extra</b></p><p class="l2">valid for <b class="cd">${cdText()}</b></p></div></div><img class="bn-stars" src="${I.stars}" alt="" aria-hidden="true"><span class="sweep"></span>`;
+  // discount-dark.svg is the same seal recoloured #065F41 — the coupon strip's own left-edge
+  // green — because the default #039855 read as a brighter green sitting on a darker one.
+  if(ab.mode==='coupon') return `<div class="bandin"><img class="tag" src="${I['discount-dark']}" alt=""><div><p class="l1">ASTRO 50 applied, <b>₹${COUPON_FLAT} extra</b></p><p class="l2">valid for <b class="cd">${cdText()}</b></p></div></div><img class="bn-stars" src="${I.stars}" alt="" aria-hidden="true"><span class="sweep"></span>`;
   if(ab.cflow&&flowRate){
     const arrows=`<span class="arrows" aria-hidden="true">${`<img src="${I['arrow-drift']}" alt="">`.repeat(3)}</span>`;
     return `<div class="bandin"><img class="tag" src="${I.discount}" alt=""><div><p class="l1">Connect with ${flowAstro} at</p><p class="rate"><b>₹${effRate(ab.sel)}/min</b><s>₹${flowRate}/min</s></p></div>${arrows}</div>`;
@@ -1330,6 +1335,10 @@ function renderBand(){
     el.className=(el.id==='band'?'banner':'band3')+(red?' red':'')+(promo?' bn-promo':'')+(coup?' coupon':'')+(g?' gold':'')+(g&&ab.wflow?' gfade':'')+(timed?' bn-dark':'');
     el.innerHTML=bandInner();
   }
+  // A running countdown is the one moving thing that should hold the eye, so the badges' light
+  // sweep stands down while it ticks. Read off the rendered band rather than re-deriving which
+  // modes carry a timer — the copy is the only authority on whether a .cd is actually showing.
+  amRoot.classList.toggle('timed', !!A('band').querySelector('.cd'));
 }
 
 /* card */
