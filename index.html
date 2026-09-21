@@ -1397,12 +1397,30 @@ function flyBonus(b,delay,dur){
   // Scale only ever DECREASES — her call. It used to balloon to 1.3 at the top of the arc and
   // shrink back; now it starts at full size and shrinks the whole way in, so the chip reads as
   // being absorbed by the card rather than popping at the user. Keep every value <= 1.
+  // VELOCITY PROFILE — fast, slow, fast, in that order, and that is the whole brief:
+  //   0 → .26   leaves the tile hard and decelerates into the apex  (ease-OUT)
+  //   .26 → .40 the direction change: 4px of travel over 14% of the flight, so it hangs
+  //   .40 → 1   falls away from the apex accelerating the whole way (ease-IN, no tail)
+  // The old curve did the opposite at the finish: it reached the card at offset .9 on an
+  // ease-out and then sat there for 64ms, which read as arriving slowly and stopping.
+  // Landing on offset 1 also puts the arrival on the same frame as thump().
+  // Speed profile, which IS the brief: fast off the tile → almost stopped at the top of the arc
+  // where it changes direction → accelerating all the way into the card, fastest on impact.
+  // Two things this has to get right, both of which were wrong in earlier passes:
+  //  1. The fall is ONE keyframe interval. Every extra waypoint restarts its own easing curve
+  //     from zero velocity — a mid-flight waypoint measured as a drop from 2840 to 70 px/s, a
+  //     visible hitch just before the card. The .86 keyframe carries opacity alone, which does
+  //     not split the transform interval.
+  //  2. The fall curve must stay near free fall (distance ∝ t²). cubic-bezier(.4,0,.8,.7) covers
+  //     8/30/62/85% of the drop at quarter/half/three-quarter/nine-tenths time against free
+  //     fall's 6/25/56/81. A steeper ease-in reads as hovering and then teleporting: the curve
+  //     this replaced was still only 21% down the screen with 80% of the flight gone.
   fly.animate([
-    {offset:0,  opacity:0,transform:'translate(0,0) scale(1) rotate(0deg)',easing:'cubic-bezier(.12,.75,.3,1)'},
-    {offset:.28,opacity:1,transform:`translate(${dx*.03}px,-50px) scale(.92) rotate(-9deg)`,easing:'cubic-bezier(.5,0,.92,.4)'},
-    {offset:.66,opacity:1,transform:`translate(${dx*.45}px,${dy*.36}px) scale(.72) rotate(8deg)`,easing:'cubic-bezier(.3,.08,.2,1)'},
-    {offset:.9, opacity:1,transform:`translate(${dx}px,${dy}px) scale(.5) rotate(-5deg)`,easing:'ease-out'},
-    {offset:1,  opacity:0,transform:`translate(${dx}px,${dy}px) scale(.3) rotate(0deg)`},
+    {offset:0,  opacity:0,transform:'translate(0,0) scale(1) rotate(0deg)',easing:'cubic-bezier(.12,.8,.25,1)'},
+    {offset:.22,opacity:1,transform:`translate(${dx*.03}px,-50px) scale(.92) rotate(-9deg)`,easing:'cubic-bezier(.45,0,.55,1)'},
+    {offset:.34,          transform:`translate(${dx*.12}px,-44px) scale(.86) rotate(-3deg)`,easing:'cubic-bezier(.4,0,.8,.7)'},
+    {offset:.86,opacity:1},
+    {offset:1,  opacity:0,transform:`translate(${dx}px,${dy}px) scale(.34) rotate(5deg)`},
   ],{duration:dur,delay,easing:'linear',fill:'both'}).finished.then(()=>fly.remove(),()=>fly.remove());
 }
 // Top-align the ₹ with the cap height of the number, using real glyph metrics.
