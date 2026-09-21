@@ -70,7 +70,6 @@ setInterval(() => {
 
 /* ---------- card ---------- */
 let animToken = 0;
-const seenAmt = new Set();
 const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 function renderCard(){
   const v = state.sel, b = bonusFor(v), total = v + b, g = isGold();
@@ -80,9 +79,8 @@ function renderCard(){
   const n = $('cardN'), fly = $('addfly'), token = ++animToken;
   const setN = x => { state.shown = x; n.textContent = fmt(x); alignCardRupee(); };
   const setFly = cls => { fly.className = 'addfly ' + cls; };
-  // The reveal plays once per amount. ₹50 earns no bonus, so it has nothing to add on.
-  if (reduced() || b === 0 || seenAmt.has(v)) { seenAmt.add(v); setN(total); setFly(''); return; }
-  seenAmt.add(v);
+  // The reveal replays on every pick. ₹50 earns no bonus, so it has nothing to add on.
+  if (reduced() || b === 0) { setN(total); setFly(''); return; }
   // Two beats, as in the first prototype: count to the recharge amount, hold while the
   // bonus chip appears, then count the bonus on top as the chip merges in.
   const from = state.shown ?? v;
@@ -206,7 +204,9 @@ addEventListener('resize', layoutOpen);
 
 /* ---------- selection ---------- */
 function select(v){
-  if (v === state.sel) return;
+  // Re-tapping the amount already selected replays the reveal, so rewind the counter to
+  // the recharge amount and let the bonus beat run again from there.
+  if (v === state.sel) state.shown = v;
   state.sel = v;
   renderTiles(); renderBand(); renderCard(); renderSummary();
   const c = $('card');                          // replay the Z tip on every pick
