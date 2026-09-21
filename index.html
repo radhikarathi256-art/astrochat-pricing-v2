@@ -664,9 +664,14 @@ body.mobile .phone{border-radius:0;box-shadow:none}
   22%{opacity:.85}
   60%{opacity:.85}
   100%{transform:translateY(104px);opacity:0}}
-.am .banner.gold,.am .band3.gold{background:#FEF0C7}
+/* Lightened from #FEF0C7 (Sep 21). Its luminance already matched the green band's #E2FBEE almost
+   exactly — what made it read as the heavier of the two was CHROMA: #FEF0C7 spans 55 between its
+   max and min channel against the green's 25. So the blue channel is lifted and the other two are
+   left alone, which drops the spread to 32 without touching how light it is. Keep that in mind
+   before "lightening" this further by raising all three channels — that washes it out instead. */
+.am .banner.gold,.am .band3.gold{background:#FEF5DE}
 /* Wallet flow only: the gold strip fades out to white, rightward, matching the green band. */
-.am .banner.gold.gfade,.am .band3.gold.gfade{background:linear-gradient(90deg,#FEF0C7 0%,#FDF3D7 40%,#FEFBF0 78%,#fff 100%)}
+.am .banner.gold.gfade,.am .band3.gold.gfade{background:linear-gradient(90deg,#FEF5DE 0%,#FEF8E9 40%,#FFFCF6 78%,#fff 100%)}
 .am .gold .bandin .l1{color:#93370D;font-weight:700}
 .am .gold .bandin .l2{color:#B54708}
 .am .gold .bandin img{filter:hue-rotate(255deg) saturate(1.2)}
