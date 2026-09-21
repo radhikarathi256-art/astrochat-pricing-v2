@@ -64,7 +64,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#EDEDEA;color:#1D2939;-
 .notch.r{right:-11px;clip-path:inset(0 50% 0 0)}
 .rcpt .notch{top:138px}
 .stack{position:absolute;left:32px;right:32px;top:137px;height:220px;z-index:3}
-.skus{position:absolute;left:0;right:0;top:20px;height:96px;display:flex;gap:12px;align-items:flex-start}
+.skus{position:absolute;left:0;right:0;top:28px;height:96px;display:flex;gap:12px;align-items:flex-start}
 .see{position:absolute;left:0;right:0;top:164px;display:flex;justify-content:center}
 .seebtn{display:flex;align-items:center;border:.8px dashed #D0D5DD;border-radius:12px;padding:4px 4px 4px 12px}
 .seebtn p{font-size:12px;line-height:18px;color:#667085;white-space:nowrap}
