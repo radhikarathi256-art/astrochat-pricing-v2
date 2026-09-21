@@ -30,15 +30,20 @@ const coinClock = performance.now();
 function coinfall(){
   const el = ((performance.now() - coinClock) / 1000) % COIN_CYCLE;
   return `<span class="coinfall" aria-hidden="true">${
-    COIN_OFF.map(o => `<i class="coin" style="animation-delay:${(o - el).toFixed(2)}s"><i class="s"><b class="f"></b><b class="k"></b></i></i>`).join('')}</span>`;
+    COIN_OFF.map(o => `<i class="coin" style="animation-delay:${(o - el).toFixed(2)}s"></i>`).join('')}</span>`;
 }
-function tile([v,b]){
+// The badge sweep is the same replay trap as the coins: renderTiles() rebuilds the markup on
+// every tap, so the phase is carried on a negative delay off the shared clock. The per-tile
+// offset keeps the three badges from flashing in unison.
+const SWEEP_CYCLE = 3.2;
+const sweepDelay = i => (-(((performance.now() - coinClock) / 1000 + i * .38) % SWEEP_CYCLE)).toFixed(2);
+function tile([v,b], i){
   const on = v === state.sel;
   return `<div class="col">
     <div class="opt" role="radio" tabindex="0" aria-checked="${on}" aria-label="₹${fmt(v)}${b?`, ₹${fmt(b)} extra`:''}" data-amt="${v}">
       <div class="box ${on?'on':''}">${v===COIN_AMT?coinfall():''}<div class="sku"><span class="r">₹</span><span class="n">${v}</span></div>${on?CORNER:''}</div>
     </div>
-    ${b?`<div class="chip"><p>+ ₹${fmt(b)}</p></div>`:''}
+    ${b?`<div class="chip" style="--sd:${sweepDelay(i)}s"><p>+₹<b>${fmt(b)}</b> more</p></div>`:''}
   </div>`;
 }
 // Collapsed row: ₹50 · ₹100 · ₹250, or the picked amount in the third slot when it's bigger.
@@ -119,7 +124,7 @@ function flyBonus(b, delay, dur){
   const sr = screen.getBoundingClientRect(), a = chip.getBoundingClientRect(), z = amt.getBoundingClientRect();
   const fly = document.createElement('div');
   fly.className = 'flyer';
-  fly.innerHTML = `<p>+ ₹${fmt(b)}</p>`;
+  fly.innerHTML = `<p>+₹${fmt(b)} more</p>`;   // must match the chip it flies out of
   Object.assign(fly.style, {
     left: (a.left - sr.left) + 'px', top: (a.top - sr.top) + 'px',
     width: a.width + 'px', height: a.height + 'px',

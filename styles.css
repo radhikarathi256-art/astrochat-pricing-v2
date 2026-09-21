@@ -106,66 +106,46 @@ body{font-family:'Inter',system-ui,sans-serif;background:#EDEDEA;color:#1D2939;-
 .corner svg .tick{transform-origin:25.8px 13.2px;animation:tickIn .35s .08s cubic-bezier(.2,.9,.3,1.3) both}
 @keyframes cornerIn{from{transform:translate(8px,-8px);opacity:0}to{transform:none;opacity:1}}
 @keyframes tickIn{from{transform:rotate(-90deg) scale(.4);opacity:0}to{transform:none;opacity:1}}
-.chip{position:relative;z-index:4;margin-top:-11px;display:flex;align-items:center;justify-content:center;padding:4px 8px;border-radius:12px;
+/* max-width caps the pill at the tile it hangs off, so a long bonus ellipsises instead of
+   spilling past the SKU. Vertical padding holds the pill at its old 26px height so the
+   spacing below it — and therefore the card height — is unaffected by the smaller type. */
+.chip{position:relative;z-index:4;margin-top:-11px;max-width:100%;display:flex;align-items:center;justify-content:center;padding:6px 8px;border-radius:12px;
   background:linear-gradient(-0.5deg,#027A48 10.094%,#039855 23.329%,#039855 83.868%,rgba(3,152,85,0) 109.72%)}
-.chip p{font-size:14px;font-weight:600;line-height:18px;letter-spacing:-.14px;color:#fff;white-space:nowrap}
+.chip p{position:relative;z-index:1;font-size:10px;font-weight:600;line-height:14px;letter-spacing:-.1px;color:#fff;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.chip p b{font-weight:800}
+/* Light sweep, collapsed row only — nine of these at once in the open grid reads as noise.
+   Clipped by the pill's own overflow, and sits under the text via .chip p's z-index. */
+#skus .chip{overflow:hidden}
+#skus .chip::after{content:"";position:absolute;top:0;bottom:0;left:0;width:38%;pointer-events:none;
+  background:linear-gradient(100deg,rgba(255,255,255,0),rgba(255,255,255,.4) 50%,rgba(255,255,255,0));
+  animation:chipSweep 3.2s linear infinite;animation-delay:var(--sd,0s)}
+@keyframes chipSweep{0%{transform:translateX(-120%)}42%,100%{transform:translateX(300%)}}
 
-/* Coin shower — only on the hero amount, and only while it is NOT the picked one.
-   No mask on this layer on purpose: iOS rasterises a masked, overflow-hidden layer once and
-   then stops repainting the animation inside it, which is why the shower ran a single pass
-   on the phone. The coins sit at the edges instead, so nothing covers the price anyway. */
-.coinfall{position:absolute;inset:0;border-radius:13px;overflow:hidden;pointer-events:none;z-index:0;opacity:1;transition:opacity .2s ease;
-  perspective:90px;perspective-origin:50% 40%}
+/* Coin shower — copied verbatim from v1 (astrochat-wallet-prototype), her call on Sep 21
+   after comparing the two side by side. Flat single-element discs, 2D tumble, fade in and
+   out, and v1's edge mask.
+   KNOWN, ACCEPTED: iOS rasterises a masked overflow:hidden layer once and then stops
+   repainting the animation inside it, so the shower can run a single pass on the phone
+   rather than looping. v2 had dropped the mask for exactly this reason. Check on device
+   before shipping; if it stops looping, the mask-image lines below are the cause. */
+.coinfall{position:absolute;inset:0;border-radius:14px;overflow:hidden;pointer-events:none;z-index:0;opacity:1;transition:opacity .2s ease;
+  -webkit-mask-image:linear-gradient(90deg,#000 0 21%,transparent 24% 76%,#000 79% 100%);
+  mask-image:linear-gradient(90deg,#000 0 21%,transparent 24% 76%,#000 79% 100%)}
 .box.on .coinfall{opacity:0}
-/* Two nested loops: the wrapper falls and drifts, the coin spins on its own clock. Keeping
-   them separate means neither has to be restarted to stay in sync. */
-.coinfall .coin{position:absolute;top:0;animation:coinFall 3.6s linear infinite;
-  transform-style:preserve-3d;will-change:transform,opacity}
-/* The reason earlier versions still read flat: one element has no thickness, so however it
-   is shaded it stays a painted circle. This is a real minted coin — two lit faces held
-   apart by a darker rim disc. Turn it edge-on and the faces disappear, leaving only the
-   rim, so the eye gets actual depth rather than a gradient pretending to be depth. */
-.coinfall .coin .s{position:relative;display:block;width:100%;height:100%;border-radius:50%;
-  transform-style:preserve-3d;animation:coinSpin 1.5s linear infinite;
-  background:linear-gradient(180deg,#F0AE1B 0%,#B9760A 46%,#7A4B02 100%);
-  box-shadow:0 2px 5px rgba(96,56,0,.45)}
-.coinfall .coin b{position:absolute;inset:0;border-radius:50%;backface-visibility:hidden;
-  background:
-    radial-gradient(circle at 34% 26%,#FFFEF4 0%,#FFE9A3 16%,rgba(255,233,163,0) 46%),
-    radial-gradient(circle at 74% 86%,#FFD86B 0%,rgba(255,216,107,0) 40%),
-    linear-gradient(140deg,#F7C53A 0%,#E3A016 34%,#B37206 62%,#E8AE22 82%,#8A5602 100%);
-  box-shadow:inset 0 0 0 1.5px #8A5602,inset 0 0 0 2.5px rgba(255,243,196,.9),
-    inset 2px 3px 4px rgba(90,54,1,.5),inset -2px -2px 3px rgba(255,248,214,.5)}
-/* the faces sit either side of the rim — that 3.2px gap IS the coin's thickness */
-.coinfall .coin .f{transform:translateZ(1.6px)}
-.coinfall .coin .k{transform:rotateY(180deg) translateZ(1.6px)}
-/* the raised inner table, proud of the rim */
-.coinfall .coin b::before{content:"";position:absolute;inset:2.5px;border-radius:50%;
-  background:linear-gradient(140deg,#FFE07A 0%,#D9950F 48%,#F2C247 100%);
-  box-shadow:inset 1px 1.5px 2px rgba(86,52,1,.5),inset -1px -1px 1.5px rgba(255,250,222,.65),
-    0 0 0 .5px rgba(90,54,1,.35)}
-/* a hard specular that sweeps as the face turns into the light */
-.coinfall .coin b::after{content:"";position:absolute;inset:0;border-radius:50%;
-  background:linear-gradient(118deg,transparent 30%,rgba(255,255,255,.95) 46%,rgba(255,255,255,.2) 54%,transparent 64%);
-  animation:coinGlint 1.5s linear infinite}
-.coinfall .coin:nth-child(1){left:1%;width:19px;height:19px}
-.coinfall .coin:nth-child(2){left:79%;width:19px;height:19px}
-.coinfall .coin:nth-child(3){left:4%;width:16px;height:16px}
-.coinfall .coin:nth-child(4){left:82%;width:16px;height:16px}
-.coinfall .coin:nth-child(5){left:0;width:17px;height:17px}
-/* stagger the spin so five coins never turn in lockstep */
-.coinfall .coin:nth-child(even) .s,.coinfall .coin:nth-child(even) b::after{animation-duration:2.1s}
-.coinfall .coin:nth-child(3) .s,.coinfall .coin:nth-child(3) b::after{animation-duration:1.8s}
+.coinfall .coin{position:absolute;top:0;opacity:0;border-radius:50%;animation:coinFall 3.6s linear infinite;
+  background:radial-gradient(circle at 35% 30%,#ffe58a,#f5b82e 55%,#c98a10 100%);
+  box-shadow:inset 0 -1px 0 rgba(120,70,0,.35),0 1px 2px rgba(120,70,0,.25)}
+.coinfall .coin::after{content:"";position:absolute;inset:22%;border-radius:50%;border:1px solid rgba(255,240,180,.7)}
+.coinfall .coin:nth-child(1){left:2%;width:15px;height:15px}
+.coinfall .coin:nth-child(2){left:81%;width:15px;height:15px}
+.coinfall .coin:nth-child(3){left:4%;width:13px;height:13px}
+.coinfall .coin:nth-child(4){left:83%;width:13px;height:13px}
+.coinfall .coin:nth-child(5){left:1%;width:14px;height:14px}
 @keyframes coinFall{
-  0%{transform:translate3d(0,-24px,0) rotate(0);opacity:0}
-  12%{opacity:1}
-  80%{opacity:1}
-  100%{transform:translate3d(4px,80px,0) rotate(190deg);opacity:0}}
-/* tumbles on two axes, so it never settles into a flat front-on disc */
-@keyframes coinSpin{
-  0%{transform:rotateY(0) rotateX(26deg)}
-  100%{transform:rotateY(360deg) rotateX(26deg)}}
-@keyframes coinGlint{0%{opacity:.12}28%{opacity:.95}52%{opacity:.08}100%{opacity:.12}}
+  0%{transform:translateY(-22px) rotate(0);opacity:0}
+  12%{opacity:.95}
+  80%{opacity:.95}
+  100%{transform:translateY(82px) rotate(220deg);opacity:0}}
 
 /* ---------- open list ---------- */
 /* Collapsed and expanded are two stacked layers. They cross-dissolve, but each also
@@ -242,7 +222,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#EDEDEA;color:#1D2939;-
 .flyer{position:absolute;z-index:8;pointer-events:none;display:flex;align-items:center;justify-content:center;
   border-radius:12px;box-shadow:0 10px 20px rgba(4,60,38,.32);will-change:transform,opacity;
   background:linear-gradient(-0.5deg,#027A48 10%,#039855 23%,#039855 84%,#04A85D 110%)}
-.flyer p{font-size:14px;font-weight:600;line-height:18px;letter-spacing:-.14px;color:#fff;white-space:nowrap}
+.flyer p{font-size:10px;font-weight:600;line-height:14px;letter-spacing:-.1px;color:#fff;white-space:nowrap}
 /* the amount takes the hit as the chip lands */
 .ac .amt.absorb{animation:absorb .52s cubic-bezier(.24,1.6,.36,1)}
 @keyframes absorb{0%{transform:none}24%{transform:scale(1.14)}58%{transform:scale(.975)}100%{transform:none}}
