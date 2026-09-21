@@ -688,23 +688,19 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    unchanged from mid-flight. */
 .am .bandin .arrows img{position:absolute;width:24px;height:32px;opacity:.85}
 /* SCATTERED, not one line — Sep 21, she reversed the earlier "one line" call with a reference
-   image: three arrows sitting high-left, low-middle, mid-right.
-   The horizontal offsets are unchanged from the animated version. The left-hand arrow was at
-   right:58px, which put it 20px clear of its neighbour and spread the three into an evenly-pitched
-   row — a line, which is exactly what the cluster was meant to stop being. At 48px it overlaps the
-   middle arrow ~6px; with 28px of vertical separation that overlap reads as depth, not collision,
-   and the group finally reads as a triangle. Keep this one TIGHTER than the 28px gap between the
-   other two.
+   image. TWO arrows now: the high-left one was dropped, leaving low-middle and mid-right.
+   These two offsets are UNCHANGED from the three-arrow version, deliberately — the pair keeps the
+   28px horizontal pitch and the vertical stagger that made the group read as depth rather than a
+   row. Restoring the third means re-adding `right:48px;top:1px` as the new nth-child(1) and
+   pushing these two down a slot, not renumbering them in place.
    The tops were -46/-18/-34, i.e. parked above the strip waiting to fall. Now that nothing moves
-   they are shifted down a uniform +47px into 1/29/13, which keeps the relative constellation
-   exactly as it was and centres it in the 62px of band that actually shows (the cluster spans
-   1-61px against the strip's 62).
+   they are shifted down a uniform +47px, which keeps the relative constellation exactly as it was
+   and sits it in the 62px of band that actually shows.
    NO per-arrow rotation: a -9/+5/-4deg spread was tried and read as crooked rather than scattered,
    because the asset already carries its own diagonal and tilting it further just looks misaligned.
-   The offsets alone do the scattering. Keep all three upright. */
-.am .bandin .arrows img:nth-child(1){right:48px;top:1px}
-.am .bandin .arrows img:nth-child(2){right:30px;top:29px}
-.am .bandin .arrows img:nth-child(3){right:2px;top:13px}
+   The offsets alone do the scattering. Keep both upright. */
+.am .bandin .arrows img:nth-child(1){right:30px;top:29px}
+.am .bandin .arrows img:nth-child(2){right:2px;top:13px}
 /* Lightened from #FEF0C7 (Sep 21). Its luminance already matched the green band's #E2FBEE almost
    exactly — what made it read as the heavier of the two was CHROMA: #FEF0C7 spans 55 between its
    max and min channel against the green's 25. So the blue channel is lifted and the other two are
@@ -1409,8 +1405,15 @@ function bandInner(){
   // would be claiming a condition the pricing does not actually impose.
   if(ab.mode==='coupon') return `<div class="bandin"><img class="tag" src="${I['discount-dark']}" alt=""><div><p class="l1">ASTRO 50 expires in <span class="cdpill"><b class="cd">${cdText()}</b></span></p><p class="l2">Get <b>₹${COUPON_FLAT}</b> extra on your first recharge</p></div></div><img class="bn-stars" src="${I.stars}" alt="" aria-hidden="true"><span class="sweep"></span>`;
   if(ab.cflow&&flowRate){
-    const arrows=`<span class="arrows" aria-hidden="true">${`<img src="${I['arrow-drift']}" alt="">`.repeat(3)}</span>`;
-    return `<div class="bandin"><img class="tag" src="${I.discount}" alt=""><div><p class="l1">Connect with ${flowAstro} at</p><p class="rate"><b>₹${effRate(ab.sel)}/min</b><s>₹${flowRate}/min</s></p></div>${arrows}</div>`;
+    // Lead with the SAVING, not the price. The bonus is what makes this rate possible, so the band
+    // now names the gap it creates; the two rates stay underneath as the proof.
+    // `cheaper` is derived from the same effRate() the rate line prints — never hardcode it, or the
+    // headline and the figures below it can disagree. It is always >0 wherever this band is
+    // reachable: the only zero-bonus tile is ₹50, and at ₹50 shortOfMin() has already taken over
+    // with the red "not enough to connect" strip.
+    const arrows=`<span class="arrows" aria-hidden="true">${`<img src="${I['arrow-drift']}" alt="">`.repeat(2)}</span>`;
+    const cheaper=flowRate-effRate(ab.sel);
+    return `<div class="bandin"><img class="tag" src="${I.discount}" alt=""><div><p class="l1">${flowAstro} is <b>₹${cheaper}/min cheaper</b> with bonus</p><p class="rate"><b>₹${effRate(ab.sel)}/min</b><s>₹${flowRate}/min</s></p></div>${arrows}</div>`;
   }
   // The wallet flow gets this copy at EVERY amount, not just ₹50 — the green "Yay, you're earning
   // ₹X extra" band it used to show above ₹50 is gone. Keeping the words and the colour fixed is
