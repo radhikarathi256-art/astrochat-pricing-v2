@@ -112,7 +112,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:#EDEDEA;color:#1D2939;-
 .chip{position:relative;z-index:4;margin-top:-11px;max-width:100%;display:flex;align-items:center;justify-content:center;padding:6px 8px;border-radius:12px;
   background:linear-gradient(-0.5deg,#027A48 10.094%,#039855 23.329%,#039855 83.868%,rgba(3,152,85,0) 109.72%)}
 .chip p{position:relative;z-index:1;font-size:10px;font-weight:600;line-height:14px;letter-spacing:-.1px;color:#fff;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
-.chip p b{font-weight:800}
+/* The figure carries the hierarchy; "more" and the ₹ stay at 10px/600. line-height is pinned
+   so the bigger inline type can't grow the line box and push the pill taller — the card's
+   spacing below is measured off this pill's height. */
+.chip p b,.flyer p b{font-size:12px;font-weight:800;line-height:14px}
 /* Light sweep, collapsed row only — nine of these at once in the open grid reads as noise.
    Clipped by the pill's own overflow, and sits under the text via .chip p's z-index. */
 #skus .chip{overflow:hidden}
@@ -121,31 +124,14 @@ body{font-family:'Inter',system-ui,sans-serif;background:#EDEDEA;color:#1D2939;-
   animation:chipSweep 3.2s linear infinite;animation-delay:var(--sd,0s)}
 @keyframes chipSweep{0%{transform:translateX(-120%)}42%,100%{transform:translateX(300%)}}
 
-/* Coin shower — copied verbatim from v1 (astrochat-wallet-prototype), her call on Sep 21
-   after comparing the two side by side. Flat single-element discs, 2D tumble, fade in and
-   out, and v1's edge mask.
-   KNOWN, ACCEPTED: iOS rasterises a masked overflow:hidden layer once and then stops
-   repainting the animation inside it, so the shower can run a single pass on the phone
-   rather than looping. v2 had dropped the mask for exactly this reason. Check on device
-   before shipping; if it stops looping, the mask-image lines below are the cause. */
-.coinfall{position:absolute;inset:0;border-radius:14px;overflow:hidden;pointer-events:none;z-index:0;opacity:1;transition:opacity .2s ease;
-  -webkit-mask-image:linear-gradient(90deg,#000 0 21%,transparent 24% 76%,#000 79% 100%);
-  mask-image:linear-gradient(90deg,#000 0 21%,transparent 24% 76%,#000 79% 100%)}
+/* Coin shower — a dotLottie drawn onto one canvas, created once in app.js and re-parented
+   into whichever ₹250 tile is on screen.
+   NO mask here, deliberately: v1's edge mask cannot come along. iOS rasterises a masked
+   overflow:hidden layer once and never repaints it, which merely stuttered the old CSS coins
+   but would freeze a canvas on frame one. */
+.coinfall{position:absolute;inset:0;border-radius:14px;overflow:hidden;pointer-events:none;z-index:0;opacity:1;transition:opacity .2s ease}
 .box.on .coinfall{opacity:0}
-.coinfall .coin{position:absolute;top:0;opacity:0;border-radius:50%;animation:coinFall 3.6s linear infinite;
-  background:radial-gradient(circle at 35% 30%,#ffe58a,#f5b82e 55%,#c98a10 100%);
-  box-shadow:inset 0 -1px 0 rgba(120,70,0,.35),0 1px 2px rgba(120,70,0,.25)}
-.coinfall .coin::after{content:"";position:absolute;inset:22%;border-radius:50%;border:1px solid rgba(255,240,180,.7)}
-.coinfall .coin:nth-child(1){left:2%;width:15px;height:15px}
-.coinfall .coin:nth-child(2){left:81%;width:15px;height:15px}
-.coinfall .coin:nth-child(3){left:4%;width:13px;height:13px}
-.coinfall .coin:nth-child(4){left:83%;width:13px;height:13px}
-.coinfall .coin:nth-child(5){left:1%;width:14px;height:14px}
-@keyframes coinFall{
-  0%{transform:translateY(-22px) rotate(0);opacity:0}
-  12%{opacity:.95}
-  80%{opacity:.95}
-  100%{transform:translateY(82px) rotate(220deg);opacity:0}}
+.coinfall canvas{display:block;width:100%;height:100%}
 
 /* ---------- open list ---------- */
 /* Collapsed and expanded are two stacked layers. They cross-dissolve, but each also

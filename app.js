@@ -23,14 +23,54 @@ const isGold = () => bonusFor(state.sel) === 0;
 
 /* ---------- tiles ---------- */
 const CORNER = `<span class="corner"><svg width="38" height="38" viewBox="0 0 38 38"><path d="M0 0H38V38Z" fill="#EF6939"/><path class="tick" d="M30.2 11.1L24.3 16.2L21.4 13.5L21.9 12.8L24.3 14.9L29.7 10.3L30.2 11.1Z" fill="#fff"/></svg></span>`;
-// Coin shower on the hero amount. Tiles are re-rendered from scratch on every tap, so each
-// coin gets a negative delay off a single clock — otherwise the shower restarts on each tap.
-const COIN_AMT = 250, COIN_CYCLE = 3.6, COIN_OFF = [0, .9, 1.8, 2.7, 3.3];
-const coinClock = performance.now();
-function coinfall(){
-  const el = ((performance.now() - coinClock) / 1000) % COIN_CYCLE;
-  return `<span class="coinfall" aria-hidden="true">${
-    COIN_OFF.map(o => `<i class="coin" style="animation-delay:${(o - el).toFixed(2)}s"></i>`).join('')}</span>`;
+// Coin shower on the hero amount — a dotLottie on a canvas.
+// renderTiles() rebuilds both tile containers from scratch on every tap, so the player is
+// created ONCE and its canvas is re-parented into whichever tile needs it. Building a new
+// DotLottie per render would restart the loop and re-initialise its renderer on each tap.
+const COIN_AMT = 250;
+const COIN_LOTTIE = 'https://lottie.host/d4101c1e-c028-466c-8475-e9788ec23564/sUf0MvXJiL.lottie';
+const coinClock = performance.now();   // still drives the badge sweep
+let coinWrap = null, coinCanvas = null, coinPlayer = null;
+
+function initCoins(){
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  coinWrap = document.createElement('span');
+  coinWrap.className = 'coinfall';
+  coinWrap.setAttribute('aria-hidden', 'true');
+  coinCanvas = document.createElement('canvas');
+  coinWrap.appendChild(coinCanvas);
+  mountCoins();
+  // Loaded from a CDN because there is no build step here. If it fails (offline, blocked),
+  // the tile simply shows no coins rather than breaking the page.
+  import('https://esm.sh/@lottiefiles/dotlottie-web@0.40.2').then(({ DotLottie }) => {
+    coinPlayer = new DotLottie({
+      canvas: coinCanvas, src: COIN_LOTTIE, autoplay: true, loop: true,
+      layout: { fit: 'cover', align: [.5, .5] },
+    });
+    sizeCoins();
+  }).catch(() => {});
+}
+// The canvas backing store has to track its CSS box or the coins render soft.
+function sizeCoins(){
+  if (!coinWrap || !coinCanvas) return;
+  const r = coinWrap.getBoundingClientRect();
+  if (!r.width || !r.height) return;
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  const w = Math.round(r.width * dpr), h = Math.round(r.height * dpr);
+  if (coinCanvas.width === w && coinCanvas.height === h) return;
+  coinCanvas.width = w; coinCanvas.height = h;
+  coinPlayer?.resize();
+}
+// Moves the one canvas into the visible container's hero tile. Paused while that tile is the
+// selected one, since the CSS hides the layer there anyway.
+function mountCoins(){
+  if (!coinWrap) return;
+  const root = state.open ? $('grid') : $('skus');
+  const box = root.querySelector(`[data-amt="${COIN_AMT}"]`)?.closest('.opt')?.querySelector('.box');
+  if (!box) { coinPlayer?.pause(); return; }
+  if (coinWrap.parentElement !== box) box.insertBefore(coinWrap, box.firstChild);
+  sizeCoins();
+  if (state.sel === COIN_AMT) coinPlayer?.pause(); else coinPlayer?.play();
 }
 // The badge sweep is the same replay trap as the coins: renderTiles() rebuilds the markup on
 // every tap, so the phase is carried on a negative delay off the shared clock. The per-tile
@@ -41,7 +81,7 @@ function tile([v,b], i){
   const on = v === state.sel;
   return `<div class="col">
     <div class="opt" role="radio" tabindex="0" aria-checked="${on}" aria-label="₹${fmt(v)}${b?`, ₹${fmt(b)} extra`:''}" data-amt="${v}">
-      <div class="box ${on?'on':''}">${v===COIN_AMT?coinfall():''}<div class="sku"><span class="r">₹</span><span class="n">${v}</span></div>${on?CORNER:''}</div>
+      <div class="box ${on?'on':''}"><div class="sku"><span class="r">₹</span><span class="n">${v}</span></div>${on?CORNER:''}</div>
     </div>
     ${b?`<div class="chip" style="--sd:${sweepDelay(i)}s"><p>+₹<b>${fmt(b)}</b> more</p></div>`:''}
   </div>`;
@@ -55,6 +95,7 @@ function collapsedSet(){
 function renderTiles(){
   $('skus').innerHTML = collapsedSet().map(tile).join('');
   $('grid').innerHTML = AMTS.map(tile).join('');
+  mountCoins();   // innerHTML detached the canvas — put it back
 }
 
 /* ---------- band (timer; turns gold on ₹50) ---------- */
@@ -124,7 +165,7 @@ function flyBonus(b, delay, dur){
   const sr = screen.getBoundingClientRect(), a = chip.getBoundingClientRect(), z = amt.getBoundingClientRect();
   const fly = document.createElement('div');
   fly.className = 'flyer';
-  fly.innerHTML = `<p>+₹${fmt(b)} more</p>`;   // must match the chip it flies out of
+  fly.innerHTML = `<p>+₹<b>${fmt(b)}</b> more</p>`;   // must match the chip it flies out of
   Object.assign(fly.style, {
     left: (a.left - sr.left) + 'px', top: (a.top - sr.top) + 'px',
     width: a.width + 'px', height: a.height + 'px',
@@ -244,7 +285,7 @@ function setOpen(on){
   else renderTiles();
 }
 $('openscroll').addEventListener('scroll', () => { layoutOpen(); flashBar(); }, { passive:true });
-addEventListener('resize', () => { layoutOpen(); drawRcpt(); });
+addEventListener('resize', () => { layoutOpen(); drawRcpt(); sizeCoins(); });
 
 /* ---------- receipt outline ---------- */
 // Drawn at 1:1 so the dashes and the 1px stroke stay undistorted.
@@ -306,5 +347,5 @@ screen.addEventListener('keydown', e => {
 });
 
 /* ---------- boot ---------- */
-renderTiles(); renderBand(); renderCard(false); renderSummary(); renderPM(); drawRcpt();
+renderTiles(); renderBand(); renderCard(false); renderSummary(); renderPM(); drawRcpt(); initCoins();
 if (document.fonts) document.fonts.ready.then(() => { alignCardRupee(); layoutOpen(); });
