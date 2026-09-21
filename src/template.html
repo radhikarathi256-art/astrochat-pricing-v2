@@ -583,10 +583,11 @@ body.mobile .phone{border-radius:0;box-shadow:none}
   86%{transform:rotate(4deg)}
   92%{transform:rotate(-2deg)}}
 /* ONE type size across every band variant — her call. They had drifted to 11.5 / 13 / 15px
-   depending on which flow you were in, which read as five different components; the smallest
-   of those, 11.5/16, is now the size for all of them and the only thing that varies is weight.
+   depending on which flow you were in, which read as five different components. 12/16 is now
+   the size for all of them and WEIGHT is the only thing that carries emphasis: the figures
+   (₹ amounts, rates, the countdown) sit at 800 against 400-600 copy.
    Anything added here must NOT reintroduce a font-size. */
-.am .bandin .l1,.am .bandin .l2,.am .bandin .rate{font-size:11.5px;line-height:16px}
+.am .bandin .l1,.am .bandin .l2,.am .bandin .rate{font-size:12px;line-height:16px}
 .am .bandin .l1{font-weight:600;letter-spacing:.1px}
 .am .bandin .l1 b{font-weight:800;font-variant-numeric:tabular-nums}
 /* Wallet flow only: regular copy with the figure as the single bold thing on the line. */
