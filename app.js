@@ -128,13 +128,13 @@ function flyBonus(b, delay, dur){
   const dx = (z.left + z.width / 2) - (a.left + a.width / 2);
   const dy = (z.top + z.height / 2) - (a.top + a.height / 2);
   // Each leg carries its own easing and the iteration stays linear, so the chip lands on
-  // the last frame of the flight rather than racing ahead of it: pop off the tile, arc
-  // down, settle into the card, squash into the number.
+  // the last frame of the flight rather than racing ahead of it: lift well clear of the
+  // tile and hang at the top, then drop onto the card and squash into the number.
   fly.animate([
-    { offset: 0,   opacity: 0, transform: 'translate(0,0) scale(.9) rotate(0deg)', easing: 'cubic-bezier(.2,.9,.3,1.35)' },
-    { offset: .16, opacity: 1, transform: `translate(${dx * .04}px,-22px) scale(1.26) rotate(-9deg)`, easing: 'cubic-bezier(.55,0,.8,.25)' },
-    { offset: .58, opacity: 1, transform: `translate(${dx * .42}px,${dy * .34}px) scale(1.12) rotate(9deg)`, easing: 'cubic-bezier(.25,.1,.2,1)' },
-    { offset: .88, opacity: 1, transform: `translate(${dx}px,${dy}px) scale(.85) rotate(-5deg)`, easing: 'ease-out' },
+    { offset: 0,   opacity: 0, transform: 'translate(0,0) scale(.9) rotate(0deg)', easing: 'cubic-bezier(.12,.75,.3,1)' },
+    { offset: .28, opacity: 1, transform: `translate(${dx * .03}px,-50px) scale(1.3) rotate(-9deg)`, easing: 'cubic-bezier(.5,0,.92,.4)' },
+    { offset: .66, opacity: 1, transform: `translate(${dx * .45}px,${dy * .36}px) scale(1.14) rotate(8deg)`, easing: 'cubic-bezier(.3,.08,.2,1)' },
+    { offset: .9,  opacity: 1, transform: `translate(${dx}px,${dy}px) scale(.85) rotate(-5deg)`, easing: 'ease-out' },
     { offset: 1,   opacity: 0, transform: `translate(${dx}px,${dy}px) scale(.3) rotate(0deg)` },
   ], { duration: dur, delay, easing: 'linear', fill: 'both' })
     .finished.then(() => fly.remove(), () => fly.remove());
