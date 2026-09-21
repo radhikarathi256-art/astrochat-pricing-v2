@@ -1,32 +1,26 @@
-# AstroChat · Bonus highlight prototype
+# AstroChat · Add Money prototype
 
-Interactive HTML prototype of the Add Money to Wallet flow.
+Static HTML/CSS/JS. There's no build step.
 
-## Open it
-Double-click **index.html**. It's one self-contained file (all icons embedded), so it works offline and can be committed or hosted as-is.
-- On a phone: full-screen, with a small **Flows ▾** button at the top to jump between paths.
-- On desktop: framed phone with a toolbar of paths.
-- Deep links: `index.html?start=home | wallet | listingChat | again | history` (add `&view=mobile` to force the phone layout).
+## Deploy to Vercel
+- **Dashboard:** go to vercel.com/new, choose "Deploy" with this folder dragged in, or push it to a GitHub repo and import it. Framework preset: **Other**. Leave the build command empty and the output directory as `.`.
+- **CLI:** run `npm i -g vercel`, then `vercel` from inside this folder. Use `vercel --prod` for the production URL.
 
-## Flows
-| Path | Route |
-|---|---|
-| Wallet | Home → wallet chip → Add Money |
-| Insufficient balance | Home → astrologer card → Chat → low balance → Add Money (red warning rises when ₹50 is picked) |
-| Coupon | Recent chats → Chat Again → low balance → coupon popup → Add Money (ASTRO50 banner) |
-| ₹5/min offer | Recent chats → View History → Continue Chat → low balance → offer popup → Add Money |
+## Run locally
+`npx serve .` or `python3 -m http.server`, then open http://localhost:3000 (or :8000).
 
-## Edit it
-- All markup, styles and logic: `src/template.html`
-- Icons (exported from Figma): `src/icons/`
-- Optional photos (avatars, promo banner, low-wallet art): drop `vippsana`, `hemali`, `chat`, `promo`, `lowWallet` images into `src/photos/`; the stand-ins are replaced automatically.
-- Rebuild after editing: `python3 src/build.py` (Python 3, no packages needed) → regenerates `index.html`.
+## What works
+- **₹50, ₹100 and ₹250 amounts:** the selected tile gets the orange corner and tick.
+  - **₹50:** gold card ("NO BONUS ON ₹50"), gold "You're missing out on a bonus" band, and the arc without the green line.
+  - **₹100 and up:** green card showing amount + bonus, with a count-up. The band shows the live timer "Recharge offer valid for m:ss".
+- **See More Options:** all 10 amounts in a scrollable list that runs under the card, with a mint or gold fade behind it and a custom scroll indicator. The indicator appears on open and while scrolling. See Less Options returns to 3 amounts; if a bigger amount was picked, it takes the third slot.
+- **Payment Summary:** tap to expand the original breakdown:
+  - Recharge amount, GST 18%, Total payable
+  - "To be added in your wallet"
+  - Recharge Added, Extra bonus, Total
 
-## Key numbers and rules (in `src/template.html`)
-- `BASE` — amounts and standard bonuses; `COUPON` — coupon bonuses
-- `ASTRO_RATE` — astrologer rate used for the per-minute price (₹25/min)
-- GST 18% on the recharge amount; wallet credit = amount + bonus
-- Count-up animation plays once per amount per visit; ₹50 (no bonus) never animates
-- Rays show at ₹250 and above
+  The card and arc stay mounted on top.
+- **Pay with:** opens the original Select Payment Method sheet.
 
-Fonts load from Google Fonts (Inter); without internet the page falls back to the system font.
+## Edit amounts and bonuses
+In `app.js`, change `AMTS = [[amount, bonus], ...]`. GST is `GST_RATE` (18% of the amount only).

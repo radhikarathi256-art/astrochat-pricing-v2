@@ -1,0 +1,259 @@
+/* AstroChat · Add Money — static prototype
+   Layout is built on a 360 × 768 Android frame; on phones it fills the viewport. */
+
+*{box-sizing:border-box;margin:0;padding:0}
+img{display:block}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;text-align:inherit;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:'Inter',system-ui,sans-serif;background:#EDEDEA;color:#1D2939;-webkit-font-smoothing:antialiased}
+
+.stage{min-height:100%;display:flex;align-items:center;justify-content:center;padding:24px 0}
+.screen{position:relative;width:360px;height:768px;background:#fff;overflow:hidden;overflow:clip;border-radius:8px;
+  box-shadow:0 1px 3px rgba(16,24,40,.09),0 12px 30px rgba(16,24,40,.12)}
+@media (max-width:480px){
+  .stage{padding:0;align-items:stretch}
+  .screen{width:100%;height:100dvh;min-height:640px;border-radius:0;box-shadow:none}
+}
+
+/* ---------- header ---------- */
+.nav{position:absolute;left:0;right:0;top:0;border-bottom:1px solid #D0D5DD;background:#fff;z-index:5}
+.enbar{height:39px;display:flex;align-items:center;justify-content:space-between;padding:10px 18px}
+.enbar .t{font-family:'Roboto',sans-serif;font-weight:500;font-size:14px;line-height:20px;letter-spacing:.14px}
+.enbar .ic{display:flex;align-items:center;gap:6px}
+.topnav{height:64px;display:flex;align-items:center;padding:8px 16px}
+.topnav .ttl{flex:1;display:flex;align-items:center;gap:2px}
+.topnav .back{width:24px;height:24px;display:flex;align-items:center;justify-content:center;padding:4px}
+.topnav h1{font-size:18px;font-weight:600;line-height:28px;color:#344054}
+.badge{display:flex;align-items:center;gap:8px;background:#F2F4F7;border-radius:20px;padding:4px 8px}
+.badge p{font-size:12px;font-weight:600;line-height:18px;color:#475467}
+
+.chev{width:22px;height:22px;transition:transform .4s cubic-bezier(.2,.8,.2,1)}
+.chev.up{transform:rotate(180deg)}
+
+/* ---------- offer band ---------- */
+.banner,.band3{color:#fff;background:#039855;border-radius:16px 16px 0 0;transition:background-color .3s}
+.banner{position:absolute;top:114px;left:18px;right:23px;z-index:1}
+.bandin{display:flex;gap:10px;align-items:flex-start;padding:12px 16px 42px}
+.bandin img{width:26px;height:26px;flex-shrink:0;transition:filter .3s}
+.bandin .l1{font-size:13px;line-height:18px;font-weight:600;letter-spacing:.1px}
+.bandin .l1 b{font-weight:800;font-variant-numeric:tabular-nums}
+.bandin .l2{margin-top:1px;font-size:11.5px;line-height:16px;font-weight:500;color:#A6F4C5}
+.banner.gold,.band3.gold{background:#FEF0C7}
+.gold .bandin .l1{color:#93370D;font-weight:700}
+.gold .bandin .l2{color:#B54708}
+.gold .bandin img{filter:hue-rotate(255deg) saturate(1.2)}
+
+/* ---------- collapsed receipt ---------- */
+.collapsed{position:absolute;inset:0;transition:opacity .3s cubic-bezier(.2,.8,.2,1),transform .36s cubic-bezier(.2,.8,.2,1)}
+.rcpt{position:absolute;left:16px;right:16px;top:176px;height:223px;background:#fff;border:1px dashed #C6CCD5;border-radius:24px;z-index:2}
+.notch{position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;border:1px dashed #D0D5DD}
+.notch.l{left:-11px;clip-path:inset(0 0 0 50%)}
+.notch.r{right:-11px;clip-path:inset(0 50% 0 0)}
+.rcpt .notch{top:138px}
+.stack{position:absolute;left:32px;right:32px;top:176px;height:220px;z-index:3}
+.skus{position:absolute;left:0;right:0;top:28px;height:96px;display:flex;gap:12px;align-items:flex-start}
+.see{position:absolute;left:0;right:0;top:164px;display:flex;justify-content:center}
+.seebtn{display:flex;align-items:center;border:.8px dashed #D0D5DD;border-radius:12px;padding:4px 4px 4px 12px}
+.seebtn p{font-size:12px;line-height:18px;color:#667085;white-space:nowrap}
+
+/* ---------- amount tile ---------- */
+.col{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center}
+.opt{position:relative;width:100%;cursor:pointer}
+.box{position:relative;width:100%;aspect-ratio:1/0.81;background:#fff;border:1px solid #D0D5DD;border-radius:14px;
+  box-shadow:0 4px 8px rgba(0,0,0,.04);display:flex;align-items:center;justify-content:center;overflow:hidden;
+  transition:border-color .2s,box-shadow .2s,transform .12s}
+.opt:active .box{transform:scale(.97)}
+.box.on{border:1.5px solid #EF6939;box-shadow:0 6px 14px rgba(239,105,57,.14)}
+.sku{position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:center;color:#344054}
+.sku .r{font-size:12px;font-weight:700;line-height:21px;height:18px;width:6px}
+.sku .n{font-size:20px;font-weight:600;line-height:26px;white-space:nowrap}
+.corner{position:absolute;top:0;right:0;width:38px;height:38px;overflow:hidden;border-top-right-radius:13px;line-height:0;
+  animation:cornerIn .28s cubic-bezier(.2,.9,.3,1.2)}
+.corner svg .tick{transform-origin:25.8px 13.2px;animation:tickIn .35s .08s cubic-bezier(.2,.9,.3,1.3) both}
+@keyframes cornerIn{from{transform:translate(8px,-8px);opacity:0}to{transform:none;opacity:1}}
+@keyframes tickIn{from{transform:rotate(-90deg) scale(.4);opacity:0}to{transform:none;opacity:1}}
+.chip{position:relative;z-index:4;margin-top:-11px;display:flex;align-items:center;justify-content:center;padding:4px 8px;border-radius:12px;
+  background:linear-gradient(-0.5deg,#027A48 10.094%,#039855 23.329%,#039855 83.868%,rgba(3,152,85,0) 109.72%)}
+.chip p{font-size:14px;font-weight:600;line-height:18px;letter-spacing:-.14px;color:#fff;white-space:nowrap}
+
+/* coin shower — only on the hero amount, and only while it is NOT the picked one.
+   The side mask keeps the coins at the edges so they never sit behind the price. */
+.coinfall{position:absolute;inset:0;border-radius:13px;overflow:hidden;pointer-events:none;z-index:0;opacity:1;transition:opacity .2s ease;
+  -webkit-mask-image:linear-gradient(90deg,#000 0 21%,transparent 24% 76%,#000 79% 100%);
+  mask-image:linear-gradient(90deg,#000 0 21%,transparent 24% 76%,#000 79% 100%)}
+.box.on .coinfall{opacity:0}
+.coinfall .coin{position:absolute;top:0;border-radius:50%;opacity:0;animation:coinFall 3.6s linear infinite;
+  background:radial-gradient(circle at 35% 30%,#ffe58a,#f5b82e 55%,#c98a10 100%);
+  box-shadow:inset 0 -1px 0 rgba(120,70,0,.35),0 1px 2px rgba(120,70,0,.25)}
+.coinfall .coin:nth-child(1){left:2%;width:15px;height:15px}
+.coinfall .coin:nth-child(2){left:81%;width:15px;height:15px}
+.coinfall .coin:nth-child(3){left:4%;width:13px;height:13px}
+.coinfall .coin:nth-child(4){left:83%;width:13px;height:13px}
+.coinfall .coin:nth-child(5){left:1%;width:14px;height:14px}
+@keyframes coinFall{0%{transform:translateY(-22px) rotate(0);opacity:0}12%{opacity:.95}80%{opacity:.95}100%{transform:translateY(78px) rotate(220deg);opacity:0}}
+
+/* ---------- open list ---------- */
+/* Collapsed and expanded are two stacked layers. They cross-dissolve, but each also
+   moves a little in the direction of travel so the swap reads as one motion. */
+.openwrap{position:absolute;left:0;right:0;top:104px;bottom:0;z-index:1;visibility:hidden;opacity:0;transform:translateY(14px);
+  transition:opacity .3s cubic-bezier(.2,.8,.2,1),transform .36s cubic-bezier(.2,.8,.2,1),visibility 0s .36s}
+.screen.open .openwrap{visibility:visible;opacity:1;transform:none;
+  transition:opacity .3s cubic-bezier(.2,.8,.2,1),transform .36s cubic-bezier(.2,.8,.2,1)}
+.screen.open .collapsed{opacity:0;transform:translateY(-10px) scale(.985);pointer-events:none}
+/* staggered reveal, gated to the open/close transition so re-rendering tiles on every
+   tap cannot replay it */
+@keyframes gridIn{from{opacity:0;transform:translateY(12px) scale(.96)}to{opacity:1;transform:none}}
+.screen.open.switching .grid .col{animation:gridIn .34s cubic-bezier(.2,.9,.3,1) both}
+.screen.open.switching .grid .col:nth-child(n+4){animation-delay:.05s}
+.screen.open.switching .grid .col:nth-child(n+7){animation-delay:.1s}
+.screen.open.switching .grid .col:nth-child(n+10){animation-delay:.15s}
+.openscroll{position:absolute;inset:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;padding:10px 16px 0}
+.openscroll::-webkit-scrollbar{display:none}
+.band3{position:relative;z-index:1;margin:0 4px}
+.rc{position:relative;z-index:2;background:#fff;border:1px dashed #D0D5DD;border-radius:24px;margin-top:-30px;padding:18px 16px}
+.rc .notch{bottom:58px}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.seerow{display:flex;justify-content:center;margin-top:30px}
+.scrollpad{height:0}
+/* scroll indicator */
+.sbar{position:absolute;right:5px;top:14px;width:3px;border-radius:3px;background:rgba(16,24,40,.07);z-index:4;opacity:0;transition:opacity .35s}
+.sbar.on{opacity:1}
+.sbar i{position:absolute;left:0;top:0;width:3px;border-radius:3px;background:rgba(16,24,40,.34)}
+
+/* ---------- bottom block ---------- */
+.payblock{position:absolute;left:0;right:0;bottom:0;z-index:3}
+.cardwrap{position:relative;display:flex;flex-direction:column;align-items:center;perspective:900px}
+.cardwrap>.ac{margin-bottom:-22px;z-index:1}
+.arc{position:relative;z-index:2;display:block;width:100%;height:24px}
+.arc #arcLine{transition:opacity .3s}
+.payblock.gold #arcLine{opacity:0}
+/* overlay that fades the amounts behind the card; it ends exactly at Payment Summary */
+.veilfade{position:absolute;left:0;right:0;bottom:0;height:250px;z-index:0;pointer-events:none;opacity:0;transition:opacity .3s;
+  background:linear-gradient(180deg,rgba(236,253,243,0) 0%,rgba(230,250,239,.30) 34%,rgba(214,244,229,.72) 66%,rgba(201,239,220,.94) 86%,#C6EEDB 100%)}
+.payblock.gold .veilfade{background:linear-gradient(180deg,rgba(251,246,234,0) 0%,rgba(250,243,228,.34) 34%,rgba(246,236,210,.74) 66%,rgba(242,230,200,.94) 86%,#F1E4C4 100%)}
+.screen.open .veilfade,.screen.sumopen .veilfade{opacity:1}
+.screen.sumopen .veilfade{height:420px}
+
+/* wallet card (B3) */
+.ac{position:relative;width:268px;height:108px;border-radius:18px;padding:1.5px;display:flex;align-items:center;justify-content:center;isolation:isolate;
+  box-shadow:0 6px 14px rgba(4,60,38,.16);transition:background .35s,box-shadow .35s}
+.ac.green{background:linear-gradient(150deg,rgba(255,255,255,.95),rgba(2,122,72,.45) 48%,rgba(255,255,255,.85))}
+.ac.gold{background:linear-gradient(150deg,rgba(255,255,255,.95),rgba(150,110,25,.42) 48%,rgba(255,255,255,.88));box-shadow:0 6px 14px rgba(80,58,10,.14)}
+.ac .skin{position:absolute;inset:1.5px;border-radius:16.5px;overflow:hidden;z-index:0}
+.ac.green .skin{background:radial-gradient(60% 90% at 50% 56%,rgba(255,255,255,.62),rgba(255,255,255,0) 60%),
+  conic-gradient(from 190deg at 50% 56%,#CDEEDE,#86D3B2 30deg,#E6F8EF 60deg,#8AD4B4 96deg,#D9F3E8 132deg,#7FCDAC 168deg,#E6F8EF 204deg,#84D1B0 244deg,#D2F0E2 288deg,#8FD7B7 324deg,#CDEEDE 360deg)}
+.ac.gold .skin{background:radial-gradient(60% 90% at 50% 56%,rgba(255,255,255,.68),rgba(255,255,255,0) 60%),
+  conic-gradient(from 190deg at 50% 56%,#F3E8CC,#DEC88F 30deg,#FBF4E4 60deg,#E2CE99 96deg,#F7EEDA 132deg,#D8C085 168deg,#FBF4E4 204deg,#E0CB94 244deg,#F4EBD3 288deg,#E6D3A2 324deg,#F3E8CC 360deg)}
+.ac .spin{position:absolute;left:50%;top:56%;width:520px;height:520px;transform:translate(-50%,-50%);opacity:.085;
+  background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.9) 0deg .5deg,rgba(255,255,255,0) .5deg 1.7deg),
+             repeating-conic-gradient(from 0deg,rgba(0,70,44,.6) 0deg .3deg,rgba(0,70,44,0) .3deg 1.7deg)}
+.ac.gold .spin{background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.9) 0deg .5deg,rgba(255,255,255,0) .5deg 1.7deg),
+             repeating-conic-gradient(from 0deg,rgba(96,70,10,.55) 0deg .3deg,rgba(96,70,10,0) .3deg 1.7deg)}
+/* picking an amount tips the card in Z and settles it back */
+.ac.tilt{animation:cardTilt .62s cubic-bezier(.22,.9,.28,1)}
+@keyframes cardTilt{
+  0%{transform:none}
+  30%{transform:rotateX(9deg) rotateY(-6deg) scale(1.03)}
+  62%{transform:rotateX(-3.5deg) rotateY(2.5deg) scale(1.006)}
+  100%{transform:none}}
+.ac .c{position:relative;z-index:2;text-align:center;padding:2px 18px 0}
+.ac .e{font-size:11.5px;font-weight:700;letter-spacing:.7px}
+.ac.green .e{color:#05603A}
+.ac.gold .e{color:#8A6A24}
+.ac .amt{position:relative;width:fit-content;margin:6px auto 0;display:flex;align-items:flex-start;justify-content:center;gap:3px}
+/* the "+₹50" that appears once the recharge amount has counted up, then merges into it */
+.addfly{position:absolute;left:calc(100% + 8px);top:1px;white-space:nowrap;font-size:12px;line-height:16px;font-weight:700;
+  color:#027A48;background:#ECFDF3;border:1px solid #ABEFC6;border-radius:8px;padding:1px 6px;
+  opacity:0;transform:translateY(8px) scale(.75);pointer-events:none;
+  transition:opacity .25s ease-out,transform .4s cubic-bezier(.2,1.4,.4,1)}
+.addfly.in{opacity:1;transform:none}
+.addfly.merge{opacity:0;transform:translateX(-26px) scale(.5);
+  transition:opacity .5s ease-in,transform .6s cubic-bezier(.5,0,.8,.4)}
+.ac.green .amt{color:#04301F}
+.ac.gold .amt{color:#3F3417}
+.ac .amt .r{font-size:17px;font-weight:700;line-height:1}
+.ac .amt .n{font-size:31px;font-weight:800;letter-spacing:-1px;line-height:1;font-variant-numeric:tabular-nums}
+.ac .t{margin-top:7px;font-size:12.5px;font-weight:500;color:#1D2939}
+
+/* payment summary (original expanded content) */
+.summary{position:relative;z-index:2;background:#fff;padding:0 18px}
+.sumrow{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 0 14px}
+.sumrow .sl{font-size:13.5px;line-height:18px;color:#667085;white-space:nowrap}
+.sumrow .sr{display:flex;align-items:center;gap:4px;font-size:13.5px;line-height:18px;color:#667085;white-space:nowrap}
+.ps-details{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s cubic-bezier(.2,.8,.2,1)}
+.screen.sumopen .ps-details{grid-template-rows:1fr}
+.ps-inner{min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:20px;opacity:0;transition:opacity .2s ease}
+.screen.sumopen .ps-inner{opacity:1;transition:opacity .3s ease .1s;padding-bottom:6px}
+.ps-sec{display:flex;flex-direction:column;gap:12px}
+.ps-dash{display:block;height:1px;background:repeating-linear-gradient(90deg,var(--dc) 0 2px,transparent 2px 4px)}
+.ps-calc{display:flex;flex-direction:column;gap:2px;padding:0 12px}
+.ps-line{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ps-line span:first-child{font-size:12px;line-height:18px;color:#667085}
+.ps-line span:last-child{font-size:14px;line-height:20px}
+.ps-line.r1 span:last-child{color:#344054}
+.ps-line.r2 span:last-child{color:#1D2939}
+.ps-line.tot{padding:0 12px}
+.ps-line.tot span{font-size:14px!important;line-height:20px;font-weight:600;color:#1D2939!important}
+.ps-credit{display:flex;flex-direction:column}
+.ps-box{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #027A48;border-radius:12px;padding:8px 12px;color:#027A48}
+.ps-box span{font-size:12px;line-height:18px;font-weight:600}
+.ps-box b{font-size:14px;line-height:24px;font-weight:700}
+.ps-box.plain{border-color:#D0D5DD;color:#475467}
+.ps-panel{margin:-12px 0 0;padding:24px 12px 12px;border-radius:0 0 12px 12px;background:#F2F4F7;display:flex;flex-direction:column;gap:8px}
+.ps-line.p1 span:last-child{color:#1D2939}
+.ps-line.pg span{color:#027A48!important}
+.ps-line.pt span:first-child{color:#475467}
+.ps-line.pt span:last-child{color:#344054}
+
+/* pay row */
+.cta{position:relative;z-index:2;background:#fff;display:flex;align-items:center;gap:16px;padding:8px 16px 24px}
+.payw{flex:1;display:flex;flex-direction:column;gap:2px;align-items:flex-start}
+.payw .l{display:flex;align-items:center;font-size:12px;line-height:18px;color:#475467}
+.pp{display:flex;gap:4px;align-items:center;font-weight:700;font-size:16px;color:#344054}
+.pp .logo{width:20px;height:20px;border:.6px solid #D0D5DD;border-radius:4px;padding:1px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.pp .logo img{width:100%;height:100%;object-fit:cover;border-radius:3px}
+.pp .logo.raw{border:0;padding:0}
+.paybtn{width:200px;background:#EF6939;border-radius:12px;padding:12px 18px;text-align:center;color:#fff;white-space:nowrap;
+  box-shadow:0 2px 6px rgba(239,105,57,.28);transition:transform .1s}
+.paybtn:active{transform:scale(.98)}
+.paybtn b{font-size:16px;line-height:24px;font-weight:600;font-variant-numeric:tabular-nums}
+.paybtn small{font-size:12px;line-height:18px;opacity:.95}
+
+/* ---------- payment method sheet ---------- */
+.pm-overlay{position:absolute;inset:0;z-index:40;pointer-events:none}
+.pm-overlay.open{pointer-events:auto}
+.pm-scrim{position:absolute;inset:0;background:rgba(16,24,40,.55);opacity:0;transition:opacity .3s ease}
+.pm-overlay.open .pm-scrim{opacity:1}
+.pm-sheet{position:absolute;left:0;right:0;bottom:0;height:min(732px,calc(100% - 68px));border-radius:32px 32px 0 0;overflow-x:hidden;overflow-y:auto;scrollbar-width:none;
+  background:linear-gradient(to bottom,#FBF1E2 4.211%,#fff 21.842%);box-shadow:0 -5px 10px rgba(0,0,0,.25);padding-bottom:128px;
+  transform:translateY(100%);transition:transform .38s cubic-bezier(.2,.9,.3,1)}
+.pm-sheet::-webkit-scrollbar{display:none}
+.pm-overlay.open .pm-sheet{transform:none}
+.pm-head{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:32px;padding:24px 16px 12px;background:#FCF4E9;border-radius:32px 32px 0 0}
+.pm-head p{flex:1;font-size:16px;font-weight:700;color:#344054}
+.pm-x{width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:12px}
+.pm-x img{width:16px;height:16px}
+.pm-body{display:flex;flex-direction:column;gap:32px;padding:8px 16px 0}
+.pm-group{display:flex;flex-direction:column;gap:8px}
+.pm-gt{font-size:14px;font-weight:500;color:#344054}
+.pm-card{background:#fff;border:1px solid #EAECF0;border-radius:18px;padding:12px;display:flex;flex-direction:column}
+.pm-list{gap:16px}
+.pm-row{display:flex;align-items:center;justify-content:space-between;cursor:pointer;width:100%}
+.pm-name{display:flex;align-items:center;gap:10px;font-size:14px;line-height:20px;font-weight:500;color:#475467}
+.pm-logo{width:32px;height:32px;padding:2px;border-radius:8px;display:flex;align-items:center;justify-content:center;border:1px solid #D0D5DD;flex-shrink:0;background:#fff;overflow:hidden}
+.pm-logo img{width:100%;height:100%;object-fit:cover}
+.pm-logo.raw{border:0;padding:0}
+.pm-radio{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:100px}
+.pm-radio img{width:20px;height:20px}
+.pm-row:active .pm-radio{background:rgba(239,105,57,.08)}
+.pm-div{display:block;height:1px;background:repeating-linear-gradient(90deg,#EAECF0 0 2px,transparent 2px 4px)}
+.pm-cta{position:absolute;left:0;right:0;bottom:0;z-index:3;background:#fff;border:1px solid #D0D5DD;border-bottom:0;border-radius:12px 12px 0 0;box-shadow:0 -6px 20px rgba(0,0,0,.2);
+  transform:translateY(110%);transition:transform .38s cubic-bezier(.2,.9,.3,1) .04s}
+.pm-overlay.open .pm-cta{transform:none}
+.pm-credit{padding:12px 12px 8px;text-align:center;font-size:14px;line-height:20px;color:#344054}
+.pm-credit .g{font-weight:700;color:#027A48}
+.pm-credit .w{color:#475467}
+.pm-btnwrap{padding:8px 16px 24px}
+.pm-btnwrap .paybtn{width:100%;display:block}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
