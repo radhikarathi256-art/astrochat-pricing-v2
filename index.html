@@ -582,9 +582,16 @@ body.mobile .phone{border-radius:0;box-shadow:none}
   80%{transform:rotate(-7deg) scale(1.04)}
   86%{transform:rotate(4deg)}
   92%{transform:rotate(-2deg)}}
-.am .bandin .l1{font-size:13px;line-height:18px;font-weight:600;letter-spacing:.1px}
+/* ONE type size across every band variant — her call. They had drifted to 11.5 / 13 / 15px
+   depending on which flow you were in, which read as five different components; the smallest
+   of those, 11.5/16, is now the size for all of them and the only thing that varies is weight.
+   Anything added here must NOT reintroduce a font-size. */
+.am .bandin .l1,.am .bandin .l2,.am .bandin .rate{font-size:11.5px;line-height:16px}
+.am .bandin .l1{font-weight:600;letter-spacing:.1px}
 .am .bandin .l1 b{font-weight:800;font-variant-numeric:tabular-nums}
-.am .bandin .l2{margin-top:1px;font-size:11.5px;line-height:16px;font-weight:500;color:#027A48}
+/* Wallet flow only: regular copy with the figure as the single bold thing on the line. */
+.am .bandin .l1.reg{font-weight:400}
+.am .bandin .l2{margin-top:1px;font-weight:500;color:#027A48}
 /* Astrologer flow, tile too small to connect: same left-to-right fade, red. */
 .am .banner.red,.am .band3.red{color:#912018;background:linear-gradient(90deg,#FCE7E7 0%,#FDEEEE 40%,#FEF8F8 78%,#fff 100%)}
 .am .red .bandin .l1,.am .red .bandin .l2{color:#912018}
@@ -607,7 +614,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .am .bn-promo .bandin .l1{color:#fff;font-weight:600}
 .am .bn-promo .bandin .rate,.am .bn-promo .bandin .rate b{color:#fff}
 .am .bn-promo .bandin .rate s{opacity:.8}
-.am .bn-promo .bandin .rate .off{margin-left:6px;font-size:13px}
+.am .bn-promo .bandin .rate .off{margin-left:6px}
 /* she asked for the tag to tick over faster on this flow only */
 .am .bn-promo .bandin .tag{animation-duration:1.5s}
 /* Chat Again → ASTRO50. Deepest green of the set, carrying v1's sparkle field AND v1's light
@@ -617,8 +624,8 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .am .banner.coupon,.am .band3.coupon{color:#fff;background:linear-gradient(90deg,#065F41 0%,#066B44 88%,#3FA87A 94%,#AFE0CA 97.5%,#fff 100%)}
 .am .coupon .bandin{z-index:1}
 .am .coupon .bandin .l1,.am .coupon .bandin .l2{color:#fff}
-.am .coupon .bandin .l2{font-size:13px;line-height:18px;font-weight:600}
-.am .coupon .bandin .l2 b{font-size:15px;font-weight:800;letter-spacing:.3px;font-variant-numeric:tabular-nums}
+.am .coupon .bandin .l2{font-weight:600}
+.am .coupon .bandin .l2 b{font-weight:800;letter-spacing:.3px;font-variant-numeric:tabular-nums}
 /* v1's exact treatment: anchored to the RIGHT, small (236px of a 342px band, not full-bleed),
    masked out towards the text so it never crowds the copy. Stretching it full-width was the
    version she called "horrible".
@@ -631,8 +638,8 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .am .coupon .sweep{z-index:0;height:62px;bottom:auto}
 /* Astrologer flow, tile big enough: the rate the recharge buys, with the list price struck out.
    Both sit on ONE line, so this variant has no .l2 — the band is a single-line strip. */
-.am .bandin .rate{margin-top:1px;font-size:11.5px;line-height:16px;font-weight:500;color:#027A48}
-.am .bandin .rate b{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;color:#05603A}
+.am .bandin .rate{margin-top:1px;font-weight:500;color:#027A48}
+.am .bandin .rate b{font-weight:800;font-variant-numeric:tabular-nums;color:#05603A}
 .am .bandin .rate s{margin-left:6px;opacity:.65;font-weight:600}
 /* The arrows drift down the right-hand end, behind the text, to sell "the rate falls".
    Clipped to the 62px that actually shows (see .bandin) so they never leak out behind the card;
@@ -1317,7 +1324,9 @@ function bandInner(){
   if(isGold()) return `<div class="bandin"><img src="${I.warning}" alt=""><div><p class="l1">You're missing out on a bonus</p><p class="l2">Pick ₹100 or more to get extra</p></div></div>`;
   // Wallet flow: one wrapping line naming the bonus the tapped amount actually earns, and NO
   // countdown — so this band also reads as untimed and takes the lighter green (see renderBand).
-  if(ab.wflow) return `<div class="bandin"><img class="tag" src="${I.discount}" alt=""><div><p class="l1">Yay! you are earning <b>₹${bonusFor(ab.sel)} extra</b>, recharge more to earn more</p></div></div>`;
+  // Regular weight throughout except the figure itself — the ₹ and the number are the only bold
+  // thing on this line, so "extra" sits outside the <b>.
+  if(ab.wflow) return `<div class="bandin"><img class="tag" src="${I.discount}" alt=""><div><p class="l1 reg">Yay! you are earning <b>₹${bonusFor(ab.sel)}</b> extra, recharge more to earn more</p></div></div>`;
   const cd = `<b class="cd">${cdText()}</b>`;
   const l1 = ab.mode==='coupon' ? `<b>ASTRO50</b> applied${ab.noTimer?'':` · ends in ${cd}`}`
            : ab.mode==='offer'  ? `First 5 mins chat at <b>₹5/min</b> · <b>80% Off</b>`
@@ -1417,8 +1426,8 @@ function flyBonus(b,delay,dur){
   //     this replaced was still only 21% down the screen with 80% of the flight gone.
   fly.animate([
     {offset:0,  opacity:0,transform:'translate(0,0) scale(1) rotate(0deg)',easing:'cubic-bezier(.12,.8,.25,1)'},
-    {offset:.22,opacity:1,transform:`translate(${dx*.03}px,-50px) scale(.92) rotate(-9deg)`,easing:'cubic-bezier(.45,0,.55,1)'},
-    {offset:.34,          transform:`translate(${dx*.12}px,-44px) scale(.86) rotate(-3deg)`,easing:'cubic-bezier(.4,0,.8,.7)'},
+    {offset:.22,opacity:1,transform:`translate(${dx*.03}px,-76px) scale(.92) rotate(-9deg)`,easing:'cubic-bezier(.45,0,.55,1)'},
+    {offset:.34,          transform:`translate(${dx*.12}px,-68px) scale(.86) rotate(-3deg)`,easing:'cubic-bezier(.4,0,.8,.7)'},
     {offset:.86,opacity:1},
     {offset:1,  opacity:0,transform:`translate(${dx}px,${dy}px) scale(.34) rotate(5deg)`},
   ],{duration:dur,delay,easing:'linear',fill:'both'}).finished.then(()=>fly.remove(),()=>fly.remove());
