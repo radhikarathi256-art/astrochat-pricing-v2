@@ -75,7 +75,8 @@ function renderCard(animate = true){
   const v = state.sel, b = bonusFor(v), total = v + b, g = isGold();
   $('card').className = 'ac ' + (g ? 'gold' : 'green');
   $('payblock').classList.toggle('gold', g);
-  $('cardE').textContent = g ? 'NO BONUS ON ₹50' : 'CONGRATULATIONS!';
+  // ₹50 earns no bonus; drop the eyebrow rather than calling that out
+  $('cardE').hidden = g;
   const n = $('cardN'), token = ++animToken;
   const setN = x => { state.shown = x; n.textContent = fmt(x); alignCardRupee(); };
   // The reveal replays on every pick, but not on first paint. ₹50 earns no bonus, so it
