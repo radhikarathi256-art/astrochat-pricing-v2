@@ -81,8 +81,13 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 /* light sweep: kept for the ASTRO50 coupon banner (both its timer and non-timer states).
    The offer banner deliberately has none. */
 .sweep{position:absolute;inset:0;pointer-events:none;overflow:hidden;border-radius:inherit}
-.sweep::after{content:"";position:absolute;top:-20%;bottom:-20%;width:40%;left:-60%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-18deg);animation:sweep 2.8s ease-in-out infinite}
-@keyframes sweep{0%,40%{left:-60%}80%,100%{left:130%}}
+/* Travels on TRANSFORM, not `left`. Animating `left` re-runs layout and repaints the whole band
+   on every frame, which is what made it stutter; a transform stays on the compositor.
+   The 475% is not arbitrary: the old travel was left -60% → 130%, i.e. 190% of the BAND's width,
+   and translateX percentages resolve against the ELEMENT's own width, which is 40% of the band —
+   190/40 = 475. Change `width:40%` and this number has to be rederived. */
+.sweep::after{content:"";position:absolute;top:-20%;bottom:-20%;width:40%;left:-60%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);will-change:transform;animation:sweep 2.8s ease-in-out infinite}
+@keyframes sweep{0%,40%{transform:translateX(0) skewX(-18deg)}80%,100%{transform:translateX(475%) skewX(-18deg)}}
 
 /* wallet chip: single row, gift <-> add alternating (option I) */
 .wchip{height:32px;display:flex;align-items:center;gap:6px;padding:0 3px 0 9px;background:#fff;border:1px solid var(--g300);border-radius:16px;white-space:nowrap;font-size:13px;font-weight:600;color:var(--g800);transition:transform .12s}
