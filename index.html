@@ -660,42 +660,35 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .am .bandin .rate{margin-top:1px;font-weight:500;color:#027A48}
 .am .bandin .rate b{font-weight:800;font-variant-numeric:tabular-nums;color:#05603A}
 .am .bandin .rate s{margin-left:6px;opacity:.65;font-weight:600}
-/* The arrows drift down the right-hand end, behind the text, to sell "the rate falls".
+/* The arrows sit at the right-hand end, behind the text, to sell "the rate falls".
    Clipped to the 62px that actually shows (see .bandin) so they never leak out behind the card;
    they are decoration only, hence aria-hidden in the markup and no pointer events here. */
 .am .bandin .arrows{position:absolute;right:0;top:0;width:96px;height:62px;overflow:hidden;pointer-events:none}
-/* ONE pass, not a loop — her call. `both` holds the last frame, which is opacity:0, so they fall
-   once and stay gone. renderBand() rewrites the band's innerHTML on every tile tap, so the
-   animation restarts by itself on each SKU pick; nothing has to retrigger it. */
-.am .bandin .arrows img{position:absolute;width:24px;height:32px;opacity:0;animation:arrowDrift 1.15s cubic-bezier(.3,0,.5,1) both}
+/* STATIC — Sep 21, she asked for the drift to go. They used to fall once per SKU pick on an
+   `arrowDrift` keyframe whose last frame was opacity:0, so simply deleting the animation would
+   have left them invisible: the opacity now has to be declared outright, and the `top` offsets
+   below had to come back inside the strip (they were negative, i.e. parked above it ready to
+   fall in). .85 is the opacity the drift held while it was on screen, so the resting look is
+   unchanged from mid-flight. */
+.am .bandin .arrows img{position:absolute;width:24px;height:32px;opacity:.85}
 /* SCATTERED, not one line — Sep 21, she reversed the earlier "one line" call with a reference
    image: three arrows sitting high-left, low-middle, mid-right.
-   The staggered attempt that was rejected before (tops -34/-12/-20, delays 0/.10/.05) failed
-   because it staggered the DELAYS too, which pulled the three apart in flight until there was no
-   shape left to read. The delay stays identical for all three here, so the constellation is rigid
-   and the whole cluster falls as one piece — only the start offsets and a few degrees of tilt
-   differ. Do not reintroduce per-arrow delays; the offsets alone already make them enter in a
-   cascade, because each one clears the strip's top edge at a different moment.
-   Spans 14-94px inside the 96px container and starts wholly above it (lowest top is -18, arrows
-   are 32 tall), so nothing pops in at the edge.
+   The horizontal offsets are unchanged from the animated version. The left-hand arrow was at
+   right:58px, which put it 20px clear of its neighbour and spread the three into an evenly-pitched
+   row — a line, which is exactly what the cluster was meant to stop being. At 48px it overlaps the
+   middle arrow ~6px; with 28px of vertical separation that overlap reads as depth, not collision,
+   and the group finally reads as a triangle. Keep this one TIGHTER than the 28px gap between the
+   other two.
+   The tops were -46/-18/-34, i.e. parked above the strip waiting to fall. Now that nothing moves
+   they are shifted down a uniform +47px into 1/29/13, which keeps the relative constellation
+   exactly as it was and centres it in the 62px of band that actually shows (the cluster spans
+   1-61px against the strip's 62).
    NO per-arrow rotation: a -9/+5/-4deg spread was tried and read as crooked rather than scattered,
    because the asset already carries its own diagonal and tilting it further just looks misaligned.
    The offsets alone do the scattering. Keep all three upright. */
-.am .bandin .arrows img{animation-delay:0s}
-/* Sep 21: the left-hand arrow was at right:58px, which put it 20px clear of its neighbour and
-   spread the three into an evenly-pitched row — a line, which is exactly what the cluster was
-   meant to stop being. Pulling it in to 48px overlaps it ~6px with the middle arrow. They sit
-   28px apart vertically so the overlap reads as depth, not collision, and the group finally
-   reads as a triangle. Keep this one TIGHTER than the 28px gap between the other two. */
-.am .bandin .arrows img:nth-child(1){right:48px;top:-46px}
-.am .bandin .arrows img:nth-child(2){right:30px;top:-18px}
-.am .bandin .arrows img:nth-child(3){right:2px;top:-34px}
-/* starts above the strip and leaves below it, so the fade in/out never shows a hard edge */
-@keyframes arrowDrift{
-  0%{transform:translateY(0);opacity:0}
-  22%{opacity:.85}
-  60%{opacity:.85}
-  100%{transform:translateY(104px);opacity:0}}
+.am .bandin .arrows img:nth-child(1){right:48px;top:1px}
+.am .bandin .arrows img:nth-child(2){right:30px;top:29px}
+.am .bandin .arrows img:nth-child(3){right:2px;top:13px}
 /* Lightened from #FEF0C7 (Sep 21). Its luminance already matched the green band's #E2FBEE almost
    exactly — what made it read as the heavier of the two was CHROMA: #FEF0C7 spans 55 between its
    max and min channel against the green's 25. So the blue channel is lifted and the other two are
@@ -847,9 +840,14 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    time you look at it the bar has already gone and the list reads as un-scrollable. `.am.open`
    holds it up for as long as the sheet is open; .on is kept only so a scroll still re-asserts it
    if something else has faded it. */
-.am .sbar{position:absolute;right:5px;top:14px;width:3px;border-radius:3px;background:rgba(16,24,40,.07);z-index:4;opacity:0;transition:opacity .35s}
+/* Lightened Sep 21. The thumb was .34 alpha, which on white is a mid grey — too assertive for an
+   indicator that is only there to say "there is more below". .18 keeps it legible against the
+   white card while dropping out of the reading order. The track goes .07 -> .05 with it, so the
+   thumb still sits about 3.5x the track and the contrast BETWEEN them is preserved; lightening
+   only the thumb would have flattened the two into one grey line. */
+.am .sbar{position:absolute;right:5px;top:14px;width:3px;border-radius:3px;background:rgba(16,24,40,.05);z-index:4;opacity:0;transition:opacity .35s}
 .am .sbar.on,.screen.am.open .sbar{opacity:1}
-.am .sbar i{position:absolute;left:0;top:0;width:3px;border-radius:3px;background:rgba(16,24,40,.34)}
+.am .sbar i{position:absolute;left:0;top:0;width:3px;border-radius:3px;background:rgba(16,24,40,.18)}
 
 /* ---------- bottom block ---------- */
 .am .payblock{position:absolute;left:0;right:0;bottom:0;z-index:3}
