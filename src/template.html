@@ -1220,6 +1220,55 @@ function collapsedSet(){
 function renderTiles(){
   A('skus').innerHTML = collapsedSet().map(amTile).join('');
   A('grid').innerHTML = BASE.map(amTile).join('');
+  mountCoins();
+}
+
+/* Coin shower on the hero amount — a dotLottie drawn onto ONE canvas.
+   renderTiles() rebuilds both tile containers from scratch on every tap, so the player is
+   created once and its canvas is RE-PARENTED into whichever tile currently needs it. Building a
+   new DotLottie per render would restart the loop and re-init its renderer on each tap. */
+const COIN_LOTTIE = 'https://lottie.host/d4101c1e-c028-466c-8475-e9788ec23564/sUf0MvXJiL.lottie';
+let coinWrap=null, coinCanvas=null, coinPlayer=null, coinTried=false;
+
+function initCoins(){
+  if(RM || coinTried) return;
+  coinTried = true;
+  coinWrap = document.createElement('span');
+  coinWrap.className = 'coinfall';
+  coinWrap.setAttribute('aria-hidden','true');
+  coinCanvas = document.createElement('canvas');
+  coinWrap.appendChild(coinCanvas);
+  mountCoins();
+  // CDN import: there is no bundler here. If it fails (offline/blocked) the tile simply shows
+  // no coins rather than breaking the page.
+  import('https://esm.sh/@lottiefiles/dotlottie-web@0.40.2').then(({DotLottie})=>{
+    coinPlayer = new DotLottie({canvas:coinCanvas, src:COIN_LOTTIE, autoplay:true, loop:true,
+      layout:{fit:'cover', align:[.5,.5]}});
+    sizeCoins();
+  }).catch(()=>{});
+}
+// The canvas backing store has to track its CSS box or the coins render soft.
+function sizeCoins(){
+  if(!coinWrap || !coinCanvas) return;
+  const r = coinWrap.getBoundingClientRect();
+  if(!r.width || !r.height) return;
+  const dpr = Math.min(devicePixelRatio||1, 2);
+  const w = Math.round(r.width*dpr), h = Math.round(r.height*dpr);
+  if(coinCanvas.width===w && coinCanvas.height===h) return;
+  coinCanvas.width=w; coinCanvas.height=h;
+  coinPlayer?.resize();
+}
+// Moves the one canvas into the visible container's hero tile. Paused while that tile is the
+// selected one, since .box.on hides the layer there anyway.
+function mountCoins(){
+  if(!coinWrap || !amRoot) return;
+  const amt = ab.coin||250;
+  const root = ab.open ? A('grid') : A('skus');
+  const box = root?.querySelector(`[data-amt="${amt}"]`)?.closest('.opt')?.querySelector('.box');
+  if(!box){ coinPlayer?.pause(); return; }
+  if(coinWrap.parentElement!==box) box.insertBefore(coinWrap, box.firstChild);
+  sizeCoins();
+  if(ab.sel===amt) coinPlayer?.pause(); else coinPlayer?.play();
 }
 
 /* band */
@@ -1373,7 +1422,7 @@ function renderSummary(){
       ${b+cpn?`<div class="ps-panel">
         ${row('Recharge Added',`₹${fmt(v)}`,'p1')}
         ${b?row('Extra bonus',`+₹${fmt(b)}`,'pg'):''}
-        ${cpn?row('Coupon code applied',`+₹${fmt(cpn)}`,'pg'):''}
+        ${cpn?row('Coupon Code Applied',`+₹${fmt(cpn)}`,'pg'):''}
         ${dash('#D0D5DD')}
         ${row('Total',`₹${fmt(total)}`,'pt')}
       </div>`:''}
@@ -1475,6 +1524,9 @@ function initAM(root){
   amRoot=root;
   ab.open=false; ab.sumOpen=false; ab.pmOpen=false; ab.shown=null;
   renderTiles(); renderBand(); renderCard(false); renderSummary(); renderPM(); drawRcpt();
+  // Once per page; on a remount the surviving canvas is re-parented into the new root by
+  // mountCoins(), which renderTiles() has just called.
+  initCoins();
   A('openscroll').addEventListener('scroll',()=>{layoutOpen();flashBar()},{passive:true});
   root.addEventListener('click',e=>{
     // With the payment summary open the amounts are locked — the tap just closes the summary.
