@@ -1696,14 +1696,9 @@ function renderSummary(){
   A('sumTxt').textContent=`₹${fmt(v)} + ₹${fmt(gst)} GST`;
   const dash=c=>`<span class="ps-dash" style="--dc:${c}"></span>`;
   const row=(l,r,cls='')=>`<div class="ps-line ${cls}"><span>${l}</span><span>${r}</span></div>`;
+  // What you GET leads, what you PAY follows — the order the Figma component uses
+  // (Payment summary / State=Open, 4815:2493). Sep 22.
   A('psInner').innerHTML=`
-    <div class="ps-sec">
-      ${dash('#EAECF0')}
-      <div class="ps-calc">${row('Recharge amount',`₹${fmt(v)}`,'r1')}${row('GST (18%)',`₹${fmt(gst)}`,'r2')}</div>
-      ${dash('#EAECF0')}
-      ${row('Total payable',`₹${fmt(pay)}`,'tot')}
-      ${dash('#EAECF0')}
-    </div>
     <div class="ps-credit">
       <div class="ps-box ${b+cpn?'':'plain'}"><span>To be added in your wallet</span><b>₹${fmt(total)}</b></div>
       ${b+cpn?`<div class="ps-panel">
@@ -1713,6 +1708,13 @@ function renderSummary(){
         ${dash('#D0D5DD')}
         ${row('Total',`₹${fmt(total)}`,'pt')}
       </div>`:''}
+    </div>
+    <div class="ps-sec">
+      ${dash('#EAECF0')}
+      <div class="ps-calc">${row('Recharge amount',`₹${fmt(v)}`,'r1')}${row('GST (18%)',`₹${fmt(gst)}`,'r2')}</div>
+      ${dash('#EAECF0')}
+      ${row('Total payable',`₹${fmt(pay)}`,'tot')}
+      ${dash('#EAECF0')}
     </div>`;
   A('payBtn').innerHTML=`<b>Pay ₹${fmt(pay)}</b><small> (GST incl.)</small>`;
   A('pmPay').innerHTML=`<b>Pay ₹${fmt(pay)}</b><small> (GST incl.)</small>`;
