@@ -849,18 +849,25 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    box, so leaving a transparent border would have put the svg's 100% 2px inside the rounded edge it
    is meant to trace. With no border the padding box and the border box coincide, `inset:0` lands on
    the card's real edge, and the +1px of padding keeps every interior measurement where it was. */
-.am .rc{position:relative;z-index:2;background:#fff;border-radius:24px;margin-top:-30px;padding:19px 17px;transition:margin-top .42s cubic-bezier(.2,.8,.2,1)}
+/* No `background` here: the white fill is the SVG path's, so it follows the bowed bottom instead
+   of squaring off behind it. It still does the background's old job of hiding the band that .rc
+   pulls itself over, because the path spans the whole card and .rc's stacking context sits above
+   .band3's z-index 1 either way. */
+.am .rc{position:relative;z-index:2;margin-top:-30px;padding:19px 17px;transition:margin-top .42s cubic-bezier(.2,.8,.2,1)}
 /* width/height must be stated. An <svg> is a REPLACED element, so `width:auto` gives it its
    intrinsic 300x150 instead of stretching to the offsets — which is exactly what it silently did
-   on the first attempt, leaving a 299x149 outline floating inside a 328x489 card. */
-.am .rcline{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
-/* Half-pixel inset and 23.5px radius put the 1px stroke's CENTRELINE where the old border's was —
-   a stroke straddles its path, so x=0 would hang half of it outside the card.
-   Everything else here is copied from #rcptPath deliberately: same colour, same 2/2 dashes, same
-   butt caps. If one of them is ever retuned, retune both or they drift apart again. */
-.am .rcline rect{x:.5px;y:.5px;width:calc(100% - 1px);height:calc(100% - 1px);rx:23.5px;
-  fill:none;stroke:#C6CCD5;stroke-width:1;stroke-dasharray:2 2;stroke-linecap:butt}
-.am .rc .notch{bottom:58px}
+   on the first attempt, leaving a 299x149 outline floating inside a 328x489 card.
+   z-index:-1 is what keeps the now-opaque fill behind the tiles. .rc has a z-index, so it is a
+   stacking context and the negative child cannot escape it — it lands above .rc's own background
+   and below the in-flow grid, which is exactly the slot the old CSS background occupied. */
+.am .rcline{position:absolute;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none;overflow:visible}
+/* Copied from #rcptPath deliberately: same fill, colour, 2/2 dashes and butt caps. If one of them
+   is ever retuned, retune both or the two cards drift apart again. */
+.am .rcline path{fill:#fff;stroke:#C6CCD5;stroke-width:1;stroke-dasharray:2 2;stroke-linecap:butt}
+/* 61 = where the closed card's notch sits (229 tall, top:148, 20 high). Both cards now bow from
+   DROP=56 above their base, so this is also the 5px of clearance the closed card leaves above the
+   point the bow starts. At the old 58 the notch had only 2px and sat on the curve's shoulder. */
+.am .rc .notch{bottom:61px}
 .am .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .am .seerow{display:flex;justify-content:center;margin-top:30px}
 .am .scrollpad{height:0}
@@ -1230,7 +1237,7 @@ function renderAB(){
         <div class="openblk">
           <div class="band3" id="band3"></div>
           <div class="rc">
-            <svg class="rcline" aria-hidden="true"><rect/></svg>
+            <svg class="rcline" aria-hidden="true"><path/></svg>
             <span class="notch l"></span><span class="notch r"></span>
             <div class="grid" id="grid"></div>
             <div class="seerow"><button class="seebtn" type="button" id="seeLess"><p>See Less Options</p><img class="chev up" src="${I.chevron}" alt=""></button></div>
@@ -1677,6 +1684,27 @@ function drawRcpt(){
     `C${o+HH} ${H} ${o} ${B+HV} ${o} ${B}Z`);
 }
 
+/* The open sheet's outline, drawn with the SAME geometry as the closed receipt so that expanding
+   the list does not change the card's silhouette — only its height. DROP is shared, so the bow is
+   literally the same curve; the corner radius is the open card's own 24, which is the one thing
+   that was already different between the two and is left alone.
+   Called from a ResizeObserver rather than from the render functions: .rc's height is set by the
+   band above it and by the grid, both of which re-render on their own schedules, and an observer
+   catches every one of those without having to find each call site. */
+const RC_R=24;
+function drawRc(){
+  if(!amRoot) return;
+  const el=amRoot.querySelector('.rc'); if(!el) return;
+  const o=.5, W=el.clientWidth-o, H=el.clientHeight-o;
+  if(W<=o||H<=DROP) return;                    // mid-transition the box can be 0; skip, we get another call
+  const m=(W+o)/2, B=H-DROP, HV=DROP, HH=(W-m)*.18;
+  el.querySelector('.rcline').setAttribute('viewBox',`0 0 ${el.clientWidth} ${el.clientHeight}`);
+  el.querySelector('.rcline path').setAttribute('d',
+    `M${o} ${RC_R}A${RC_R} ${RC_R} 0 0 1 ${o+RC_R} ${o}H${W-RC_R}A${RC_R} ${RC_R} 0 0 1 ${W} ${RC_R}`+
+    `V${B}C${W} ${B+HV} ${W-HH} ${H} ${m} ${H}`+
+    `C${o+HH} ${H} ${o} ${B+HV} ${o} ${B}Z`);
+}
+
 function select(v){
   // Re-tapping the selected amount replays the reveal: rewind the counter and run it again.
   if(v===ab.sel) ab.shown=v;
@@ -1690,7 +1718,10 @@ function select(v){
 function initAM(root){
   amRoot=root;
   ab.open=false; ab.sumOpen=false; ab.pmOpen=false; ab.shown=null;
-  renderTiles(); renderBand(); renderCard(false); renderSummary(); renderPM(); drawRcpt();
+  renderTiles(); renderBand(); renderCard(false); renderSummary(); renderPM(); drawRcpt(); drawRc();
+  // Redraw the open sheet's outline whenever its box changes — grid re-render, band appearing or
+  // going, rotation. Scoped to this root so it dies with the screen on remount.
+  new ResizeObserver(drawRc).observe(amRoot.querySelector('.rc'));
   // Once per page; on a remount the surviving canvas is re-parented into the new root by
   // mountCoins(), which renderTiles() has just called.
   initCoins();
