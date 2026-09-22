@@ -1263,7 +1263,10 @@ let flowAstro='Astro Hemali';
 let flowType='wallet'; // 'insufficient' when the user came from an astrologer's Chat button with too little balance // astrologer the user is trying to reach (null when opened from the wallet)
 function cdText(){
   const s=ab.cd;
-  if(ab.mode==='coupon'){return `${Math.floor(s/3600)}:${String(Math.floor(s%3600/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`}
+  // Both the coupon and the offer run for hours, so they need the H:MM:SS face; the short flows
+  // keep M:SS. Keyed on mode, not on the remaining seconds, so the format never changes shape
+  // mid-countdown.
+  if(ab.mode==='coupon'||ab.mode==='offer'){return `${Math.floor(s/3600)}:${String(Math.floor(s%3600/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`}
   return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
 }
 /* ---------- ADD MONEY (pricing-v2 design) ---------- */
@@ -1347,6 +1350,7 @@ function renderAB(){
   </div>`;
 }
 const OFFER_SECONDS=5*60;
+const OFFER_WINDOW=24*3600;   // the View History → Continue Chat band's "expires in" window
 function startCountdown(sec){
   if(ticker){clearInterval(ticker);ticker=null}   // openAB starts one; the flows may restart it
   ab.cd=sec;
@@ -1480,7 +1484,7 @@ function bandInner(){
   // 80% (262px of 328) and nothing may sit on the ramp past it. "First recharge offer expires in"
   // plus the chip measured 304.6px and put the chip itself on the gradient. Re-measure the INK
   // right edge of both lines — not the block box, which is full-width — before lengthening either.
-  if(ab.mode==='offer') return `<div class="bandin"><img class="tag" src="${I.discount}" alt=""><div><p class="l1">Offer expires in <span class="cdpill"><b>24 hours</b></span></p><p class="l2">Bonus on first recharge over <b>₹100</b></p></div></div>`;
+  if(ab.mode==='offer') return `<div class="bandin"><img class="tag" src="${I.discount}" alt=""><div><p class="l1">Offer expires in <span class="cdpill"><b class="cd">${cdText()}</b></span></p><p class="l2">Bonus on first recharge over <b>₹100</b></p></div></div>`;
   // ASTRO50. Same on every tile — the ₹50 is flat, so no figure here moves with the selection.
   // The <b class="cd"> is what startCountdown()'s ticker rewrites each second.
   // discount-dark.svg is the same seal recoloured #065F41 — the coupon strip's own left-edge
@@ -1979,9 +1983,10 @@ function go(route,rate){
     case 'again': flowType='coupon'; flowAstro='Astro Vipasana'; flowRate=flowRate||5; mount(renderLow()); later(()=>withPopup('coupon','coupon',()=>later(()=>{ab.banner=true;startCountdown(5*3600);renderBand()},800)),1600); break;
     case 'history': mount(renderChat()); break;
     case 'post3': flowType='wallet'; flowAstro=''; openAB('default',100,false,true,{rows:2,coin:500}); break;
-    // No startCountdown here any more: this band's window is the static "24 hours" chip, so there
-    // is nothing for the ticker to rewrite and no `.cd` for renderBand()'s `.timed` check to find.
-    case 'continue': flowType='offer'; flowAstro='Astro Vipasana'; flowRate=flowRate||12; mount(renderLow()); later(()=>withPopup('offer','offer',()=>{ab.banner=true;renderBand()}),1600); break;
+    // Sep 22: this band ticks again. The static "24 hours" chip is now a live `.cd` counting down
+    // from a 24h window. It keeps its own .bn-promo green — renderBand()'s `timed` flag, the one
+    // that adds .bn-dark, excludes promo — but the root does gain .timed now that a `.cd` exists.
+    case 'continue': flowType='offer'; flowAstro='Astro Vipasana'; flowRate=flowRate||12; mount(renderLow()); later(()=>withPopup('offer','offer',()=>{ab.banner=true;startCountdown(OFFER_WINDOW);renderBand()}),1600); break;
   }
 }
 // v1's global tap router. The Add Money screen binds its own handler in initAM(), so this one
