@@ -724,11 +724,12 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    at ry²/rx — about 3px here — which is the pinch that read as a sharp corner. The path in
    drawRcpt() leaves the side vertically and eases into the bow, so the curvature is spread
    out the way the green arc under the congratulations card is. */
-/* top 142 -> 154 (Sep 22): the band's copy sat 27px below the nav rule but only 15px above the
-   card, which read lopsided. The visible green strip is cardTop - bannerTop, so the only way to
-   give the copy the same room underneath is to move the card down; the band's own padding-bottom
-   can't do it because the card covers it. */
-.am .rcpt{position:absolute;left:16px;right:16px;top:154px;height:213px;z-index:2;transition:top .42s cubic-bezier(.2,.8,.2,1)}
+/* top 142 -> 139 (Sep 22): the green showing under the band's second line is to match the green
+   showing ABOVE its first line — 12px, the band's own padding-top — not the white gap under the
+   nav. Tried 154 first (matching nav-rule-to-copy, 27px) and she rejected it: "the space below
+   shud have decreased not increased". The visible strip is cardTop - bannerTop, so only the card
+   can change it; the band's 42px padding-bottom is hidden underneath and does nothing. */
+.am .rcpt{position:absolute;left:16px;right:16px;top:139px;height:213px;z-index:2;transition:top .42s cubic-bezier(.2,.8,.2,1)}
 /* Wallet flow with the nudge band hidden: the card takes the band's place instead of leaving a
    hole under the nav. 80px is the band's own top, so the card ends up exactly where the band
    started and the 15px breathing room below the nav is preserved.
@@ -753,7 +754,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    Must stay above the point the bottom arch starts (height - DROP = 213 - 56 = 157). */
 .am .rcpt .notch{top:132px}
 /* same box as the receipt card, so "See More Options" can hang off its bottom edge */
-.am .stack{position:absolute;left:32px;right:32px;top:154px;height:213px;z-index:3;transition:top .42s cubic-bezier(.2,.8,.2,1)}
+.am .stack{position:absolute;left:32px;right:32px;top:139px;height:213px;z-index:3;transition:top .42s cubic-bezier(.2,.8,.2,1)}
 .am .skus{position:absolute;left:0;right:0;top:28px;height:96px;display:flex;gap:12px;align-items:flex-start}
 /* Anchored from the top, not the bottom, so growing the card or deepening the arch below it
    leaves the button exactly where it is.
