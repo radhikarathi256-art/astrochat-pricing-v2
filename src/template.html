@@ -975,6 +975,11 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .am .sumrow{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 0 14px}
 .am .sumrow .sl{font-size:13.5px;line-height:18px;color:#667085;white-space:nowrap}
 .am .sumrow .sr{display:flex;align-items:center;gap:4px;font-size:13.5px;line-height:18px;color:#667085;white-space:nowrap}
+/* Open, the "₹50 + ₹9 GST" summary goes — the breakdown below now says it in full, so leaving
+   it would state the same number twice. Matches Figma's State=Open. Width is held by the
+   collapsed value so the chevron doesn't slide sideways as the row opens. */
+.am .sumrow .sr #sumTxt{transition:opacity .2s ease}
+.screen.am.sumopen .sumrow .sr #sumTxt{opacity:0;visibility:hidden}
 .am .ps-details{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s cubic-bezier(.2,.8,.2,1)}
 .screen.am.sumopen .ps-details{grid-template-rows:1fr}
 .am .ps-inner{min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:20px;opacity:0;transition:opacity .2s ease}
