@@ -611,6 +611,18 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 /* Wallet flow only: regular copy with the figure as the single bold thing on the line. */
 .am .bandin .l1.reg{font-weight:400}
 .am .bandin .l2{margin-top:1px;font-weight:500;color:#027A48}
+/* Line 2 never had a bold rule of its own, so a <b> in it fell back to the browser's 700 and the
+   band's own colour — half a step from the copy around it, which is why the figures did not read
+   as figures. 800 matches .l1 b. NO colour here: the coupon and promo bands are white-on-green
+   and a colour would have to be undone in both. */
+.am .bandin .l2 b{font-weight:800;font-variant-numeric:tabular-nums}
+/* The highlight, used only by the low-balance band's copy. Deliberately a class and not plain
+   `b`, because every other band sets its own text colour (gold #93370D, coupon/promo white, red
+   #912018) and darkening `b` globally would fight all four. b.hl outranks `.am .bandin .l2` on
+   specificity, so it wins wherever it IS used and is inert everywhere else.
+   #05603A is the same green the old struck-through rate line used — one shade darker than .l2's
+   #027A48, enough to separate the number without turning it into a second colour on the band. */
+.am .bandin b.hl{color:#05603A;font-weight:800;font-variant-numeric:tabular-nums}
 /* Astrologer flow, tile too small to connect: same left-to-right fade, red. */
 .am .banner.red,.am .band3.red{color:#912018;background:linear-gradient(90deg,#FCE7E7 0%,#FDEEEE 40%,#FEF8F8 78%,#fff 100%)}
 .am .red .bandin .l1,.am .red .bandin .l2{color:#912018}
@@ -680,7 +692,11 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    below had to come back inside the strip (they were negative, i.e. parked above it ready to
    fall in). .85 is the opacity the drift held while it was on screen, so the resting look is
    unchanged from mid-flight. */
-.am .bandin .arrows img{position:absolute;width:24px;height:32px;opacity:.85}
+/* 18x24, down from 24x32 (Sep 22). The pair is decoration and was competing with the copy for
+   attention at the old size; three quarters is small enough to read as a flourish. If this is
+   retuned again, scale the nth-child offsets below by the same factor — they were derived from
+   the arrow's own width, not picked. */
+.am .bandin .arrows img{position:absolute;width:18px;height:24px;opacity:.85}
 /* SCATTERED, not one line — Sep 21, she reversed the earlier "one line" call with a reference
    image. TWO arrows now: the high-left one was dropped, leaving low-middle and mid-right.
    These two offsets are UNCHANGED from the three-arrow version, deliberately — the pair keeps the
@@ -692,9 +708,13 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    and sits it in the 62px of band that actually shows.
    NO per-arrow rotation: a -9/+5/-4deg spread was tried and read as crooked rather than scattered,
    because the asset already carries its own diagonal and tilting it further just looks misaligned.
-   The offsets alone do the scattering. Keep both upright. */
-.am .bandin .arrows img:nth-child(1){right:30px;top:29px}
-.am .bandin .arrows img:nth-child(2){right:2px;top:13px}
+   The offsets alone do the scattering. Keep both upright.
+   Sep 22: ANCHORED TOP-RIGHT. They used to hang at top 29/13 of the 62px strip, i.e. roughly
+   centred on it, which put the lower arrow level with the second line of copy. Both are now
+   pulled up against the corner (4px of clearance) and the horizontal pitch dropped 28->21 to
+   track the smaller asset, so the diagonal stagger is unchanged in proportion. */
+.am .bandin .arrows img:nth-child(1){right:25px;top:18px}
+.am .bandin .arrows img:nth-child(2){right:4px;top:4px}
 /* Lightened from #FEF0C7 (Sep 21). Its luminance already matched the green band's #E2FBEE almost
    exactly — what made it read as the heavier of the two was CHROMA: #FEF0C7 spans 55 between its
    max and min channel against the green's 25. So the blue channel is lifted and the other two are
@@ -1052,6 +1072,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
     <button data-copy="2">2 · ₹500 free</button>
     <button data-copy="3">3 · talk 50 min</button>
     <button data-copy="4">4 · fewest numbers</button>
+    <button data-copy="5">5 · ₹5/min</button>
   </div>
   <div class="stage" id="stage"><div class="phone" id="phone"></div></div>
 </div>
@@ -1070,6 +1091,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
     <button data-copy="2">2 · You get ₹500 free<small>Free money first</small></button>
     <button data-copy="3">3 · Talk 50 min with Astro Hemali<small>Total talk time first</small></button>
     <button data-copy="4">4 · ₹500 free with this recharge<small>Fewest numbers on screen</small></button>
+    <button data-copy="5">5 · Chat at just ₹5/min<small>Free money, then the rate</small></button>
   </div>
 </div>
 
@@ -1458,13 +1480,21 @@ function bandInner(){
     const credit=creditFor(ab.sel), rs=n=>'₹'+n.toLocaleString('en-IN');
     const mins=Math.round(credit/flowRate), freeMins=mins-Math.round(ab.sel/flowRate);
     const bonus=credit-ab.sel;
-    // TEMPORARY ?copy=1..4 switch so these can be compared in the real band. Collapse to the
+    // TEMPORARY ?copy=1..5 switch so these can be compared in the real band. Collapse to the
     // chosen pair and delete the rest along with COPY/SEL and the "Band copy" toolbar.
+    // Every figure is wrapped in b.hl, not plain <b> — see the .hl rule in the CSS. The word next
+    // to the figure ("free", "min") stays INSIDE the bold so the number and its unit read as one
+    // object; splitting them put a 600-weight "free" against an 800 "₹500" and the eye stopped
+    // at the number instead of the claim.
     const V={
-      1:[`<b>${freeMins} min free</b> with ${flowAstro}`,`Your ${rs(ab.sel)} gets you <b>${mins} min</b>`],
-      2:[`You get <b>${rs(bonus)} free</b>`,`That's <b>${freeMins} extra min</b> with ${flowAstro}`],
-      3:[`Talk <b>${mins} min</b> with ${flowAstro}`,`<b>${freeMins} min</b> of that is free`],
-      4:[`<b>${rs(bonus)} free</b> with this recharge`,`Chat longer with ${flowAstro}`]
+      1:[`<b class="hl">${freeMins} min free</b> with ${flowAstro}`,`Your ${rs(ab.sel)} gets you <b class="hl">${mins} min</b>`],
+      2:[`You get <b class="hl">${rs(bonus)} free</b>`,`That's <b class="hl">${freeMins} extra min</b> with ${flowAstro}`],
+      3:[`Talk <b class="hl">${mins} min</b> with ${flowAstro}`,`<b class="hl">${freeMins} min</b> of that is free`],
+      4:[`<b class="hl">${rs(bonus)} free</b> with this recharge`,`Chat longer with ${flowAstro}`],
+      // The per-minute one she asked to see again. ONE rate, never two: the struck-through
+      // "₹5/min ₹15/min" pair is the comparison she rejected. effRate() is the honest per-tile
+      // figure and ignores the coupon on purpose, so a coupon can never make the rate look worse.
+      5:[`<b class="hl">${rs(bonus)} free</b> with this recharge`,`Chat at just <b class="hl">${rs(effRate(ab.sel))}/min</b> with ${flowAstro}`]
     };
     const [l1,l2]=V[COPY]||V[1];
     return `<div class="bandin"><img class="tag" src="${I.discount}" alt=""><div><p class="l1">${l1}</p><p class="l2">${l2}</p></div>${arrows}</div>`;
