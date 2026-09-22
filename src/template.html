@@ -1050,6 +1050,19 @@ body.mobile .phone{border-radius:0;box-shadow:none}
     <button data-jump="history">View history (offer)</button>
     <button data-jump="post3">Post 3rd recharge</button>
   </div>
+  <!-- TEMPORARY copy A/B switcher. Jumps straight into the low-balance flow with the chosen
+       headline. Delete together with COPY / the ?copy switch in bandInner(). -->
+  <div class="toolbar" role="toolbar" aria-label="Band headline variant">
+    <b>Band copy</b>
+    <button data-copy="1">1 · talks like ₹750</button>
+    <button data-copy="2">2 · talk 50, pay 17</button>
+    <button data-copy="3">3 · ₹10/min cheaper</button>
+    <button data-copy="4">4 · bonus rate</button>
+    <button data-copy="5">5 · ₹500 free</button>
+    <button data-copy="6">6 · +33 min free</button>
+    <button data-copy="7">7 · turn into ₹750</button>
+    <button data-copy="8">8 · 50 min, 33 free</button>
+  </div>
   <div class="stage" id="stage"><div class="phone" id="phone"></div></div>
 </div>
 <button class="flows-btn" id="flowsBtn" aria-haspopup="dialog">Flows ▾</button>
@@ -1062,6 +1075,15 @@ body.mobile .phone{border-radius:0;box-shadow:none}
     <button data-jump="again">Chat again<small>Coupon applied → coupon bonuses</small></button>
     <button data-jump="history">View history<small>Continue chat → ₹5/min offer</small></button>
     <button data-jump="post3">Post 3rd recharge<small>Two rows of SKUs, coins on ₹500</small></button>
+    <h4>Band copy (all at ₹250)</h4>
+    <button data-copy="1">1 · Your ₹250 talks like ₹750<small>Multiplier, in words</small></button>
+    <button data-copy="2">2 · Talk 50 min, pay for 17<small>Minutes vs minutes</small></button>
+    <button data-copy="3">3 · ₹10/min cheaper<small>Saving per minute — wraps to 2 lines</small></button>
+    <button data-copy="4">4 · Your bonus rate<small>Label only, rate does the work</small></button>
+    <button data-copy="5">5 · You get ₹500 free<small>Free money, first word</small></button>
+    <button data-copy="6">6 · +33 min free with Astro Hemali<small>Free time with her</small></button>
+    <button data-copy="7">7 · Turn ₹250 into ₹750<small>Transformation</small></button>
+    <button data-copy="8">8 · 50 min with Astro Hemali, 33 free<small>Outcome plus the free part</small></button>
   </div>
 </div>
 
@@ -1405,6 +1427,10 @@ const creditFor=v=>v+bonusFor(v)+couponFor();
 const effRate=v=>Math.round(flowRate*v/(v+baseBonusFor(v)));
 const minutesFor=v=>creditFor(v)/flowRate;
 const shortOfMin=()=>ab.cflow&&flowRate&&minutesFor(ab.sel)<MIN_MINUTES;
+// TEMPORARY, paired with the ?copy=1..8 switch in bandInner() and the "Band copy" toolbar.
+// ?sel= preselects a tile so the switcher can land on the amount its button labels quote.
+const COPY=+(new URLSearchParams(location.search).get('copy')||1);
+const SEL=+(new URLSearchParams(location.search).get('sel')||0);
 function bandInner(){
   // The astrologer bands come FIRST: on this flow ₹50 is a blocker, not a missed bonus, so it
   // must not fall through to the gold "you're missing out" copy.
@@ -1438,8 +1464,29 @@ function bandInner(){
     // reachable: the only zero-bonus tile is ₹50, and at ₹50 shortOfMin() has already taken over
     // with the red "not enough to connect" strip.
     const arrows=`<span class="arrows" aria-hidden="true">${`<img src="${I['arrow-drift']}" alt="">`.repeat(2)}</span>`;
-    const cheaper=flowRate-effRate(ab.sel);
-    return `<div class="bandin"><img class="tag" src="${I.discount}" alt=""><div><p class="l1">${flowAstro} is <b>₹${cheaper}/min cheaper</b> with bonus</p><p class="rate"><b>₹${effRate(ab.sel)}/min</b><s>₹${flowRate}/min</s></p></div>${arrows}</div>`;
+    const rate=effRate(ab.sel), credit=creditFor(ab.sel), rs=n=>'₹'+n.toLocaleString('en-IN');
+    // TEMPORARY — four candidate headlines, switched with ?copy=1..4 so they can be compared in the
+    // real band rather than in a mockup. Collapse to the chosen one and delete the rest.
+    // Every figure is derived from the same effRate()/creditFor() the rate line below prints, so no
+    // variant can disagree with its own proof line. All four are per-tile: above ₹250 the bonus
+    // multiplier falls, and a headline pinned to ₹250's numbers would start overclaiming.
+    // 1-4 describe the deal; 5-8 sell it. The difference is that 5-8 put a FREE thing first —
+    // free money or free minutes — instead of a ratio or a rate the user has to interpret.
+    // Safe to say "free" at every tile this band can appear on: the only zero-bonus amount is ₹50,
+    // and there shortOfMin() has already replaced this band with the red "not enough" strip.
+    const mins=Math.round(credit/flowRate), paidMins=Math.round(ab.sel/flowRate);
+    const bonus=credit-ab.sel, freeMins=mins-paidMins;
+    const l1=({
+      1:`Your ${rs(ab.sel)} talks like <b>${rs(credit)}</b>`,
+      2:`Talk <b>${mins} min</b>, pay for ${paidMins}`,
+      3:`${flowAstro} is <b>₹${flowRate-rate}/min cheaper</b> with bonus`,
+      4:`Your bonus rate`,
+      5:`You get <b>${rs(bonus)} free</b>`,
+      6:`<b>+${freeMins} min free</b> with ${flowAstro}`,
+      7:`Turn ${rs(ab.sel)} into <b>${rs(credit)}</b>`,
+      8:`<b>${mins} min</b> with ${flowAstro}, ${freeMins} free`
+    })[COPY]||`Your ${rs(ab.sel)} talks like <b>${rs(credit)}</b>`;
+    return `<div class="bandin"><img class="tag" src="${I.discount}" alt=""><div><p class="l1">${l1}</p><p class="rate"><b>₹${rate}/min</b><s>₹${flowRate}/min</s></p></div>${arrows}</div>`;
   }
   // The wallet flow gets this copy at EVERY amount, not just ₹50 — the green "Yay, you're earning
   // ₹X extra" band it used to show above ₹50 is gone. Keeping the words and the colour fixed is
@@ -1839,7 +1886,8 @@ function go(route,rate){
     case 'wallet': flowType='wallet'; flowAstro=''; openAB('default',100,false,true,{wflow:true}); break;
     // cflow = came from an astrologer card, so the band talks about connecting to THEM: the
     // red "not enough to connect" strip below the 4-min minimum, the green rate strip above it.
-    case 'listingChat': flowType='insufficient'; flowAstro='Astro Hemali'; flowRate=flowRate||15; mount(renderLow()); later(()=>openAB('default',100,false,true,{cflow:true}),1600); break;
+    // SEL is temporary, so the copy switcher can land on the tile its button labels quote.
+    case 'listingChat': flowType='insufficient'; flowAstro='Astro Hemali'; flowRate=flowRate||15; mount(renderLow()); later(()=>openAB('default',SEL||100,false,true,{cflow:true}),1600); break;
     case 'again': flowType='coupon'; flowAstro='Astro Vipasana'; flowRate=flowRate||5; mount(renderLow()); later(()=>withPopup('coupon','coupon',()=>later(()=>{ab.banner=true;startCountdown(5*3600);renderBand()},800)),1600); break;
     case 'history': mount(renderChat()); break;
     case 'post3': flowType='wallet'; flowAstro=''; openAB('default',100,false,true,{rows:2,coin:500}); break;
@@ -1855,6 +1903,13 @@ phone.addEventListener('click',e=>{
   if(t) return go(t.dataset.go,t.dataset.rate);
 });
 document.querySelectorAll('[data-jump]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.jump)));
+// TEMPORARY copy switcher. A full reload rather than a re-render, because COPY is read once at
+// parse time; that also makes the current variant shareable as a URL. Delete with COPY/SEL.
+document.querySelectorAll('[data-copy]').forEach(b=>b.addEventListener('click',()=>{
+  const u=new URL(location.href);
+  u.searchParams.set('start','listingChat'); u.searchParams.set('sel','250');
+  u.searchParams.set('copy',b.dataset.copy); location.href=u.toString();
+}));
 document.getElementById('flowsBtn').addEventListener('click',()=>document.getElementById('flowsSheet').classList.add('open'));
 document.getElementById('flowsSheet').addEventListener('click',e=>{if(e.target.id==='flowsSheet')e.currentTarget.classList.remove('open')});
 
