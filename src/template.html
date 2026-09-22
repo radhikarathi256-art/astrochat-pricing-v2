@@ -1109,7 +1109,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
     <button data-jump="wallet">Wallet pill<small>Add Money to Wallet, standard bonuses</small></button>
     <button data-jump="listingChat">Listing → Chat<small>Low balance → Add Money to Wallet</small></button>
     <button data-jump="again">Chat again<small>Coupon applied → coupon bonuses</small></button>
-    <button data-jump="history">View history<small>Continue chat → ₹5/min offer</small></button>
+    <button data-jump="history">View history<small>Continue chat → ₹12/min offer</small></button>
     <button data-jump="post3">Post 3rd recharge<small>Two rows of SKUs, coins on ₹500</small></button>
     <h4>Band copy (all at ₹250)</h4>
     <button data-copy="1">1 · 33 min free with Astro Hemali<small>Free minutes first</small></button>
@@ -1915,8 +1915,8 @@ function renderChat(){
     <div class="sheet">
       <div class="sheet-top"><img src="${I.sparkle}" alt=""><span>Next Free 2 Mins Chat In</span><span>14h : 23 m</span></div>
       <div class="sheet-card">
-        <div class="sheet-row">${photo('chat',60,'AV')}<p>Hi mansi, continue this chat at discounted price of <b>₹5/min</b></p></div>
-        <button data-go="continue" data-rate="5">Continue Chat</button>
+        <div class="sheet-row">${photo('chat',60,'AV')}<p>Hi mansi, continue this chat at discounted price of <b>₹12/min</b></p></div>
+        <button data-go="continue" data-rate="12">Continue Chat</button>
       </div>
     </div>
   </div>`;
@@ -1976,7 +1976,7 @@ function go(route,rate){
     case 'post3': flowType='wallet'; flowAstro=''; openAB('default',100,false,true,{rows:2,coin:500}); break;
     // No startCountdown here any more: this band's window is the static "24 hours" chip, so there
     // is nothing for the ticker to rewrite and no `.cd` for renderBand()'s `.timed` check to find.
-    case 'continue': flowType='offer'; flowAstro='Astro Vipasana'; flowRate=flowRate||5; mount(renderLow()); later(()=>withPopup('offer','offer',()=>{ab.banner=true;renderBand()}),1600); break;
+    case 'continue': flowType='offer'; flowAstro='Astro Vipasana'; flowRate=flowRate||12; mount(renderLow()); later(()=>withPopup('offer','offer',()=>{ab.banner=true;renderBand()}),1600); break;
   }
 }
 // v1's global tap router. The Add Money screen binds its own handler in initAM(), so this one
