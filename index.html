@@ -605,7 +605,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    the size for all of them and WEIGHT is the only thing that carries emphasis: the figures
    (₹ amounts, rates, the countdown) sit at 800 against 400-600 copy.
    Anything added here must NOT reintroduce a font-size. */
-.am .bandin .l1,.am .bandin .l2,.am .bandin .rate{font-size:12px;line-height:16px}
+.am .bandin .l1,.am .bandin .l2{font-size:12px;line-height:16px}
 .am .bandin .l1{font-weight:600;letter-spacing:.1px}
 .am .bandin .l1 b{font-weight:800;font-variant-numeric:tabular-nums}
 /* Wallet flow only: regular copy with the figure as the single bold thing on the line. */
@@ -631,8 +631,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    and therefore smoother. */
 .am .banner.bn-promo,.am .band3.bn-promo{color:#fff;background:linear-gradient(90deg,#039855 0%,#039855 80%,#0BA05C 86%,#3CB783 90%,#7CD0AC 94%,#BCE8D5 97%,#E9F9F2 99%,#fff 100%)}
 /* .l2's default is a dark green meant for the pale bands; on this solid one it has to go white,
-   same as .l1. The .rate overrides that used to live here went with the struck-out per-minute
-   copy this band no longer carries — .rate itself is still used by the astrologer band. */
+   same as .l1. */
 .am .bn-promo .bandin .l1,.am .bn-promo .bandin .l2{color:#fff}
 .am .bn-promo .bandin .l1{font-weight:600}
 .am .bn-promo .bandin .l2{font-weight:500}
@@ -671,11 +670,6 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .am .coupon .bn-stars{position:absolute;right:0;top:0;width:236px;height:44px;z-index:0;object-fit:cover;object-position:right top;pointer-events:none;opacity:.2;
   -webkit-mask-image:linear-gradient(to left,#000 0%,rgba(0,0,0,.5) 26%,rgba(0,0,0,.12) 52%,transparent 72%);mask-image:linear-gradient(to left,#000 0%,rgba(0,0,0,.5) 26%,rgba(0,0,0,.12) 52%,transparent 72%)}
 .am .coupon .sweep{z-index:0;height:62px;bottom:auto}
-/* Astrologer flow, tile big enough: the rate the recharge buys, with the list price struck out.
-   Both sit on ONE line, so this variant has no .l2 — the band is a single-line strip. */
-.am .bandin .rate{margin-top:1px;font-weight:500;color:#027A48}
-.am .bandin .rate b{font-weight:800;font-variant-numeric:tabular-nums;color:#05603A}
-.am .bandin .rate s{margin-left:6px;opacity:.65;font-weight:600}
 /* The arrows sit at the right-hand end, behind the text, to sell "the rate falls".
    Clipped to the 62px that actually shows (see .bandin) so they never leak out behind the card;
    they are decoration only, hence aria-hidden in the markup and no pointer events here. */
@@ -1054,14 +1048,10 @@ body.mobile .phone{border-radius:0;box-shadow:none}
        headline. Delete together with COPY / the ?copy switch in bandInner(). -->
   <div class="toolbar" role="toolbar" aria-label="Band headline variant">
     <b>Band copy</b>
-    <button data-copy="1">1 · talks like ₹750</button>
-    <button data-copy="2">2 · talk 50, pay 17</button>
-    <button data-copy="3">3 · ₹10/min cheaper</button>
-    <button data-copy="4">4 · bonus rate</button>
-    <button data-copy="5">5 · ₹500 free</button>
-    <button data-copy="6">6 · +33 min free</button>
-    <button data-copy="7">7 · turn into ₹750</button>
-    <button data-copy="8">8 · 50 min, 33 free</button>
+    <button data-copy="1">1 · 33 min free</button>
+    <button data-copy="2">2 · ₹500 free</button>
+    <button data-copy="3">3 · talk 50 min</button>
+    <button data-copy="4">4 · fewest numbers</button>
   </div>
   <div class="stage" id="stage"><div class="phone" id="phone"></div></div>
 </div>
@@ -1076,14 +1066,10 @@ body.mobile .phone{border-radius:0;box-shadow:none}
     <button data-jump="history">View history<small>Continue chat → ₹5/min offer</small></button>
     <button data-jump="post3">Post 3rd recharge<small>Two rows of SKUs, coins on ₹500</small></button>
     <h4>Band copy (all at ₹250)</h4>
-    <button data-copy="1">1 · Your ₹250 talks like ₹750<small>Multiplier, in words</small></button>
-    <button data-copy="2">2 · Talk 50 min, pay for 17<small>Minutes vs minutes</small></button>
-    <button data-copy="3">3 · ₹10/min cheaper<small>Saving per minute — wraps to 2 lines</small></button>
-    <button data-copy="4">4 · Your bonus rate<small>Label only, rate does the work</small></button>
-    <button data-copy="5">5 · You get ₹500 free<small>Free money, first word</small></button>
-    <button data-copy="6">6 · +33 min free with Astro Hemali<small>Free time with her</small></button>
-    <button data-copy="7">7 · Turn ₹250 into ₹750<small>Transformation</small></button>
-    <button data-copy="8">8 · 50 min with Astro Hemali, 33 free<small>Outcome plus the free part</small></button>
+    <button data-copy="1">1 · 33 min free with Astro Hemali<small>Free minutes first</small></button>
+    <button data-copy="2">2 · You get ₹500 free<small>Free money first</small></button>
+    <button data-copy="3">3 · Talk 50 min with Astro Hemali<small>Total talk time first</small></button>
+    <button data-copy="4">4 · ₹500 free with this recharge<small>Fewest numbers on screen</small></button>
   </div>
 </div>
 
@@ -1459,34 +1445,29 @@ function bandInner(){
   if(ab.cflow&&flowRate){
     // Lead with the SAVING, not the price. The bonus is what makes this rate possible, so the band
     // now names the gap it creates; the two rates stay underneath as the proof.
-    // `cheaper` is derived from the same effRate() the rate line prints — never hardcode it, or the
-    // headline and the figures below it can disagree. It is always >0 wherever this band is
-    // reachable: the only zero-bonus tile is ₹50, and at ₹50 shortOfMin() has already taken over
-    // with the red "not enough to connect" strip.
+    // NO per-minute figures. This band used to print "₹5/min" struck through "₹15/min", which asked
+    // the user to divide, compare and trust two rates at the exact moment they have been blocked
+    // from chatting. The bonus does not have to be shown working — "free" needs no arithmetic.
+    // That also retires the ratio framings ("talks like ₹750", "turn ₹250 into ₹750"): they read as
+    // a puzzle rather than an offer, because nothing on screen says what "talks like" means.
+    // Both lines are per-tile. Above ₹250 the bonus multiplier falls, so anything pinned to ₹250's
+    // numbers would start overclaiming on the bigger tiles.
+    // Safe to say "free" wherever this band appears: the only zero-bonus amount is ₹50, and there
+    // shortOfMin() has already replaced this band with the red "not enough to connect" strip.
     const arrows=`<span class="arrows" aria-hidden="true">${`<img src="${I['arrow-drift']}" alt="">`.repeat(2)}</span>`;
-    const rate=effRate(ab.sel), credit=creditFor(ab.sel), rs=n=>'₹'+n.toLocaleString('en-IN');
-    // TEMPORARY — four candidate headlines, switched with ?copy=1..4 so they can be compared in the
-    // real band rather than in a mockup. Collapse to the chosen one and delete the rest.
-    // Every figure is derived from the same effRate()/creditFor() the rate line below prints, so no
-    // variant can disagree with its own proof line. All four are per-tile: above ₹250 the bonus
-    // multiplier falls, and a headline pinned to ₹250's numbers would start overclaiming.
-    // 1-4 describe the deal; 5-8 sell it. The difference is that 5-8 put a FREE thing first —
-    // free money or free minutes — instead of a ratio or a rate the user has to interpret.
-    // Safe to say "free" at every tile this band can appear on: the only zero-bonus amount is ₹50,
-    // and there shortOfMin() has already replaced this band with the red "not enough" strip.
-    const mins=Math.round(credit/flowRate), paidMins=Math.round(ab.sel/flowRate);
-    const bonus=credit-ab.sel, freeMins=mins-paidMins;
-    const l1=({
-      1:`Your ${rs(ab.sel)} talks like <b>${rs(credit)}</b>`,
-      2:`Talk <b>${mins} min</b>, pay for ${paidMins}`,
-      3:`${flowAstro} is <b>₹${flowRate-rate}/min cheaper</b> with bonus`,
-      4:`Your bonus rate`,
-      5:`You get <b>${rs(bonus)} free</b>`,
-      6:`<b>+${freeMins} min free</b> with ${flowAstro}`,
-      7:`Turn ${rs(ab.sel)} into <b>${rs(credit)}</b>`,
-      8:`<b>${mins} min</b> with ${flowAstro}, ${freeMins} free`
-    })[COPY]||`Your ${rs(ab.sel)} talks like <b>${rs(credit)}</b>`;
-    return `<div class="bandin"><img class="tag" src="${I.discount}" alt=""><div><p class="l1">${l1}</p><p class="rate"><b>₹${rate}/min</b><s>₹${flowRate}/min</s></p></div>${arrows}</div>`;
+    const credit=creditFor(ab.sel), rs=n=>'₹'+n.toLocaleString('en-IN');
+    const mins=Math.round(credit/flowRate), freeMins=mins-Math.round(ab.sel/flowRate);
+    const bonus=credit-ab.sel;
+    // TEMPORARY ?copy=1..4 switch so these can be compared in the real band. Collapse to the
+    // chosen pair and delete the rest along with COPY/SEL and the "Band copy" toolbar.
+    const V={
+      1:[`<b>${freeMins} min free</b> with ${flowAstro}`,`Your ${rs(ab.sel)} gets you <b>${mins} min</b>`],
+      2:[`You get <b>${rs(bonus)} free</b>`,`That's <b>${freeMins} extra min</b> with ${flowAstro}`],
+      3:[`Talk <b>${mins} min</b> with ${flowAstro}`,`<b>${freeMins} min</b> of that is free`],
+      4:[`<b>${rs(bonus)} free</b> with this recharge`,`Chat longer with ${flowAstro}`]
+    };
+    const [l1,l2]=V[COPY]||V[1];
+    return `<div class="bandin"><img class="tag" src="${I.discount}" alt=""><div><p class="l1">${l1}</p><p class="l2">${l2}</p></div>${arrows}</div>`;
   }
   // The wallet flow gets this copy at EVERY amount, not just ₹50 — the green "Yay, you're earning
   // ₹X extra" band it used to show above ₹50 is gone. Keeping the words and the colour fixed is
