@@ -1618,6 +1618,11 @@ function renderCard(animate=true){
   const n=A('cardN'), token=++animToken;
   const setN=x=>{ab.shown=x;n.textContent=fmt(x);alignCardRupee()};
   if(!animate||RM||b===0){setN(total);return}
+  // Each amount's badge drops ONCE per visit to this screen. Pick ₹100 and its "+₹150 more"
+  // flies into the card; pick ₹100 again later and only the number refreshes, no second drop.
+  // The set lives on `ab`, which openAB() rebuilds, so re-entering the screen replays them all.
+  if(ab.dropped.has(v)){setN(total);return}
+  ab.dropped.add(v);
   // count to the recharge amount, fly the bonus chip into the card, then count the bonus on
   const from=ab.shown??v;
   const d1=from===v?0:360, flight=640, d2=700, t0=performance.now();
@@ -1831,8 +1836,8 @@ function drawRc(){
 }
 
 function select(v){
-  // Re-tapping the selected amount replays the reveal: rewind the counter and run it again.
-  if(v===ab.sel) ab.shown=v;
+  // No rewind on a re-tap any more — an amount whose badge has already dropped just refreshes
+  // the number (see renderCard), so replaying the counter would animate to where it already is.
   ab.sel=v;
   renderTiles(); renderBand(); renderCard(); renderSummary();
   const c=A('card');                           // replay the Z tip on every pick
@@ -1947,7 +1952,7 @@ function mount(html, anim){
 // The AM screen binds its own listeners, so they have to be re-made after every mount.
 function afterMount(){ const am=phone.querySelector('.screen.am'); if(am) initAM(am); else amRoot=null; }
 function openAB(mode,sel,banner=false,auto=true,extra){
-  ab={mode,sel,banner,shown:null,cd:0,...extra};
+  ab={mode,sel,banner,shown:null,cd:0,dropped:new Set(),...extra};
   // The band always carries a countdown on this screen, so the default flows get one too.
   startCountdown(mode==='coupon'?5*3600:OFFER_SECONDS);
   mount(renderAB(), phone.querySelector('.screen.am')?null:'in-right');
