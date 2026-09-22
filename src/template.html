@@ -45,6 +45,21 @@ body.kbd :focus-visible{outline:2px solid rgba(16,24,40,.35);outline-offset:2px}
 .toolbar b{color:var(--g800);font-weight:600;margin-right:4px}
 .toolbar button{background:#2f2f33;border:1px solid #707076;color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;text-align:center}
 .toolbar button:hover{background:#3b3b40}
+/* Live alert-banner copy editor, desktop only. Same dark chrome as .toolbar so it reads as
+   prototype furniture and not as part of the design. */
+.edpanel{position:fixed;right:16px;top:16px;z-index:50;width:250px;display:flex;flex-direction:column;gap:8px;
+  background:#2f2f33;border:1px solid #707076;border-radius:12px;padding:12px;color:#fff;font-size:12px;line-height:16px}
+.edpanel b{font-weight:600}
+.edpanel label{display:flex;flex-direction:column;gap:4px;color:#c9c9cf}
+.edpanel input{background:#1c1c1f;border:1px solid #707076;border-radius:8px;padding:6px 8px;color:#fff;font:inherit;width:100%}
+.edpanel input::placeholder{color:#8a8a93}
+.edpanel .hint{color:#9a9aa2}
+.edpanel button{background:#4a4a52;border:1px solid #707076;color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;text-align:center}
+.edpanel button:hover{background:#5a5a63}
+body.mobile .edpanel{display:none}
+/* The panel is fixed, so it would sit on top of the phone on a narrow desktop window. Reserve
+   its width on the shell instead and let the phone centre in what's left. */
+body:not(.mobile) .shell{padding-right:282px}
 .stage{position:relative;flex-shrink:0}
 .phone{position:absolute;left:0;top:0;width:360px;background:#fff;overflow:hidden;transform-origin:0 0;border-radius:18px;box-shadow:0 24px 70px rgba(0,0,0,.4)}
 .screen{position:absolute;inset:0;overflow:hidden}
@@ -623,6 +638,10 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    #05603A is the same green the old struck-through rate line used — one shade darker than .l2's
    #027A48, enough to separate the number without turning it into a second colour on the band. */
 .am .bandin b.hl{color:#05603A;font-weight:800;font-variant-numeric:tabular-nums}
+/* …except where the band sets its own colour. The edit panel lets *stars* put a b.hl on ANY
+   band now, and #05603A on the coupon's dark green is invisible. On those four the highlight
+   is the 800 weight alone. */
+.am .red .bandin b.hl,.am .gold .bandin b.hl,.am .coupon .bandin b.hl,.am .bn-promo .bandin b.hl{color:inherit}
 /* Astrologer flow, tile too small to connect: same left-to-right fade, red. */
 .am .banner.red,.am .band3.red{color:#912018;background:linear-gradient(90deg,#FCE7E7 0%,#FDEEEE 40%,#FEF8F8 78%,#fff 100%)}
 .am .red .bandin .l1,.am .red .bandin .l2{color:#912018}
@@ -682,39 +701,10 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .am .coupon .bn-stars{position:absolute;right:0;top:0;width:236px;height:44px;z-index:0;object-fit:cover;object-position:right top;pointer-events:none;opacity:.2;
   -webkit-mask-image:linear-gradient(to left,#000 0%,rgba(0,0,0,.5) 26%,rgba(0,0,0,.12) 52%,transparent 72%);mask-image:linear-gradient(to left,#000 0%,rgba(0,0,0,.5) 26%,rgba(0,0,0,.12) 52%,transparent 72%)}
 .am .coupon .sweep{z-index:0;height:62px;bottom:auto}
-/* The arrows sit at the right-hand end, behind the text, to sell "the rate falls".
-   Clipped to the 62px that actually shows (see .bandin) so they never leak out behind the card;
-   they are decoration only, hence aria-hidden in the markup and no pointer events here. */
-.am .bandin .arrows{position:absolute;right:0;top:0;width:96px;height:62px;overflow:hidden;pointer-events:none}
-/* STATIC — Sep 21, she asked for the drift to go. They used to fall once per SKU pick on an
-   `arrowDrift` keyframe whose last frame was opacity:0, so simply deleting the animation would
-   have left them invisible: the opacity now has to be declared outright, and the `top` offsets
-   below had to come back inside the strip (they were negative, i.e. parked above it ready to
-   fall in). .85 is the opacity the drift held while it was on screen, so the resting look is
-   unchanged from mid-flight. */
-/* 18x24, down from 24x32 (Sep 22). The pair is decoration and was competing with the copy for
-   attention at the old size; three quarters is small enough to read as a flourish. If this is
-   retuned again, scale the nth-child offsets below by the same factor — they were derived from
-   the arrow's own width, not picked. */
-.am .bandin .arrows img{position:absolute;width:18px;height:24px;opacity:.85}
-/* SCATTERED, not one line — Sep 21, she reversed the earlier "one line" call with a reference
-   image. TWO arrows now: the high-left one was dropped, leaving low-middle and mid-right.
-   These two offsets are UNCHANGED from the three-arrow version, deliberately — the pair keeps the
-   28px horizontal pitch and the vertical stagger that made the group read as depth rather than a
-   row. Restoring the third means re-adding `right:48px;top:1px` as the new nth-child(1) and
-   pushing these two down a slot, not renumbering them in place.
-   The tops were -46/-18/-34, i.e. parked above the strip waiting to fall. Now that nothing moves
-   they are shifted down a uniform +47px, which keeps the relative constellation exactly as it was
-   and sits it in the 62px of band that actually shows.
-   NO per-arrow rotation: a -9/+5/-4deg spread was tried and read as crooked rather than scattered,
-   because the asset already carries its own diagonal and tilting it further just looks misaligned.
-   The offsets alone do the scattering. Keep both upright.
-   Sep 22: ANCHORED TOP-RIGHT. They used to hang at top 29/13 of the 62px strip, i.e. roughly
-   centred on it, which put the lower arrow level with the second line of copy. Both are now
-   pulled up against the corner (4px of clearance) and the horizontal pitch dropped 28->21 to
-   track the smaller asset, so the diagonal stagger is unchanged in proportion. */
-.am .bandin .arrows img:nth-child(1){right:25px;top:18px}
-.am .bandin .arrows img:nth-child(2){right:4px;top:4px}
+/* Sep 22: the two decorative drift arrows that used to sit top-right of the astrologer band are
+   GONE — she asked for them removed. They were pure decoration ("the rate falls") and were
+   competing with the copy for the right-hand end of the strip. `arrow-drift` is still in
+   src/icons/ and so still inlined; nothing references it. */
 /* Lightened from #FEF0C7 (Sep 21). Its luminance already matched the green band's #E2FBEE almost
    exactly — what made it read as the heavier of the two was CHROMA: #FEF0C7 spans 55 between its
    max and min channel against the green's 25. So the blue channel is lifted and the other two are
@@ -734,7 +724,11 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    at ry²/rx — about 3px here — which is the pinch that read as a sharp corner. The path in
    drawRcpt() leaves the side vertically and eases into the bow, so the curvature is spread
    out the way the green arc under the congratulations card is. */
-.am .rcpt{position:absolute;left:16px;right:16px;top:142px;height:229px;z-index:2;transition:top .42s cubic-bezier(.2,.8,.2,1)}
+/* top 142 -> 154 (Sep 22): the band's copy sat 27px below the nav rule but only 15px above the
+   card, which read lopsided. The visible green strip is cardTop - bannerTop, so the only way to
+   give the copy the same room underneath is to move the card down; the band's own padding-bottom
+   can't do it because the card covers it. */
+.am .rcpt{position:absolute;left:16px;right:16px;top:154px;height:213px;z-index:2;transition:top .42s cubic-bezier(.2,.8,.2,1)}
 /* Wallet flow with the nudge band hidden: the card takes the band's place instead of leaving a
    hole under the nav. 80px is the band's own top, so the card ends up exactly where the band
    started and the 15px breathing room below the nav is preserved.
@@ -754,20 +748,34 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .am .notch{position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;border:1px dashed #D0D5DD}
 .am .notch.l{left:-11px;clip-path:inset(0 0 0 50%)}
 .am .notch.r{right:-11px;clip-path:inset(0 50% 0 0)}
-/* Sits 28px below the bonus chips (120.5), which is the same inset the tiles get from the top
-   edge — that symmetry is what the card's height is sized around. Must stay above the point
-   the bottom arch starts (height - DROP = 173). */
-.am .rcpt .notch{top:148px}
+/* Sep 22: was 28px below the bonus chips (120.5); she boxed that gap as too big next to the ~8px
+   under the notch, so it is now 12px below them and the two gaps around the notch match.
+   Must stay above the point the bottom arch starts (height - DROP = 213 - 56 = 157). */
+.am .rcpt .notch{top:132px}
 /* same box as the receipt card, so "See More Options" can hang off its bottom edge */
-.am .stack{position:absolute;left:32px;right:32px;top:142px;height:229px;z-index:3;transition:top .42s cubic-bezier(.2,.8,.2,1)}
+.am .stack{position:absolute;left:32px;right:32px;top:154px;height:213px;z-index:3;transition:top .42s cubic-bezier(.2,.8,.2,1)}
 .am .skus{position:absolute;left:0;right:0;top:28px;height:96px;display:flex;gap:12px;align-items:flex-start}
 /* Anchored from the top, not the bottom, so growing the card or deepening the arch below it
    leaves the button exactly where it is.
    The two gaps are what she tunes, so keep them derivable: the SKU block ends at 124, so this
    top IS 124 + gap. Sep 21 she took 8 off each — gap below the SKUs 59 -> 51 (top 183 -> 175)
-   and gap below the button 31 -> 23, the latter by shortening the card 245 -> 229. Changing
-   .see's top alone moves BOTH gaps, so the card height has to move with it. */
-.am .see{position:absolute;left:0;right:0;top:175px;display:flex;justify-content:center}
+   and gap below the button 31 -> 23, the latter by shortening the card 245 -> 229. Sep 22 another
+   16 came off the top gap only (51 -> 35, top 175 -> 159, card 229 -> 213) so the space above the
+   notch matches the space below it. Changing .see's top alone moves BOTH gaps, so the card height
+   has to move with it. */
+.am .see{position:absolute;left:0;right:0;top:159px;display:flex;justify-content:center}
+/* TWO ROWS of SKUs — the post-3rd-recharge flow (ab.rows === 2), where the user has already
+   recharged twice and the bigger amounts are worth showing up front rather than behind
+   "See More Options". Deliberately a grid with grid-auto-rows:96px rather than a wrapping flex:
+   96 is exactly the height the single row already occupies, so row 1 lands pixel-identical to
+   the one-row layout and the whole second row is a clean +96 on everything below it —
+   the card, its outline box and the button all shift by the same number.
+   The notch moves with the chips (12px below them, same as the closed card's 120.5 + 12) and
+   still clears the point the bottom arch starts, height - DROP = 309 - 56 = 253. */
+.am.rows2 .skus{height:192px;display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:96px;gap:0 12px;align-items:start}
+.am.rows2 .stack,.am.rows2 .rcpt{height:309px}
+.am.rows2 .see{top:255px}
+.am.rows2 .rcpt .notch{top:228px}
 .am .seebtn{display:flex;align-items:center;border:.8px dashed #D0D5DD;border-radius:12px;padding:4px 4px 4px 12px}
 .am .seebtn p{font-size:12px;line-height:18px;color:#667085;white-space:nowrap}
 
@@ -1076,6 +1084,17 @@ body.mobile .phone{border-radius:0;box-shadow:none}
   </div>
   <div class="stage" id="stage"><div class="phone" id="phone"></div></div>
 </div>
+<!-- Desktop-only live editor for the alert banner. Fixed to the right edge rather than stacked
+     into .shell on purpose: .shell is a centred column and the phone is sized off the remaining
+     viewport height, so another row there would shrink the prototype. Prototype scaffolding —
+     goes out with COPY / the "Band copy" toolbar. -->
+<aside class="edpanel" id="edPanel" aria-label="Edit alert banner copy">
+  <b>Alert banner copy</b>
+  <label for="edL1">Line 1<input id="edL1" type="text" autocomplete="off" spellcheck="false"></label>
+  <label for="edL2">Line 2<input id="edL2" type="text" autocomplete="off" spellcheck="false"></label>
+  <p class="hint">Wrap words in *stars* to highlight them. Leave a box empty to keep the built-in line shown in grey.</p>
+  <button type="button" id="edReset">Reset to built-in copy</button>
+</aside>
 <button class="flows-btn" id="flowsBtn" aria-haspopup="dialog">Flows ▾</button>
 <div class="flows-sheet" id="flowsSheet" role="dialog" aria-label="Jump to a path">
   <div class="panel">
@@ -1356,11 +1375,14 @@ function amTile([v], i){
     ${b?`<div class="chip" style="--sd:${sweepDelay(i)}s"><p>+₹<b>${fmt(b)}</b> more</p></div>`:''}
   </div>`;
 }
-// Collapsed row: ₹50 · ₹100 · ₹250, or the picked amount in the third slot when it's bigger.
+// Collapsed row: ₹50 · ₹100 · ₹250, or the picked amount in the last slot when it's bigger.
+// ab.rows === 2 (the post-3rd-recharge flow) takes six instead: ₹50 · ₹100 · ₹250 / ₹500 ·
+// ₹1000 · ₹2000. Same swap rule either way — drop ₹50 off the front and push the picked
+// amount onto the end, so whatever is selected is always visible without opening the sheet.
 function collapsedSet(){
-  const base=BASE.slice(0,3);
-  if(ab.sel<=250) return base;
-  return [BASE[1],BASE[2],BASE.find(a=>a[0]===ab.sel)];
+  const base=BASE.slice(0, ab.rows===2 ? 6 : 3);
+  if(base.some(a=>a[0]===ab.sel)) return base;
+  return [...base.slice(1), BASE.find(a=>a[0]===ab.sel)];
 }
 function renderTiles(){
   A('skus').innerHTML = collapsedSet().map(amTile).join('');
@@ -1476,7 +1498,6 @@ function bandInner(){
     // numbers would start overclaiming on the bigger tiles.
     // Safe to say "free" wherever this band appears: the only zero-bonus amount is ₹50, and there
     // shortOfMin() has already replaced this band with the red "not enough to connect" strip.
-    const arrows=`<span class="arrows" aria-hidden="true">${`<img src="${I['arrow-drift']}" alt="">`.repeat(2)}</span>`;
     const credit=creditFor(ab.sel), rs=n=>'₹'+n.toLocaleString('en-IN');
     const mins=Math.round(credit/flowRate), freeMins=mins-Math.round(ab.sel/flowRate);
     const bonus=credit-ab.sel;
@@ -1497,7 +1518,7 @@ function bandInner(){
       5:[`<b class="hl">${rs(bonus)} free</b> with this recharge`,`Chat at just <b class="hl">${rs(effRate(ab.sel))}/min</b> with ${flowAstro}`]
     };
     const [l1,l2]=V[COPY]||V[1];
-    return `<div class="bandin"><img class="tag" src="${I.discount}" alt=""><div><p class="l1">${l1}</p><p class="l2">${l2}</p></div>${arrows}</div>`;
+    return `<div class="bandin"><img class="tag" src="${I.discount}" alt=""><div><p class="l1">${l1}</p><p class="l2">${l2}</p></div></div>`;
   }
   // The wallet flow gets this copy at EVERY amount, not just ₹50 — the green "Yay, you're earning
   // ₹X extra" band it used to show above ₹50 is gone. Keeping the words and the colour fixed is
@@ -1511,6 +1532,43 @@ function bandInner(){
   // deliberately does NOT name a coupon figure: the ₹50 top-up is not in this bonus table yet
   const l2 = `Extra credit lands in your wallet instantly`;
   return `<div class="bandin"><img class="tag" src="${I.discount}" alt=""><div><p class="l1">${l1}</p><p class="l2">${l2}</p></div></div>`;
+}
+/* ---------- live alert-banner copy override (desktop panel, prototype scaffolding) ----------
+   bandInner() stays the single source of the real copy; this only paints over the two <p>s
+   AFTER they are in the DOM, so an empty box always falls straight back to the built-in line
+   and every mode keeps its own icon, colour and layout.
+   The input is escaped and only `*...*` is turned into markup — she types plain words, and
+   nothing she types can inject a tag. */
+const bandCopy={l1:'',l2:''};
+const edEsc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const edFmt=s=>edEsc(s).replace(/\*([^*]+)\*/g,'<b class="hl">$1</b>');
+const edPanel=document.getElementById('edPanel');
+// The panel outlives any one screen, so every call has to re-check that an Add Money screen is
+// actually mounted — amRoot is never cleared when you navigate away.
+const onAM=()=>!!(amRoot&&amRoot.isConnected&&amRoot.querySelector('#band'));
+function edApply(el){
+  const p1=el.querySelector('.l1'), p2=el.querySelector('.l2');
+  // Placeholders show the built-in copy she is about to replace — read off #band before the
+  // override lands, so they keep tracking the flow and the selected amount.
+  if(el.id==='band'&&edPanel){
+    edPanel.querySelector('#edL1').placeholder = p1?p1.textContent:'';
+    edPanel.querySelector('#edL2').placeholder = p2?p2.textContent:'';
+  }
+  if(bandCopy.l1&&p1) p1.innerHTML=edFmt(bandCopy.l1);
+  if(bandCopy.l2&&p2) p2.innerHTML=edFmt(bandCopy.l2);
+}
+if(edPanel){
+  edPanel.addEventListener('input',e=>{
+    if(e.target.id==='edL1') bandCopy.l1=e.target.value;
+    else if(e.target.id==='edL2') bandCopy.l2=e.target.value;
+    else return;
+    if(onAM()) renderBand();
+  });
+  edPanel.querySelector('#edReset').addEventListener('click',()=>{
+    bandCopy.l1=bandCopy.l2='';
+    edPanel.querySelector('#edL1').value=''; edPanel.querySelector('#edL2').value='';
+    if(onAM()) renderBand();
+  });
 }
 function renderBand(){
   const red=shortOfMin(), promo=ab.mode==='offer', coup=ab.mode==='coupon';
@@ -1530,6 +1588,7 @@ function renderBand(){
     // Only the wallet flow's band fades out to white; every other flow keeps the flat gold.
     el.className=(el.id==='band'?'banner':'band3')+(red?' red':'')+(promo?' bn-promo':'')+(coup?' coupon':'')+(g?' gold':'')+(g&&ab.wflow?' gfade':'')+(timed?' bn-dark':'')+(off?' bn-off':'');
     el.innerHTML=bandInner();
+    edApply(el);
   }
   // A running countdown is the one moving thing that should hold the eye, so the badges' light
   // sweep stands down while it ticks. Read off the rendered band rather than re-deriving which
@@ -1776,6 +1835,8 @@ function select(v){
 function initAM(root){
   amRoot=root;
   ab.open=false; ab.sumOpen=false; ab.pmOpen=false; ab.shown=null;
+  // Set before the renders: .rows2 resizes .rcpt, and drawRcpt() below measures that box.
+  amRoot.classList.toggle('rows2', ab.rows===2);
   renderTiles(); renderBand(); renderCard(false); renderSummary(); renderPM(); drawRcpt(); drawRc();
   // Redraw the open sheet's outline whenever its box changes — grid re-render, band appearing or
   // going, rotation. Scoped to this root so it dies with the screen on remount.
