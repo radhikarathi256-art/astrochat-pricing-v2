@@ -729,7 +729,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    nav. Tried 154 first (matching nav-rule-to-copy, 27px) and she rejected it: "the space below
    shud have decreased not increased". The visible strip is cardTop - bannerTop, so only the card
    can change it; the band's 42px padding-bottom is hidden underneath and does nothing. */
-.am .rcpt{position:absolute;left:16px;right:16px;top:139px;height:213px;z-index:2;transition:top .42s cubic-bezier(.2,.8,.2,1)}
+.am .rcpt{position:absolute;left:16px;right:16px;top:139px;height:229px;z-index:2;transition:top .42s cubic-bezier(.2,.8,.2,1)}
 /* Wallet flow with the nudge band hidden: the card takes the band's place instead of leaving a
    hole under the nav. 80px is the band's own top, so the card ends up exactly where the band
    started and the 15px breathing room below the nav is preserved.
@@ -751,10 +751,10 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .am .notch.r{right:-11px;clip-path:inset(0 50% 0 0)}
 /* Sep 22: was 28px below the bonus chips (120.5); she boxed that gap as too big next to the ~8px
    under the notch, so it is now 12px below them and the two gaps around the notch match.
-   Must stay above the point the bottom arch starts (height - DROP = 213 - 56 = 157). */
+   Must stay above the point the bottom arch starts (height - DROP = 229 - 72 = 157). */
 .am .rcpt .notch{top:132px}
 /* same box as the receipt card, so "See More Options" can hang off its bottom edge */
-.am .stack{position:absolute;left:32px;right:32px;top:139px;height:213px;z-index:3;transition:top .42s cubic-bezier(.2,.8,.2,1)}
+.am .stack{position:absolute;left:32px;right:32px;top:139px;height:229px;z-index:3;transition:top .42s cubic-bezier(.2,.8,.2,1)}
 .am .skus{position:absolute;left:0;right:0;top:28px;height:96px;display:flex;gap:12px;align-items:flex-start}
 /* Anchored from the top, not the bottom, so growing the card or deepening the arch below it
    leaves the button exactly where it is.
@@ -763,7 +763,8 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    and gap below the button 31 -> 23, the latter by shortening the card 245 -> 229. Sep 22 another
    16 came off the top gap only (51 -> 35, top 175 -> 159, card 229 -> 213) so the space above the
    notch matches the space below it. Changing .see's top alone moves BOTH gaps, so the card height
-   has to move with it. */
+   has to move with it. Sep 23's card 213 -> 229 went entirely into a deeper bow (DROP 56 -> 72),
+   so this top is untouched and the button sits exactly where it did. */
 .am .see{position:absolute;left:0;right:0;top:159px;display:flex;justify-content:center}
 /* TWO ROWS of SKUs — the post-3rd-recharge flow (ab.rows === 2), where the user has already
    recharged twice and the bigger amounts are worth showing up front rather than behind
@@ -772,9 +773,9 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    the one-row layout and the whole second row is a clean +96 on everything below it —
    the card, its outline box and the button all shift by the same number.
    The notch moves with the chips (12px below them, same as the closed card's 120.5 + 12) and
-   still clears the point the bottom arch starts, height - DROP = 309 - 56 = 253. */
+   still clears the point the bottom arch starts, height - DROP = 325 - 72 = 253. */
 .am.rows2 .skus{height:192px;display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:96px;gap:0 12px;align-items:start}
-.am.rows2 .stack,.am.rows2 .rcpt{height:309px}
+.am.rows2 .stack,.am.rows2 .rcpt{height:325px}
 .am.rows2 .see{top:255px}
 .am.rows2 .rcpt .notch{top:228px}
 .am .seebtn{display:flex;align-items:center;border:.8px dashed #D0D5DD;border-radius:12px;padding:4px 4px 4px 12px}
@@ -876,7 +877,10 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    of squaring off behind it. It still does the background's old job of hiding the band that .rc
    pulls itself over, because the path spans the whole card and .rc's stacking context sits above
    .band3's z-index 1 either way. */
-.am .rc{position:relative;z-index:2;margin-top:-30px;padding:19px 17px;transition:margin-top .42s cubic-bezier(.2,.8,.2,1)}
+/* Bottom padding carries the extra 16 that DROP gained on Sep 23, so the content keeps the same
+   clearance above the bow it always had. This card is content-sized, so unlike .rcpt it has no
+   height to grow — the padding IS its height. */
+.am .rc{position:relative;z-index:2;margin-top:-30px;padding:19px 17px 35px;transition:margin-top .42s cubic-bezier(.2,.8,.2,1)}
 /* width/height must be stated. An <svg> is a REPLACED element, so `width:auto` gives it its
    intrinsic 300x150 instead of stretching to the offsets — which is exactly what it silently did
    on the first attempt, leaving a 299x149 outline floating inside a 328x489 card.
@@ -887,10 +891,11 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 /* Copied from #rcptPath deliberately: same fill, colour, 2/2 dashes and butt caps. If one of them
    is ever retuned, retune both or the two cards drift apart again. */
 .am .rcline path{fill:#fff;stroke:#C6CCD5;stroke-width:1;stroke-dasharray:2 2;stroke-linecap:butt}
-/* 61 = where the closed card's notch sits (229 tall, top:148, 20 high). Both cards now bow from
-   DROP=56 above their base, so this is also the 5px of clearance the closed card leaves above the
-   point the bow starts. At the old 58 the notch had only 2px and sat on the curve's shoulder. */
-.am .rc .notch{bottom:61px}
+/* Both cards bow from DROP above their base, so this is DROP + the 5px of clearance the closed
+   card leaves above the point the bow starts. It must move whenever DROP does — 56 -> 72 on
+   Sep 23 took it 61 -> 77. At 61 against the deeper bow the notch would sit on the curve's
+   shoulder, which is exactly the fault an earlier 58 had. */
+.am .rc .notch{bottom:77px}
 .am .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .am .seerow{display:flex;justify-content:center;margin-top:30px}
 .am .scrollpad{height:0}
@@ -1804,8 +1809,13 @@ function setOpen(on){
 /* receipt outline — drawn at 1:1 so the dashes and the 1px stroke stay undistorted.
    Each half of the bottom is ONE cubic from the side to the centre; a corner arc glued to a
    bow is tangent-continuous but not curvature-continuous and the eye reads the jump as a
-   crease. DROP governs roundness (40 -> 21.6px, 56 -> 27px, 72 -> 31.3px), not the handles. */
-const RCPT_R=32, DROP=56;
+   crease. DROP governs roundness (40 -> 21.6px, 56 -> 27px, 72 -> 31.3px), not the handles.
+   DROP is also literally the sag: the sides stop at H - DROP and the centre reaches H.
+   Sep 23 she asked for a deeper bow, so 56 -> 72 — and every card height went up by the same 16,
+   which keeps H - DROP where it was. That is the whole trick: the straight sides and the notch
+   do not move, only the centre dips further. Change DROP without moving the heights and you
+   raise the sides instead, which is not what "deeper" means. */
+const RCPT_R=32, DROP=72;
 function drawRcpt(){
   if(!amRoot) return;
   const el=A('rcpt'), o=.5;                    // half the stroke, so it sits inside the box
