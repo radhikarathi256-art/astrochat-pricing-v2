@@ -527,10 +527,9 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 /* Confetti sits ABOVE the black scrim and BELOW the card — both layers are positioned, so DOM
    order alone decided it and any reorder would silently break it. Pinned explicitly. */
 .confetti{position:absolute;inset:0;z-index:1;pointer-events:none}
-.confetti i{position:absolute;left:50%;top:38%;width:8px;height:12px;border-radius:2px;opacity:0;animation:burst 1.5s cubic-bezier(.15,.6,.3,1) forwards}
-/* holds full opacity for most of the flight — fading from frame one made the pieces read as if
-   they were under the scrim rather than on top of it */
-@keyframes burst{0%{opacity:1;transform:translate(0,0) rotate(0)}70%{opacity:1}100%{opacity:0;transform:translate(var(--x),var(--y)) rotate(var(--r))}}
+/* The art is a 1:1 Lottie, so the box is squared off the screen WIDTH and centred on the popup.
+   Stretching it to the full 360x780 overlay would smear every piece vertically. */
+.confetti dotlottie-wc{position:absolute;left:50%;top:50%;width:150%;aspect-ratio:1;transform:translate(-50%,-50%)}
 .pop{position:absolute;left:50%;top:50%;width:278px;z-index:2;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;animation:popin .4s cubic-bezier(.2,1.3,.4,1)}
 @keyframes popin{from{transform:translate(-50%,-50%) scale(.8);opacity:0}to{transform:translate(-50%,-50%) scale(1);opacity:1}}
 .pop .badge{position:relative;z-index:2;width:52px;height:52px;margin-bottom:-26px;animation:wiggle 1.2s ease-in-out .3s}
@@ -615,13 +614,9 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    amount, or the strip of band left showing above the card changes width (it is card.top minus
    this, and is meant to stay 62). */
 .am .banner{position:absolute;top:80px;left:16px;right:16px;z-index:1}
-/* Wallet flow only: the band is the ₹50 nudge and nothing else, so it is parked behind the SKU
-   card and slides up only while ₹50 is selected. 62px is not a taste value — it is exactly the
-   strip of band that shows above the card (card top 142 − band top 80), so translating by it
-   leaves the band's top edge level with the card's and the whole thing hidden. If either top
-   moves, this moves with it. The card is z-index 2 with an opaque #fff fill, which is what makes
-   the band disappear behind it rather than under it. */
-.am .banner.bn-off{transform:translateY(62px)}
+/* Sep 23: the wallet band no longer hides above ₹50 — it carries real copy on every SKU now, so
+   the "park it behind the SKU card and slide it up only at ₹50" state (.bn-off / .bandoff) is
+   gone along with the card's matching 139→80 rise. */
 /* The band sits BEHIND the receipt card, not above it: 62px of it shows (151 − 89) and the
    rest is hidden. So the bottom padding is deliberate filler, not spacing — it has to outrun
    that 62px or a gap opens up. Top/side padding is what actually sizes the visible strip.
@@ -631,6 +626,9 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .am .bandin img{width:26px;height:26px;flex-shrink:0;transition:filter .3s}
 /* the discount tag tips side to side every few seconds so the offer keeps a bit of life */
 .am .bandin .tag{transform-origin:50% 50%;animation:tagWiggle 3.4s ease-in-out infinite}
+/* ...but it holds still once the band has stopped asking for anything (₹250 and up). The wiggle
+   is there to pull the eye toward a next step; with no next step it is just noise. */
+.am .bandin .tag.still{animation:none}
 @keyframes tagWiggle{
   0%,62%,100%{transform:rotate(0)}
   68%{transform:rotate(-13deg) scale(1.08)}
@@ -648,6 +646,10 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .am .bandin .l1 b{font-weight:800;font-variant-numeric:tabular-nums}
 /* Wallet flow only: regular copy with the figure as the single bold thing on the line. */
 .am .bandin .l1.reg{font-weight:400}
+/* The brackets that no longer point at a bigger tile (₹250 and up) step back half a weight: the
+   line is a statement rather than an ask, and at 600/500 it stops competing with the SKU card. */
+.am .bandin.noask .l1{font-weight:600}
+.am .bandin.noask .l2{font-weight:500}
 .am .bandin .l2{margin-top:1px;font-weight:500;color:var(--success-700)}
 /* Line 2 never had a bold rule of its own, so a <b> in it fell back to the browser's 700 and the
    band's own colour — half a step from the copy around it, which is why the figures did not read
@@ -769,15 +771,6 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    shud have decreased not increased". The visible strip is cardTop - bannerTop, so only the card
    can change it; the band's 42px padding-bottom is hidden underneath and does nothing. */
 .am .rcpt{position:absolute;left:16px;right:16px;top:139px;height:229px;z-index:2;transition:top .42s cubic-bezier(.2,.8,.2,1)}
-/* Wallet flow with the nudge band hidden: the card takes the band's place instead of leaving a
-   hole under the nav. 80px is the band's own top, so the card ends up exactly where the band
-   started and the 15px breathing room below the nav is preserved.
-   This has to move in step with .banner.bn-off, and the two are deliberately the same duration
-   and curve: the band travels +62 while the card travels −62, so they close on each other and
-   meet halfway. That is what makes it read as the card rising and swallowing the band, rather
-   than two separate things moving. The band stays covered throughout — past the halfway point
-   the card's top is above the band's, and the card is z-index 2 over the band's 1. */
-.am.bandoff .rcpt,.am.bandoff .stack{top:80px}
 .am .rcptline{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 /* Was 3/2, which is exactly what Chrome draws for `1px dashed`; she asked for shorter dashes,
    so the path is now 2/2. The notch below is still a real CSS dashed border and so is still
@@ -909,16 +902,6 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .am .openscroll{position:absolute;inset:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;padding:10px 16px 0}
 .am .openscroll::-webkit-scrollbar{display:none}
 .am .band3{position:relative;z-index:1;margin:0 4px}
-/* Same slide inside the open "See More Options" sheet, where the band is in normal flow instead of
-   absolutely placed, so it has to close the space it leaves as well as move out of it.
-   57 = the band's 87px height minus the 30px .rc already overlaps it by, i.e. the strip actually
-   on show here. The gap is closed on .rc's OWN margin-top rather than a margin-bottom on the band:
-   adjacent siblings collapse their margins to the single most-negative value, not the sum, so a
-   -57 here and .rc's standing -30 would have given -57 and left 30px of empty sheet behind.
-   -87 takes .rc's top all the way up to where the band's box starts, and .rc is z-index 2 with an
-   opaque background, so the band ends up entirely inside it. */
-.am .band3.bn-off{transform:translateY(57px)}
-.am .band3.bn-off + .rc{margin-top:-87px}
 /* pulled up over the band's filler padding, the same way .rcpt covers it in the closed state */
 /* The outline is drawn in SVG for one reason: CSS gives no way to set a dash length, so
    `1px dashed` is stuck on Chrome's 3/2 while the closed card's drawn path is 2/2. Side by side
@@ -1129,22 +1112,14 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .am .sk-chip{top:165.4px;width:78px;height:26.5px;border-radius:13px}
 .am .sk-chip.c1{left:38.35px}.am .sk-chip.c2{left:141px}.am .sk-chip.c3{right:38.35px}
 .am .sk-see{top:250.5px;left:50%;margin-left:-66px;width:132px;height:26px;border-radius:12px}
-/* The two layout variants the real screen has, mirrored. bandoff pulls .rcpt/.stack from 139 to
-   80, so every block above the fold moves -59; rows2 adds a second 96px tile row and grows the
-   card to 325. Without these the skeleton lands 59px low on the wallet flow and short on post3,
-   and the hand-off snaps. */
-.am.bandoff .sk-band{display:none}
-.am.bandoff .sk-card{top:16px}
-.am.bandoff .sk-tile{top:44px}
-.am.bandoff .sk-chip{top:106.4px}
-.am.bandoff .sk-see{top:191.5px}
+/* post3's second row: one more 96px tile row, and the card grows to 325. Without these the
+   skeleton lands short on that flow and the hand-off snaps.
+   (The old band-hidden variant is gone — the band is now on screen in every wallet state, so the
+   skeleton always draws it.) */
 .am.rows2 .sk-card{height:325px}
 .am.rows2 .sk-see{top:346.5px}
 .am.rows2 .sk-tile.r2{top:199px}
 .am.rows2 .sk-chip.r2{top:261.4px}
-.am.bandoff.rows2 .sk-see{top:287.5px}
-.am.bandoff.rows2 .sk-tile.r2{top:140px}
-.am.bandoff.rows2 .sk-chip.r2{top:202.4px}
 .am .sk-tile.r2,.am .sk-chip.r2{display:none}
 .am.rows2 .sk-tile.r2,.am.rows2 .sk-chip.r2{display:block}
 .am .sk-ac{bottom:118px;left:50%;margin-left:-134px;width:268px;height:108px;border-radius:18px 18px 0 0}
@@ -1207,22 +1182,11 @@ body.mobile .phone{border-radius:0;box-shadow:none}
     <button data-jump="history">View history (offer)</button>
     <button data-jump="post3">Post 3rd recharge</button>
   </div>
-  <!-- TEMPORARY copy A/B switcher. Jumps straight into the low-balance flow with the chosen
-       headline. Delete together with COPY / the ?copy switch in bandInner(). -->
-  <div class="toolbar" role="toolbar" aria-label="Band headline variant">
-    <b>Band copy</b>
-    <button data-copy="1">1 · 33 min free</button>
-    <button data-copy="2">2 · ₹500 free</button>
-    <button data-copy="3">3 · talk 50 min</button>
-    <button data-copy="4">4 · fewest numbers</button>
-    <button data-copy="5">5 · ₹5/min</button>
-  </div>
   <div class="stage" id="stage"><div class="phone" id="phone"></div></div>
 </div>
 <!-- Desktop-only live editor for the alert banner. Fixed to the right edge rather than stacked
      into .shell on purpose: .shell is a centred column and the phone is sized off the remaining
-     viewport height, so another row there would shrink the prototype. Prototype scaffolding —
-     goes out with COPY / the "Band copy" toolbar. -->
+     viewport height, so another row there would shrink the prototype. Prototype scaffolding. -->
 <aside class="edpanel" id="edPanel" aria-label="Edit alert banner copy">
   <b>Alert banner copy</b>
   <label for="edL1">Line 1<input id="edL1" type="text" autocomplete="off" spellcheck="false"></label>
@@ -1241,12 +1205,6 @@ body.mobile .phone{border-radius:0;box-shadow:none}
     <button data-jump="again">Chat again<small>Coupon applied → coupon bonuses</small></button>
     <button data-jump="history">View history<small>Continue chat → ₹12/min offer</small></button>
     <button data-jump="post3">Post 3rd recharge<small>Two rows of SKUs, coins on ₹500</small></button>
-    <h4>Band copy (all at ₹250)</h4>
-    <button data-copy="1">1 · 33 min free with Astro Hemali<small>Free minutes first</small></button>
-    <button data-copy="2">2 · You get ₹500 free<small>Free money first</small></button>
-    <button data-copy="3">3 · Talk 50 min with Astro Hemali<small>Total talk time first</small></button>
-    <button data-copy="4">4 · ₹500 free with this recharge<small>Fewest numbers on screen</small></button>
-    <button data-copy="5">5 · Chat at just ₹5/min<small>Free money, then the rate</small></button>
   </div>
 </div>
 
@@ -1389,6 +1347,9 @@ const couponFor=()=>ab.mode==='coupon'?COUPON_FLAT:0;
 // no astrologer is known: nothing that needs a rate may be shown there.
 let flowRate=null;
 const LOTTIE_LOW='https://lottie.host/5ddeccf5-8552-43a2-9652-64ffc3b467ac/K2ZA3CwRuI.lottie';
+// Ships with the site rather than off lottie.host: it is 10KB, and the popup is the one moment
+// where a late-loading animation would be missed entirely.
+const LOTTIE_CONFETTI='assets/confetti.lottie';
 let flowAstro='Astro Hemali';
 let flowType='wallet'; // 'insufficient' when the user came from an astrologer's Chat button with too little balance // astrologer the user is trying to reach (null when opened from the wallet)
 function cdText(){
@@ -1617,10 +1578,57 @@ const creditFor=v=>v+bonusFor(v)+couponFor();
 const effRate=v=>Math.round(flowRate*v/(v+baseBonusFor(v)));
 const minutesFor=v=>creditFor(v)/flowRate;
 const shortOfMin=()=>ab.cflow&&flowRate&&minutesFor(ab.sel)<MIN_MINUTES;
-// TEMPORARY, paired with the ?copy=1..8 switch in bandInner() and the "Band copy" toolbar.
-// ?sel= preselects a tile so the switcher can land on the amount its button labels quote.
-const COPY=+(new URLSearchParams(location.search).get('copy')||1);
+// ?sel= preselects a tile, so a link can land on a particular amount's band.
 const SEL=+(new URLSearchParams(location.search).get('sel')||0);
+/* ---------- band copy (v3, Sep 23) ----------
+   One table drives all three bands. The key is <prefix><bracket>: prefix b = wallet,
+   k = ASTRO50 coupon, c = astrologer flow; bracket = which SKU is selected (50 / 100 / 250 /
+   hi = anything above ₹250). Everything in {braces} is filled from the live pricing table by
+   fillCopy(), so no figure here is hardcoded — change BASE and the copy follows.
+   The two "ask" brackets (50 and 100) point UP at the next tile; from ₹250 the band stops
+   asking and just states what you get, which is what .noask below de-emphasises. */
+const KPILL=`<b>ASTRO50</b> applied<span class="cdpill"><b>Expires today</b></span>`;
+const V3COPY={
+  b50 :["You're missing out on <b>₹{b1}</b> extra","Pick <b>₹{t1}</b>, get <b>₹{c1}</b> in your wallet"],
+  b100:["You're getting <b>₹{b1}</b> extra","Pick <b>₹{t2}</b>, get <b>₹{c2}</b> in your wallet"],
+  b250:["You're getting <b>₹{b2}</b> extra","Best deal · <b>₹{c2}</b> in your wallet"],
+  bhi :["You're getting <b>₹{bs}</b> extra","<b>₹{cs}</b> in your wallet"],
+  k50 :[KPILL,"Pick <b>₹{t1}</b>, get <b>₹{c1}</b> in your wallet"],
+  k100:[KPILL,"Pick <b>₹{t2}</b>, get <b>₹{c2}</b> in your wallet"],
+  k250:[KPILL,"Best deal · <b>₹{c2}</b> in your wallet"],
+  khi :[KPILL,"<b>₹{cs}</b> in your wallet with ASTRO50"],
+  c50 :["Only <b>{M}</b> with {astro}","Pick <b>₹{t1}</b>, chat for <b>{M1}</b>"],
+  c100:["<b>{M}</b> with {astro}","Pick <b>₹{t2}</b>, chat for <b>{M2}</b>"],
+  c250:["<b>{M}</b> with {astro}","Best deal · <b>₹{b2}</b> extra on ₹{t2}"],
+  chi :["<b>{M}</b> with {astro}","<b>₹{bs}</b> extra on ₹{s}"]
+};
+// FLOOR, not round: the band is promising talk time, and rounding 49.6 up to "50 mins" is a
+// promise the wallet cannot keep on the last minute.
+const v3Mins=v=>flowRate?Math.floor(creditFor(v)/flowRate):0;
+const v3M=v=>{const m=v3Mins(v);return m+(m===1?' min':' mins')};
+const nf=n=>n.toLocaleString('en-IN');
+function fillCopy(s){
+  const t1=BASE[1][0], t2=BASE[2][0];
+  const tok={t1,t2,b1:bonusFor(t1),b2:bonusFor(t2),c1:creditFor(t1),c2:creditFor(t2),
+    bs:bonusFor(ab.sel),cs:creditFor(ab.sel),s:ab.sel,
+    astro:flowAstro,M:v3M(ab.sel),M1:v3M(t1),M2:v3M(t2)};
+  return s.replace(/\{(\w+)\}/g,(_,k)=>{const v=tok[k];return typeof v==='number'?nf(v):v});
+}
+function v3Band(){
+  const coup=ab.mode==='coupon', money=!(ab.cflow&&flowRate);
+  const p=coup?'k':money?'b':'c';
+  // Explicit comparisons, not endsWith('50') — '250' ends with '50' too.
+  const st=ab.sel<=BASE[0][0]?'50':ab.sel<BASE[2][0]?'100':ab.sel===BASE[2][0]?'250':'hi';
+  const ask=st==='50'||st==='100';
+  const [l1,l2]=V3COPY[p+st].map(fillCopy);
+  // Only the wallet's ₹50 earns the amber warning — there the band is a miss, everywhere else
+  // it is a win and carries the seal. The seal stays the plain #039855 discount.svg: the dark
+  // recolour belongs to the deep-green promo band, and a band's seal always follows its green.
+  const icon=(st==='50'&&!coup)?`<img src="${I.warning}" alt="">`
+    :`<img class="tag${ask?'':' still'}" src="${I.discount}" alt="">`;
+  const deco=coup?`<img class="bn-stars" src="${I.stars}" alt="" aria-hidden="true"><span class="sweep"></span>`:'';
+  return `<div class="bandin${ask?'':' noask'}">${icon}<div><p class="l1">${l1}</p><p class="l2">${l2}</p></div></div>${deco}`;
+}
 function bandInner(){
   // The astrologer bands come FIRST: on this flow ₹50 is a blocker, not a missed bonus, so it
   // must not fall through to the gold "you're missing out" copy.
@@ -1638,57 +1646,24 @@ function bandInner(){
   // discount-dark.svg is the #065F41 recolour, which is what belongs on the dark band; the plain
   // #039855 one now goes to the coupon band. Whenever a band changes green, its seal follows.
   if(ab.mode==='offer') return `<div class="bandin"><img class="tag" src="${I['discount-dark']}" alt=""><div><p class="l1">Offer expires in <span class="cdpill"><b class="cd">${cdText()}</b></span></p><p class="l2">Bonus on first recharge over <b>₹100</b></p></div></div><img class="bn-stars" src="${I.stars}" alt="" aria-hidden="true">`;
-  // ASTRO50. Same on every tile — the ₹50 is flat, so no figure here moves with the selection.
-  // Sep 23: NO live clock. The chip holds a static "Expiring soon" and, exactly like the promo
-  // band's old static "24 hours", it deliberately carries NO `cd` class — `cd` is both the
-  // ticker's write target and the hook renderBand()'s `.timed` check reads, so a `cd` here would
-  // restart a clock that isn't shown and silence the SKU badge sweeps for nothing.
-  // "expires in" had to go with it: "expires in Expiring soon" is not a sentence. The line is now
-  // the coupon's NAME and the chip is its status — her wording, "ASTRO 50 coupon" + the bubble.
-  // Seal swapped to the plain #039855 discount.svg to match the lighter green it now sits on.
-  // Benefit line deliberately does NOT carry the promo band's "over ₹100" qualifier: ASTRO50 is
-  // flat and pays out at ₹50 too (the ₹50 tile badges +₹50 under this coupon), so a threshold here
-  // would be claiming a condition the pricing does not actually impose.
-  if(ab.mode==='coupon') return `<div class="bandin"><img class="tag" src="${I.discount}" alt=""><div><p class="l1">ASTRO 50 coupon <span class="cdpill"><b>Expiring soon</b></span></p><p class="l2">Get <b>₹${COUPON_FLAT}</b> extra on your first recharge</p></div></div><img class="bn-stars" src="${I.stars}" alt="" aria-hidden="true"><span class="sweep"></span>`;
-  if(ab.cflow&&flowRate){
-    // Lead with the SAVING, not the price. The bonus is what makes this rate possible, so the band
-    // now names the gap it creates; the two rates stay underneath as the proof.
-    // NO per-minute figures. This band used to print "₹5/min" struck through "₹15/min", which asked
-    // the user to divide, compare and trust two rates at the exact moment they have been blocked
-    // from chatting. The bonus does not have to be shown working — "free" needs no arithmetic.
-    // That also retires the ratio framings ("talks like ₹750", "turn ₹250 into ₹750"): they read as
-    // a puzzle rather than an offer, because nothing on screen says what "talks like" means.
-    // Both lines are per-tile. Above ₹250 the bonus multiplier falls, so anything pinned to ₹250's
-    // numbers would start overclaiming on the bigger tiles.
-    // Safe to say "free" wherever this band appears: the only zero-bonus amount is ₹50, and there
-    // shortOfMin() has already replaced this band with the red "not enough to connect" strip.
-    const credit=creditFor(ab.sel), rs=n=>'₹'+n.toLocaleString('en-IN');
-    const mins=Math.round(credit/flowRate), freeMins=mins-Math.round(ab.sel/flowRate);
-    const bonus=credit-ab.sel;
-    // TEMPORARY ?copy=1..5 switch so these can be compared in the real band. Collapse to the
-    // chosen pair and delete the rest along with COPY/SEL and the "Band copy" toolbar.
-    // Every figure is wrapped in b.hl, not plain <b> — see the .hl rule in the CSS. The word next
-    // to the figure ("free", "min") stays INSIDE the bold so the number and its unit read as one
-    // object; splitting them put a 600-weight "free" against an 800 "₹500" and the eye stopped
-    // at the number instead of the claim.
-    const V={
-      1:[`<b class="hl">${freeMins} min free</b> with ${flowAstro}`,`Your ${rs(ab.sel)} gets you <b class="hl">${mins} min</b>`],
-      2:[`You get <b class="hl">${rs(bonus)} free</b>`,`That's <b class="hl">${freeMins} extra min</b> with ${flowAstro}`],
-      3:[`Talk <b class="hl">${mins} min</b> with ${flowAstro}`,`<b class="hl">${freeMins} min</b> of that is free`],
-      4:[`<b class="hl">${rs(bonus)} free</b> with this recharge`,`Chat longer with ${flowAstro}`],
-      // The per-minute one she asked to see again. ONE rate, never two: the struck-through
-      // "₹5/min ₹15/min" pair is the comparison she rejected. effRate() is the honest per-tile
-      // figure and ignores the coupon on purpose, so a coupon can never make the rate look worse.
-      5:[`<b class="hl">${rs(bonus)} free</b> with this recharge`,`Chat at just <b class="hl">${rs(effRate(ab.sel))}/min</b> with ${flowAstro}`]
-    };
-    const [l1,l2]=V[COPY]||V[1];
-    return `<div class="bandin"><img class="tag" src="${I.discount}" alt=""><div><p class="l1">${l1}</p><p class="l2">${l2}</p></div></div>`;
-  }
-  // The wallet flow gets this copy at EVERY amount, not just ₹50 — the green "Yay, you're earning
-  // ₹X extra" band it used to show above ₹50 is gone. Keeping the words and the colour fixed is
-  // what lets renderBand slide the strip in and out as one object; if it rewrote itself on the way
-  // down you would see it change its mind mid-slide. It is only ever on screen at ₹50.
-  if(isGold()||ab.wflow) return `<div class="bandin"><img src="${I.warning}" alt=""><div><p class="l1">You're missing out on a bonus</p><p class="l2">Pick ₹100 or more to get extra</p></div></div>`;
+  // ASTRO50 (v3 k* copy). Line 1 is the coupon's NAME and the chip is its status — a STATIC
+  // "Expires today", deliberately with NO `cd` class: `cd` is both the ticker's write target and
+  // the hook renderBand()'s `.timed` check reads, so a `cd` here would restart a clock that isn't
+  // shown and silence the SKU badge sweeps for nothing.
+  // Line 2 now moves with the tile (it used to be a flat "₹50 extra" on every SKU) and states the
+  // WALLET total rather than the coupon's own ₹50 — creditFor() already has the coupon in it.
+  if(ab.mode==='coupon') return v3Band();
+  // Astrologer flow (v3 c* copy). Talk TIME, not rupees and not a per-minute rate: the user has
+  // just been blocked mid-chat, so the only unit that means anything here is how long they get to
+  // keep talking. The struck-through "₹5/min ₹15/min" pair and the "talks like ₹750" ratio
+  // framings are both retired — they asked the user to do arithmetic at the worst moment.
+  // Both lines are per-tile. Above ₹250 the bonus multiplier falls, so anything pinned to ₹250's
+  // numbers would start overclaiming on the bigger tiles.
+  if(ab.cflow&&flowRate) return v3Band();
+  // Wallet flow (v3 b* copy), on EVERY amount. ₹50 is the only one that reads as a miss — it earns
+  // no bonus — and it is the only one that turns gold; from ₹100 up the same band states what the
+  // bonus actually is and, up to ₹250, points at the next tile.
+  if(isGold()||ab.wflow) return v3Band();
   const cd = `<b class="cd">${cdText()}</b>`;
   const l1 = ab.mode==='coupon' ? `<b>ASTRO50</b> applied${ab.noTimer?'':` · ends in ${cd}`}`
            : ab.mode==='offer'  ? `First 5 mins chat at <b>₹5/min</b> · <b>80% Off</b>`
@@ -1743,7 +1718,6 @@ if(edPanel){
     u.search='';
     u.searchParams.set('start',curRoute);
     if(SEL) u.searchParams.set('sel',SEL);
-    if(COPY!==1) u.searchParams.set('copy',COPY);
     if(bandCopy.l1) u.searchParams.set('l1',bandCopy.l1);
     if(bandCopy.l2) u.searchParams.set('l2',bandCopy.l2);
     const link=u.toString();
@@ -1766,17 +1740,17 @@ function renderBand(){
   // The promo one deliberately overrides gold too, so ₹50 keeps the offer copy; the coupon one
   // doesn't need to, because with COUPON_FLAT applied ₹50 is no longer a zero-bonus tile.
   const special = red||promo||coup||(ab.cflow&&flowRate);
-  // The wallet flow is gold at every amount now, not just at ₹50, because its band has no other
-  // job — see bandInner. `off` is what actually decides whether you can see it: parked behind the
-  // SKU card unless ₹50 is the selection.
-  const g=!special&&(ab.wflow||isGold());
-  const off=!special&&ab.wflow&&!isGold();
+  // Sep 23, her call: the wallet band is on screen at EVERY SKU, not parked behind the card above
+  // ₹50. Gold is now keyed purely on the tile earning nothing, so ₹50 warns in amber and ₹100 and
+  // up sit on the standard light-green gradient (the base .banner/.band3 rule). `off` is gone with
+  // the hide — there is nothing left to slide out of the way.
+  const g=!special&&isGold();
   // v1's rule: deeper green only while a countdown is showing, lighter green without one.
   // The wallet flow's copy carries no countdown, so it lands on the lighter one.
   const timed = !g && !red && !promo && !coup && !ab.cflow && !ab.wflow;
   for(const el of [A('band'),A('band3')]){
-    // Only the wallet flow's band fades out to white; every other flow keeps the flat gold.
-    el.className=(el.id==='band'?'banner':'band3')+(red?' red':'')+(promo?' bn-promo':'')+(coup?' coupon':'')+(g?' gold':'')+(g&&ab.wflow?' gfade':'')+(timed?' bn-dark':'')+(off?' bn-off':'');
+    // Only the wallet flow's gold fades out to white; elsewhere ₹50 keeps the flat gold.
+    el.className=(el.id==='band'?'banner':'band3')+(red?' red':'')+(promo?' bn-promo':'')+(coup?' coupon':'')+(g?' gold':'')+(g&&ab.wflow?' gfade':'')+(timed?' bn-dark':'');
     el.innerHTML=bandInner();
     edApply(el);
   }
@@ -1786,8 +1760,6 @@ function renderBand(){
   amRoot.classList.toggle('timed', !!A('band').querySelector('.cd'));
   // And the badges only sweep while the pick earns nothing — see the .lure rule in the CSS.
   amRoot.classList.toggle('lure', isGold());
-  // With the band hidden the SKU card slides up into its place rather than leaving a gap.
-  amRoot.classList.toggle('bandoff', off);
 }
 
 /* card */
@@ -2117,13 +2089,9 @@ function popup(kind){
   const title=kind==='coupon'?'Coupon code Applied !':'First recharge offer !';
   const body=kind==='coupon'?`You’ll get <b>₹50 extra</b> on your first wallet recharge`
     :`You’ll get a <b>bonus</b> on your first recharge over <b>₹100</b>`;
-  const colors=['#f472b6','#facc15','#a855f7','#fb923c','#34d399','#e879f9'];
-  let bits='';
-  if(!RM) for(let i=0;i<46;i++){
-    const a=Math.random()*Math.PI*2, d=90+Math.random()*170;
-    bits+=`<i style="background:${colors[i%colors.length]};--x:${Math.cos(a)*d}px;--y:${Math.sin(a)*d-60}px;--r:${Math.random()*720-360}deg;animation-delay:${Math.random()*.15}s;width:${5+Math.random()*6}px;height:${7+Math.random()*8}px"></i>`;
-  }
-  return `<div class="overlay" role="dialog" aria-label="${title}"><div class="confetti">${bits}</div>
+  // No loop: the burst plays once as the card lands, the same as the CSS pieces it replaces.
+  const bits=RM?'':`<dotlottie-wc src="${LOTTIE_CONFETTI}" autoplay></dotlottie-wc>`;
+  return `<div class="overlay" role="dialog" aria-label="${title}"><div class="confetti" aria-hidden="true">${bits}</div>
     <div class="pop"><img class="badge" src="${I['popup-badge']}" alt="">
       <div class="pop-card"><p class="pop-title">${title}</p><p class="pop-body">${body}</p></div></div></div>`;
 }
@@ -2227,13 +2195,6 @@ phone.addEventListener('click',e=>{
   if(t) return go(t.dataset.go,t.dataset.rate);
 });
 document.querySelectorAll('[data-jump]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.jump)));
-// TEMPORARY copy switcher. A full reload rather than a re-render, because COPY is read once at
-// parse time; that also makes the current variant shareable as a URL. Delete with COPY/SEL.
-document.querySelectorAll('[data-copy]').forEach(b=>b.addEventListener('click',()=>{
-  const u=new URL(location.href);
-  u.searchParams.set('start','listingChat'); u.searchParams.set('sel','250');
-  u.searchParams.set('copy',b.dataset.copy); location.href=u.toString();
-}));
 document.getElementById('flowsBtn').addEventListener('click',()=>document.getElementById('flowsSheet').classList.add('open'));
 document.getElementById('flowsSheet').addEventListener('click',e=>{if(e.target.id==='flowsSheet')e.currentTarget.classList.remove('open')});
 
