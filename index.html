@@ -1046,6 +1046,60 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .am .paybtn b{font-size:16px;line-height:24px;font-weight:600;font-variant-numeric:tabular-nums}
 .am .paybtn small{font-size:12px;line-height:18px;opacity:.95}
 
+/* ---------- loading shimmer ---------- */
+/* The whole screen is priced by the wallet service — balance, bonus table, GST, the payment
+   method last used — so it opens as a skeleton of its own layout instead of flashing ₹0
+   placeholders that then jump. Every block below is the REAL box minus the 64px nav the overlay
+   starts under: .rcpt top:139 -> 75, .skus top:167 -> 103, the See pill top:298 -> 234, the
+   268x108 card. Keep them in step if those move, or the skeleton will visibly snap on hand-off.
+   The nav's back arrow and title are instant, so only the balance chip is covered. */
+.am .skel{position:absolute;left:0;right:0;top:64px;bottom:0;z-index:6;background:#fff;pointer-events:none;
+  transition:opacity .34s cubic-bezier(.2,.8,.2,1)}
+.am .skel.gone{opacity:0}
+.am.loading .badge{visibility:hidden}
+.am .sk{position:absolute;background:#EAECF0;border-radius:8px;overflow:hidden}
+/* One sweep for all of them: the highlight is a child travelling across each block, so every
+   block animates on the same 1.15s clock and the page reads as one surface, not nine. */
+.am .sk::after{content:"";position:absolute;inset:0;transform:translateX(-100%);
+  background:linear-gradient(90deg,rgba(255,255,255,0) 0%,rgba(255,255,255,.85) 50%,rgba(255,255,255,0) 100%);
+  animation:shimmer 1.15s linear infinite}
+@keyframes shimmer{to{transform:translateX(100%)}}
+.am .sk-badge{top:-45px;right:16px;width:62px;height:26px;border-radius:20px}
+.am .sk-band{top:16px;left:16px;right:16px;height:64px;border-radius:32px 32px 0 0}
+.am .sk-card{top:75px;left:16px;right:16px;height:229px;border-radius:24px;background:#F6F7F9}
+.am .sk-card::after{animation:none}
+.am .sk-tile{top:103px;width:90.7px;height:73.4px;border-radius:14px}
+.am .sk-tile.t1{left:32px}.am .sk-tile.t2{left:134.65px}.am .sk-tile.t3{right:32px}
+/* The badge is not below the tile, it OVERLAPS it: .chip carries margin-top:-11px, so its top is
+   tile_top + 73.4 - 11. Measured off the running screen (170.4 with no band, 266.4 on row two),
+   not derived by eye — a 22px error here reads as the badges jumping down on hand-off. */
+.am .sk-chip{top:165.4px;width:78px;height:26.5px;border-radius:13px}
+.am .sk-chip.c1{left:38.35px}.am .sk-chip.c2{left:141px}.am .sk-chip.c3{right:38.35px}
+.am .sk-see{top:234px;left:50%;margin-left:-66px;width:132px;height:26px;border-radius:12px}
+/* The two layout variants the real screen has, mirrored. bandoff pulls .rcpt/.stack from 139 to
+   80, so every block above the fold moves -59; rows2 adds a second 96px tile row and grows the
+   card to 325. Without these the skeleton lands 59px low on the wallet flow and short on post3,
+   and the hand-off snaps. */
+.am.bandoff .sk-band{display:none}
+.am.bandoff .sk-card{top:16px}
+.am.bandoff .sk-tile{top:44px}
+.am.bandoff .sk-chip{top:106.4px}
+.am.bandoff .sk-see{top:175px}
+.am.rows2 .sk-card{height:325px}
+.am.rows2 .sk-see{top:330px}
+.am.rows2 .sk-tile.r2{top:199px}
+.am.rows2 .sk-chip.r2{top:261.4px}
+.am.bandoff.rows2 .sk-see{top:271px}
+.am.bandoff.rows2 .sk-tile.r2{top:140px}
+.am.bandoff.rows2 .sk-chip.r2{top:202.4px}
+.am .sk-tile.r2,.am .sk-chip.r2{display:none}
+.am.rows2 .sk-tile.r2,.am.rows2 .sk-chip.r2{display:block}
+.am .sk-ac{bottom:118px;left:50%;margin-left:-134px;width:268px;height:108px;border-radius:18px 18px 0 0}
+.am .sk-sum{bottom:82px;left:16px;width:118px;height:18px}
+.am .sk-sum.r{left:auto;right:16px;width:96px}
+.am .sk-payw{bottom:32px;left:16px;width:96px;height:40px}
+.am .sk-pay{bottom:30px;right:16px;width:200px;height:44px;border-radius:12px}
+
 /* ---------- payment method sheet ---------- */
 /* overflow:hidden is load-bearing: the closed sheet and CTA sit below the fold on a transform,
    which still counts as scrollable overflow. Without this the screen gains 712px of scroll
@@ -1295,7 +1349,7 @@ function cdText(){
 // Markup only. Everything interactive lives in initAM(), which mount() re-runs after the
 // screen is in the DOM — v1 re-renders whole screens, so nothing here can bind at parse time.
 function renderAB(){
-  return `<div class="screen am">
+  return `<div class="screen am loading">
     <header class="nav">
       <div class="topnav">
         <button class="ttl" type="button" data-go="home" aria-label="Back to home"><span class="back"><img src="${I.back}" width="18" height="18" alt=""></span><h1>Add Money</h1></button>
@@ -1368,6 +1422,20 @@ function renderAB(){
         <p class="pm-credit" id="pmCredit"></p>
         <div class="pm-btnwrap"><button class="paybtn pm-pay" type="button" id="pmPay"></button></div>
       </div>
+    </div>
+
+    <div class="skel" id="skel" aria-hidden="true">
+      <i class="sk sk-badge"></i>
+      <i class="sk sk-band"></i>
+      <i class="sk sk-card"></i>
+      <i class="sk sk-tile t1"></i><i class="sk sk-tile t2"></i><i class="sk sk-tile t3"></i>
+      <i class="sk sk-chip c1"></i><i class="sk sk-chip c2"></i><i class="sk sk-chip c3"></i>
+      <i class="sk sk-tile r2 t1"></i><i class="sk sk-tile r2 t2"></i><i class="sk sk-tile r2 t3"></i>
+      <i class="sk sk-chip r2 c1"></i><i class="sk sk-chip r2 c2"></i><i class="sk sk-chip r2 c3"></i>
+      <i class="sk sk-see"></i>
+      <i class="sk sk-ac"></i>
+      <i class="sk sk-sum"></i><i class="sk sk-sum r"></i>
+      <i class="sk sk-payw"></i><i class="sk sk-pay"></i>
     </div>
   </div>`;
 }
@@ -1928,6 +1996,18 @@ function initAM(root){
     if(e.key==='Escape'){if(ab.pmOpen)setPM(false);else if(ab.sumOpen)setSumOpen(false)}
   });
   if(document.fonts) document.fonts.ready.then(()=>{alignCardRupee();layoutOpen()});
+  runSkeleton();
+}
+/* The screen renders its real content immediately and the skeleton sits OVER it, rather than the
+   content being withheld — everything above has already measured and drawn (drawRcpt reads
+   offsetWidth, which a display:none subtree reports as 0), so the hand-off is a pure cross-fade
+   with nothing left to lay out. */
+const SKEL_MS=900;
+function runSkeleton(){
+  // Capture the root: mount() can swap amRoot out from under a pending timer, and then the
+  // outgoing screen's skeleton would strip .loading off the incoming one.
+  const r=amRoot, s=r.querySelector('#skel'); if(!s) return;
+  later(()=>{ s.classList.add('gone'); r.classList.remove('loading'); later(()=>s.remove(),360) },SKEL_MS);
 }
 
 /* ---------- LOW / POPUP / CHAT ---------- */
@@ -2008,7 +2088,10 @@ function openAB(mode,sel,banner=false,auto=true,extra){
   // The band always carries a countdown on this screen, so the default flows get one too.
   startCountdown(mode==='coupon'?5*3600:OFFER_SECONDS);
   mount(renderAB(), phone.querySelector('.screen.am')?null:'in-right');
-  if(auto)later(()=>renderCard(true),450);
+  // Wait out the skeleton — the card's reveal used to fire at 450ms, which is now underneath it,
+  // so she'd never see it play. The popup flows pass auto=false and reveal after the popup fades,
+  // which is already well past SKEL_MS.
+  if(auto)later(()=>renderCard(true),SKEL_MS+450);
 }
 function withPopup(kind,mode,onDone){
   openAB(mode,50,false,false);
