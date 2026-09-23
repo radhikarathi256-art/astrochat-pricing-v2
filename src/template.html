@@ -29,7 +29,8 @@
   --gray-400:#98A2B3;--gray-500:#667085;--gray-600:#475467;--gray-700:#344054;--gray-800:#1D2939;--gray-900:#101828;
   --success-50:#ECFDF3;--success-100:#D1FADF;--success-200:#A6F4C5;--success-400:#32D583;
   --success-500:#12B76A;--success-600:#039855;--success-700:#027A48;--success-800:#05603A;--success-900:#054F31;
-  --warning-50:#FFFAEB;--warning-100:#FEF0C7;--warning-300:#FEC84B;--warning-400:#FDB022;--warning-600:#DC6803;--warning-900:#7A2E0E;
+  --warning-50:#FFFAEB;--warning-100:#FEF0C7;--warning-300:#FEC84B;--warning-400:#FDB022;--warning-600:#DC6803;
+  --warning-700:#B54708;--warning-800:#93370D;--warning-900:#7A2E0E;
   --error-50:#FEF3F2;--error-100:#FEE4E2;--error-500:#F04438;--error-700:#B42318;--error-800:#912018;
   --white:#FFFFFF;--black:#000000;
   --ab-bg:#EEF0F3;                     /* phone chrome — no Figma style */
@@ -636,33 +637,25 @@ body.mobile .phone{border-radius:0;box-shadow:none}
   80%{transform:rotate(-7deg) scale(1.04)}
   86%{transform:rotate(4deg)}
   92%{transform:rotate(-2deg)}}
-/* ONE type size across every band variant — her call. They had drifted to 11.5 / 13 / 15px
-   depending on which flow you were in, which read as five different components. 12/16 is now
-   the size for all of them and WEIGHT is the only thing that carries emphasis: the figures
-   (₹ amounts, rates, the countdown) sit at 800 against 400-600 copy.
-   Anything added here must NOT reintroduce a font-size. */
-.am .bandin .l1,.am .bandin .l2{font-size:var(--fs-xs);line-height:16px}
-.am .bandin .l1{font-weight:600;letter-spacing:.1px}
-.am .bandin .l1 b{font-weight:800;font-variant-numeric:tabular-nums}
-/* Wallet flow only: regular copy with the figure as the single bold thing on the line. */
-.am .bandin .l1.reg{font-weight:400}
-/* The brackets that no longer point at a bigger tile (₹250 and up) step back half a weight: the
-   line is a statement rather than an ask, and at 600/500 it stops competing with the SKU card. */
-.am .bandin.noask .l1{font-weight:600}
-.am .bandin.noask .l2{font-weight:500}
-.am .bandin .l2{margin-top:1px;font-weight:500;color:var(--success-700)}
-/* Line 2 never had a bold rule of its own, so a <b> in it fell back to the browser's 700 and the
-   band's own colour — half a step from the copy around it, which is why the figures did not read
-   as figures. 800 matches .l1 b. NO colour here: the coupon and promo bands are white-on-green
-   and a colour would have to be undone in both. */
-.am .bandin .l2 b{font-weight:800;font-variant-numeric:tabular-nums}
+/* Sep 23: every run in the band is now one of the design system's OWN two text styles —
+   Body X Small 12/Medium (500) and Body X Small 12/Bold (700), both Inter 12/18. The six Figma
+   variants are bound to exactly these, so the rule here is the same rule: body copy is Medium,
+   the figures (₹ amounts, rates, the countdown) are Bold, and there is nothing in between.
+   It had drifted to 400/500/600/700/800 across five flows, which read as five components.
+   Anything added here must NOT reintroduce a font-size or a third weight. */
+.am .bandin .l1,.am .bandin .l2{font-size:var(--fs-xs);line-height:var(--lh-xs);font-weight:500}
+.am .bandin .l1{letter-spacing:.1px}
+/* NO colour on the bold rule: the coupon and promo bands are white-on-green and a colour here
+   would have to be undone in both. */
+.am .bandin .l1 b,.am .bandin .l2 b{font-weight:700;font-variant-numeric:tabular-nums}
+.am .bandin .l2{margin-top:1px;color:var(--success-700)}
 /* The highlight, used only by the low-balance band's copy. Deliberately a class and not plain
    `b`, because every other band sets its own text colour (gold #93370D, coupon/promo white, red
    var(--error-800)) and darkening `b` globally would fight all four. b.hl outranks `.am .bandin .l2` on
    specificity, so it wins wherever it IS used and is inert everywhere else.
    var(--success-800) is the same green the old struck-through rate line used — one shade darker than .l2's
    var(--success-700), enough to separate the number without turning it into a second colour on the band. */
-.am .bandin b.hl{color:var(--success-800);font-weight:800;font-variant-numeric:tabular-nums}
+.am .bandin b.hl{color:var(--success-800);font-weight:700;font-variant-numeric:tabular-nums}
 /* …except where the band sets its own colour. The edit panel lets *stars* put a b.hl on ANY
    band now, and var(--success-800) on the coupon's dark green is invisible. On those four the highlight
    is the 800 weight alone. */
@@ -693,10 +686,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .am .banner.bn-promo,.am .band3.bn-promo{color:#fff;background:linear-gradient(90deg,var(--success-800) 0%,var(--success-800) 80%,var(--success-800) 86%,color-mix(in srgb,var(--success-600) 78%,#fff) 90%,color-mix(in srgb,var(--success-600) 54%,#fff) 94%,color-mix(in srgb,var(--success-600) 31%,#fff) 97%,color-mix(in srgb,var(--success-600) 11%,#fff) 99%,#fff 100%)}
 /* .l2's default is a dark green meant for the pale bands; on this solid one it has to go white,
    same as .l1. */
-.am .bn-promo .bandin .l1,.am .bn-promo .bandin .l2{color:#fff}
-.am .bn-promo .bandin .l1{font-weight:600}
-.am .bn-promo .bandin .l2{font-weight:500}
-.am .bn-promo .bandin .l2 b{font-weight:800;font-variant-numeric:tabular-nums}
+.am .bn-promo .bandin .l1,.am .bn-promo .bandin .l2{color:var(--white)}
 /* she asked for the tag to tick over faster on this flow only */
 .am .bn-promo .bandin .tag{animation-duration:1.5s}
 /* Chat Again → ASTRO50. Carries v1's sparkle field AND v1's light sweep. Identical on every tile.
@@ -708,9 +698,8 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    positions are still this band's own (solid to 88%). */
 .am .banner.coupon,.am .band3.coupon{color:#fff;background:linear-gradient(90deg,var(--success-600) 0%,var(--success-600) 88%,color-mix(in srgb,var(--success-600) 73%,#fff) 94%,color-mix(in srgb,var(--success-600) 25%,#fff) 97.5%,#fff 100%)}
 .am .coupon .bandin{z-index:1}
-.am .coupon .bandin .l1,.am .coupon .bandin .l2{color:#fff}
-.am .coupon .bandin .l2{font-weight:600}
-.am .coupon .bandin .l2 b{font-weight:800;letter-spacing:.3px;font-variant-numeric:tabular-nums}
+.am .coupon .bandin .l1,.am .coupon .bandin .l2{color:var(--white)}
+.am .coupon .bandin .l2 b{letter-spacing:.3px}
 /* Countdown chip. White on the deepest green in the set is the strongest contrast the band can
    offer, which is the whole point of putting the timer in a chip at all.
    INLINE, not absolutely positioned: it has to read as the object of "expires in", and anchoring
@@ -722,7 +711,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    Scoped to .am, not .coupon: the promo band uses the same chip for its static "24 hours". */
 .am .cdpill{display:inline-flex;align-items:center;vertical-align:middle;margin-left:5px;
   background:#fff;border-radius:999px;padding:1px 8px;box-shadow:0 1px 3px rgba(2,40,26,.3)}
-.am .cdpill b{font-size:var(--fs-xs);line-height:16px;font-weight:800;color:#065F41;
+.am .cdpill b{font-size:var(--fs-xs);line-height:var(--lh-xs);font-weight:700;color:var(--success-800);
   font-variant-numeric:tabular-nums;letter-spacing:.2px}
 /* v1's exact treatment: anchored to the RIGHT, small (236px of a 342px band, not full-bleed),
    masked out towards the text so it never crowds the copy. Stretching it full-width was the
@@ -754,9 +743,11 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .am .banner.gold,.am .band3.gold{background:#FEF5DE}
 /* Wallet flow only: the gold strip fades out to white, rightward, matching the green band. */
 .am .banner.gold.gfade,.am .band3.gold.gfade{background:linear-gradient(90deg,color-mix(in srgb,var(--warning-300) 18%,#fff) 0%,color-mix(in srgb,var(--warning-300) 12%,#fff) 40%,color-mix(in srgb,var(--warning-300) 5%,#fff) 78%,#fff 100%)}
-.am .gold .bandin .l1{color:#93370D;font-weight:700}
-.am .gold .bandin .l2{color:#B54708}
-.am .gold .bandin img{filter:hue-rotate(255deg) saturate(1.2)}
+.am .gold .bandin .l1{color:var(--warning-800)}
+.am .gold .bandin .l2{color:var(--warning-700)}
+/* The amber icon is drawn amber now (warning.svg is white + var(--warning-900), the exact two
+   fills the Figma "Missing out" icon slot carries). It used to be the green icon put through
+   hue-rotate(255deg), which landed on a colour that is in no palette and could not be named. */
 
 /* ---------- collapsed receipt ---------- */
 .am .collapsed{position:absolute;inset:0;transition:opacity .3s cubic-bezier(.2,.8,.2,1),transform .36s cubic-bezier(.2,.8,.2,1)}
