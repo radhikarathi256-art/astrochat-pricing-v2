@@ -764,8 +764,13 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    16 came off the top gap only (51 -> 35, top 175 -> 159, card 229 -> 213) so the space above the
    notch matches the space below it. Changing .see's top alone moves BOTH gaps, so the card height
    has to move with it. Sep 23's card 213 -> 229 went entirely into a deeper bow (DROP 56 -> 72),
-   so this top is untouched and the button sits exactly where it did. */
-.am .see{position:absolute;left:0;right:0;top:159px;display:flex;justify-content:center}
+   so this top is untouched and the button sits exactly where it did.
+   Sep 23 (later) she reframed the gap she cares about: the pill is now CENTRED in the tear-off
+   stub — equal space from the notch to the pill and from the pill to the card's bottom. That stub
+   is 77 tall (notch bottom 152 -> card bottom 229) and the pill is 30, so each gap is
+   (77 - 30) / 2 = 23.5 and the top is 152 + 23.5. The card does NOT grow; the pill just moves
+   down 16.5 into the bow. Re-derive from those two numbers if either the notch or DROP moves. */
+.am .see{position:absolute;left:0;right:0;top:175.5px;display:flex;justify-content:center}
 /* TWO ROWS of SKUs — the post-3rd-recharge flow (ab.rows === 2), where the user has already
    recharged twice and the bigger amounts are worth showing up front rather than behind
    "See More Options". Deliberately a grid with grid-auto-rows:96px rather than a wrapping flex:
@@ -776,7 +781,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    still clears the point the bottom arch starts, height - DROP = 325 - 72 = 253. */
 .am.rows2 .skus{height:192px;display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:96px;gap:0 12px;align-items:start}
 .am.rows2 .stack,.am.rows2 .rcpt{height:325px}
-.am.rows2 .see{top:255px}
+.am.rows2 .see{top:271.5px}
 .am.rows2 .rcpt .notch{top:228px}
 /* The pill's border is DRAWN, not a CSS border. Chrome's `dashed` dash length is locked to ~3x
    the border width with no property to change it, so this pill's dashes came out longer than the
@@ -890,8 +895,12 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    .band3's z-index 1 either way. */
 /* Bottom padding carries the extra 16 that DROP gained on Sep 23, so the content keeps the same
    clearance above the bow it always had. This card is content-sized, so unlike .rcpt it has no
-   height to grow — the padding IS its height. */
-.am .rc{position:relative;z-index:2;margin-top:-30px;padding:19px 17px 35px;transition:margin-top .42s cubic-bezier(.2,.8,.2,1)}
+   height to grow — the padding IS its height.
+   35 -> 23.5 when the pill was centred in the stub: the pill has to end 23.5 above the card's
+   bottom, and this padding is the only thing between them. It drops 11.5 while .seerow's margin
+   gains 16.5, so the card nets 5 taller — see .seerow. The notch is bottom-anchored, so it rides
+   that change and needs no adjustment of its own. */
+.am .rc{position:relative;z-index:2;margin-top:-30px;padding:19px 17px 23.5px;transition:margin-top .42s cubic-bezier(.2,.8,.2,1)}
 /* width/height must be stated. An <svg> is a REPLACED element, so `width:auto` gives it its
    intrinsic 300x150 instead of stretching to the offsets — which is exactly what it silently did
    on the first attempt, leaving a 299x149 outline floating inside a 328x489 card.
@@ -908,13 +917,16 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    shoulder, which is exactly the fault an earlier 58 had. */
 .am .rc .notch{bottom:77px}
 .am .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-/* 41.5 is NOT a taste number — it is the closed card's gap, measured. There the button is placed
-   by `.see{top:159px}` against a fixed 96px `.skus` block whose tile+chip only fills 89.5 of it,
-   so the real chip-bottom-to-button gap is 159 - (28 + 89.5) = 41.5. This card stacks in normal
-   flow instead, so the same gap has to be stated as a margin. At 30 the button sat 11.5px tighter
-   than the closed card's and she caught it. Re-derive this if `.see`'s top or the tile metrics
-   move — the two layouts share no constant and will silently drift apart again. */
-.am .seerow{display:flex;justify-content:center;margin-top:41.5px}
+/* 58 is NOT a taste number — it is the closed card's gap, measured. There the button is placed
+   by `.see{top:175.5px}` against a fixed 96px `.skus` block whose tile+chip only fills 89.5 of it,
+   so the real chip-bottom-to-button gap is 175.5 - (28 + 89.5) = 58.
+   This card stacks in normal flow instead, so the same gap has to be stated as a margin — its
+   grid's bottom IS its last chip's. It was 30, which sat 11.5px tighter than the closed card and
+   she caught it; 41.5 matched the old pill; 58 matches the centred one. Re-derive if `.see`'s top
+   or the tile metrics move — the two layouts share no constant and will silently drift apart
+   again. With paddingBottom 23.5 the whole stub is now in parity, both cards reading
+   chips -> +14.5 -> notch -> +23.5 -> pill -> +23.5 -> bottom. The card ends up 5px taller. */
+.am .seerow{display:flex;justify-content:center;margin-top:58px}
 .am .scrollpad{height:0}
 /* scroll indicator — 3px, persistent while the sheet is open.
    It used to only flash: .on for 2s on open and 1.4s per scroll, then fade out. That is the iOS
@@ -1075,7 +1087,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    not derived by eye — a 22px error here reads as the badges jumping down on hand-off. */
 .am .sk-chip{top:165.4px;width:78px;height:26.5px;border-radius:13px}
 .am .sk-chip.c1{left:38.35px}.am .sk-chip.c2{left:141px}.am .sk-chip.c3{right:38.35px}
-.am .sk-see{top:234px;left:50%;margin-left:-66px;width:132px;height:26px;border-radius:12px}
+.am .sk-see{top:250.5px;left:50%;margin-left:-66px;width:132px;height:26px;border-radius:12px}
 /* The two layout variants the real screen has, mirrored. bandoff pulls .rcpt/.stack from 139 to
    80, so every block above the fold moves -59; rows2 adds a second 96px tile row and grows the
    card to 325. Without these the skeleton lands 59px low on the wallet flow and short on post3,
@@ -1084,12 +1096,12 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .am.bandoff .sk-card{top:16px}
 .am.bandoff .sk-tile{top:44px}
 .am.bandoff .sk-chip{top:106.4px}
-.am.bandoff .sk-see{top:175px}
+.am.bandoff .sk-see{top:191.5px}
 .am.rows2 .sk-card{height:325px}
-.am.rows2 .sk-see{top:330px}
+.am.rows2 .sk-see{top:346.5px}
 .am.rows2 .sk-tile.r2{top:199px}
 .am.rows2 .sk-chip.r2{top:261.4px}
-.am.bandoff.rows2 .sk-see{top:271px}
+.am.bandoff.rows2 .sk-see{top:287.5px}
 .am.bandoff.rows2 .sk-tile.r2{top:140px}
 .am.bandoff.rows2 .sk-chip.r2{top:202.4px}
 .am .sk-tile.r2,.am .sk-chip.r2{display:none}
@@ -1702,7 +1714,11 @@ function renderBand(){
 
 /* card */
 let animToken=0;
-function renderCard(animate=true){
+/* `counts` is whether this render is a PICK. The screen opens with an amount already selected and
+   plays its drop unprompted; that is the screen introducing itself, not the user choosing, so it
+   must not burn the once-per-visit drop — otherwise the first time she actually taps that amount
+   nothing happens. Her call, Sep 23: the preselected amount is allowed to drop twice. */
+function renderCard(animate=true,counts=true){
   // The coupon counts towards the card even though it is no longer part of "bonus", so a ₹50
   // under ASTRO50 still shows ₹100 and stays green rather than falling back to the gold card.
   const v=ab.sel, b=bonusFor(v), cpn=couponFor(), total=v+b+cpn, g=(b+cpn)===0;
@@ -1716,7 +1732,7 @@ function renderCard(animate=true){
   // flies into the card; pick ₹100 again later and only the number refreshes, no second drop.
   // The set lives on `ab`, which openAB() rebuilds, so re-entering the screen replays them all.
   if(ab.dropped.has(v)){setN(total);return}
-  ab.dropped.add(v);
+  if(counts) ab.dropped.add(v);
   // count to the recharge amount, fly the bonus chip into the card, then count the bonus on
   const from=ab.shown??v;
   const d1=from===v?0:360, flight=640, d2=700, t0=performance.now();
@@ -2091,12 +2107,12 @@ function openAB(mode,sel,banner=false,auto=true,extra){
   // Wait out the skeleton — the card's reveal used to fire at 450ms, which is now underneath it,
   // so she'd never see it play. The popup flows pass auto=false and reveal after the popup fades,
   // which is already well past SKEL_MS.
-  if(auto)later(()=>renderCard(true),SKEL_MS+450);
+  if(auto)later(()=>renderCard(true,false),SKEL_MS+450);
 }
 function withPopup(kind,mode,onDone){
   openAB(mode,50,false,false);
   phone.insertAdjacentHTML('beforeend',popup(kind));
-  later(()=>{const o=phone.querySelector('.overlay');if(o){o.style.transition='opacity .25s';o.style.opacity='0';later(()=>{o.remove();onDone();renderCard(true)},250)}},2300);
+  later(()=>{const o=phone.querySelector('.overlay');if(o){o.style.transition='opacity .25s';o.style.opacity='0';later(()=>{o.remove();onDone();renderCard(true,false)},250)}},2300);
 }
 function go(route,rate){
   clearTimers();
@@ -2113,7 +2129,9 @@ function go(route,rate){
     case 'listingChat': flowType='insufficient'; flowAstro='Astro Hemali'; flowRate=flowRate||15; mount(renderLow()); later(()=>openAB('default',SEL||100,false,true,{cflow:true}),1600); break;
     case 'again': flowType='coupon'; flowAstro='Astro Vipasana'; flowRate=flowRate||5; mount(renderLow()); later(()=>withPopup('coupon','coupon',()=>later(()=>{ab.banner=true;startCountdown(5*3600);renderBand()},800)),1600); break;
     case 'history': mount(renderChat()); break;
-    case 'post3': flowType='wallet'; flowAstro=''; openAB('default',100,false,true,{rows:2,coin:500}); break;
+    // Still six tiles here, but the coins stay on ₹250 like every other flow — her call Sep 23.
+    // `coin` is left on `ab` so a future flow can still move them; nothing passes it today.
+    case 'post3': flowType='wallet'; flowAstro=''; openAB('default',100,false,true,{rows:2}); break;
     // Sep 22: this band ticks again. The static "24 hours" chip is now a live `.cd` counting down
     // from a 24h window. It keeps its own .bn-promo green — renderBand()'s `timed` flag, the one
     // that adds .bn-dark, excludes promo — but the root does gain .timed now that a `.cd` exists.
