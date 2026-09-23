@@ -1351,7 +1351,7 @@ let ab={mode:'default',sel:100,banner:false,shown:null,cd:0};
 const baseBonusFor=v=>((BASE.find(x=>x[0]===v)||[])[1])||0;
 /* ASTRO50 is ITEMISED AT CHECKOUT, not folded into the bonus — her call Sep 21, reversing the
    earlier one. So "bonus" everywhere means the standing bonus table only (tile badges, the
-   "Extra bonus" line), and the ₹50 gets its own "Coupon code applied" row in the payment summary.
+   "Extra Bonus" line), and the ₹50 gets its own "Coupon Code Applied" row in the payment summary.
    It is still credited, so anything showing a wallet TOTAL must read creditFor(), which adds both
    — never v+bonusFor(v), or the coupon silently goes missing from the total. */
 const COUPON_FLAT=50;
@@ -1849,7 +1849,7 @@ function renderSummary(){
       <div class="ps-box ${b+cpn?'':'plain'}"><span>To be added in your wallet</span><b>₹${fmt(total)}</b></div>
       ${b+cpn?`<div class="ps-panel">
         ${row('Recharge Added',`₹${fmt(v)}`,'p1')}
-        ${b?row('Extra bonus',`+₹${fmt(b)}`,'pg'):''}
+        ${b?row('Extra Bonus',`+₹${fmt(b)}`,'pg'):''}
         ${cpn?row('Coupon Code Applied',`+₹${fmt(cpn)}`,'pg'):''}
         ${dash('#D0D5DD')}
         ${row('Total',`₹${fmt(total)}`,'pt')}
