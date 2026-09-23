@@ -66,6 +66,11 @@ body.kbd :focus-visible{outline:2px solid rgba(16,24,40,.35);outline-offset:2px}
 .toolbar b{color:var(--gray-800);font-weight:600;margin-right:4px}
 .toolbar button{background:#2f2f33;border:1px solid #707076;color:#fff;border-radius:8px;padding:6px 10px;font-size:var(--fs-xs);text-align:center}
 .toolbar button:hover{background:#3b3b40}
+.specs{max-width:760px;color:var(--gray-600);font-size:var(--fs-xs);line-height:1.5}
+.specs summary{color:var(--gray-800);font-weight:600;cursor:pointer;text-align:center}
+.specs ol{margin:8px 0 0;padding-left:20px}
+.specs li{margin-bottom:2px}
+.specs i{font-style:normal;color:var(--gray-500)}
 /* Live alert-banner copy editor, desktop only. Same dark chrome as .toolbar so it reads as
    prototype furniture and not as part of the design. */
 .edpanel{position:fixed;right:16px;top:16px;z-index:50;width:250px;display:flex;flex-direction:column;gap:8px;
@@ -1191,6 +1196,22 @@ body.mobile .phone{border-radius:0;box-shadow:none}
     <button data-jump="chatLt">Astrologer · timer</button>
     <button data-jump="againLt">ASTRO50 · timer</button>
   </div>
+  <!-- Her Sep 23 rules list. Kept as a <details> shut by default because .shell sizes the phone off
+       the leftover viewport height (see the edpanel note below) — an always-open block here would
+       shrink the prototype it is describing. Each line says where it is done, because half the list
+       is Figma-side and half is behaviour that is already live in here. -->
+  <details class="specs">
+    <summary>Behaviour rules · Sep 23</summary>
+    <ol>
+      <li>Coin pop plays once. <i>Figma</i></li>
+      <li>Badges lose their light sweep once ₹100 or above is selected. <i>live here</i></li>
+      <li>The badge drop plays on every SKU tap; the pre-selected tile does not count as a tap. <i>live here</i></li>
+      <li>Post 3rd recharge opens on all 6 SKUs. <i>Figma</i></li>
+      <li>When the countdown runs out the banner changes state. <i>Figma</i></li>
+      <li>The shower plays on ₹250 only — it is the best deal. <i>live here</i></li>
+      <li>Discount banners keep their light sweep. <i>live here</i></li>
+    </ol>
+  </details>
   <div class="stage" id="stage"><div class="phone" id="phone"></div></div>
 </div>
 <!-- Desktop-only live editor for the alert banner. Fixed to the right edge rather than stacked
@@ -1645,12 +1666,15 @@ const V3COPY_HI={
 // FLOOR, not round: the band is promising talk time, and rounding 49.6 up to "50 mins" is a
 // promise the wallet cannot keep on the last minute.
 const v3Mins=v=>flowRate?Math.floor(creditFor(v)/flowRate):0;
-/* Past an hour the exact minute count stops meaning anything — "83 mins" is not a duration anyone
-   pictures — so it collapses to "more than 1 hour". One minute stays singular.
+/* Big counts stop meaning anything — "137 mins" is not a duration anyone pictures — so past 99
+   they collapse to "more than 1 hour". One minute stays singular.
+   The cutoff is 99, NOT 60, because her own copy table spells out "62 mins" and "66 mins" for the
+   ₹250 and ₹500 tiles; a 60 cutoff would replace the two lines she actually wrote with the generic
+   one. Her "past an hour" note and her table disagree, and the table is the approved copy.
    Returns MARKUP, and the c* templates therefore do NOT wrap {M} in <b>: on the hour form only
    "1 hour" is bold, the "more than" qualifier is not. */
 const v3M=v=>{const m=v3Mins(v);
-  if(m>60) return ab.hindi?'<b>1 ghante</b> se zyada':'more than <b>1 hour</b>';
+  if(m>99) return ab.hindi?'<b>1 ghante</b> se zyada':'more than <b>1 hour</b>';
   return `<b>${m} ${m===1?'min':'mins'}</b>`};
 // Plain digits, NO thousands separator — her call, Sep 23. At 12px on a strip this narrow
 // "₹5,200" reads as two numbers, and the SKU tiles beside it are unseparated too ("₹10000").
@@ -1681,7 +1705,11 @@ function v3Band(){
   // Only the wallet's ₹50 earns the amber warning — there the band is a miss, everywhere else
   // it is a win and carries the seal. The seal stays the plain #039855 discount.svg: the dark
   // recolour belongs to the deep-green promo band, and a band's seal always follows its green.
-  const icon=(st==='50'&&!coup)?`<img src="${I.warning}" alt="">`
+  /* Her rule: the amber bell is for ₹50 ON THE WALLET FLOW ONLY — "you're missing out" is a
+     money argument. Every other state, astrologer ₹50 included, gets the discount seal, because
+     there the sentence is about minutes and a warning bell over "only 4 mins" reads as an error.
+     So this keys on the copy branch `p`, not on `st` alone. */
+  const icon=(st==='50'&&p==='b')?`<img src="${I.warning}" alt="">`
     :`<img class="tag${ask?'':' still'}" src="${I.discount}" alt="">`;
   const deco=coup?`<img class="bn-stars" src="${I.stars}" alt="" aria-hidden="true"><span class="sweep"></span>`:'';
   return `<div class="bandin${ask?'':' noask'}">${icon}<div><p class="l1">${l1}</p><p class="l2">${l2}</p></div></div>${deco}`;
