@@ -1173,6 +1173,18 @@ body.mobile .phone{border-radius:0;box-shadow:none}
     <button data-jump="history">View history (offer)</button>
     <button data-jump="post3">Post 3rd recharge</button>
   </div>
+  <!-- The two band variants her v3 spec lists that no flow above reaches: the Hindi copy and the
+       limited-time window. Each is its English sibling with one flag set, so they are jump routes
+       rather than screens of their own. -->
+  <div class="toolbar" role="toolbar" aria-label="Alert banner copy variants">
+    <b>Alert copy variants</b>
+    <button data-jump="walletHi">Wallet · Hindi</button>
+    <button data-jump="chatHi">Astrologer · Hindi</button>
+    <button data-jump="againHi">ASTRO50 · Hindi</button>
+    <button data-jump="walletLt">Wallet · timer</button>
+    <button data-jump="chatLt">Astrologer · timer</button>
+    <button data-jump="againLt">ASTRO50 · timer</button>
+  </div>
   <div class="stage" id="stage"><div class="phone" id="phone"></div></div>
 </div>
 <!-- Desktop-only live editor for the alert banner. Fixed to the right edge rather than stacked
@@ -1196,6 +1208,12 @@ body.mobile .phone{border-radius:0;box-shadow:none}
     <button data-jump="again">Chat again<small>Coupon applied → coupon bonuses</small></button>
     <button data-jump="history">View history<small>Continue chat → ₹12/min offer</small></button>
     <button data-jump="post3">Post 3rd recharge<small>Two rows of SKUs, coins on ₹500</small></button>
+    <button data-jump="walletHi">Wallet · Hindi<small>Same bonuses, Hindi band copy</small></button>
+    <button data-jump="chatHi">Astrologer · Hindi<small>Minutes with Astro Hemali, in Hindi</small></button>
+    <button data-jump="againHi">ASTRO50 · Hindi<small>Coupon band, Aaj tak valid</small></button>
+    <button data-jump="walletLt">Wallet · timer<small>Limited-time bonus, live countdown</small></button>
+    <button data-jump="chatLt">Astrologer · timer<small>Minutes plus the countdown</small></button>
+    <button data-jump="againLt">ASTRO50 · timer<small>Coupon band with the countdown</small></button>
   </div>
 </div>
 
@@ -1352,6 +1370,10 @@ function cdText(){
   // unpadded face drops a character and the pill, which hugs its text, visibly narrows. Keyed on
   // mode rather than on the seconds left, so the shape can never change mid-countdown.
   if(ab.mode==='offer') return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+  // The limited-time band spells its units out — "14m 44s", not "14:44". Seconds are padded so the
+  // chip keeps one width; minutes are not, because this clock never reaches two digits again once
+  // it drops below ten and a leading zero there reads as a stopwatch rather than a deadline.
+  if(ab.lt) return `${Math.floor(s/60)}m ${String(s%60).padStart(2,'0')}s`;
   return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
 }
 /* ---------- ADD MONEY (pricing-v2 design) ---------- */
@@ -1371,7 +1393,7 @@ function renderAB(){
       <div class="rcpt" id="rcpt"><svg class="rcptline" id="rcptLine" aria-hidden="true"><path id="rcptPath"/></svg><span class="notch l"></span><span class="notch r"></span></div>
       <div class="stack">
         <div class="skus" id="skus"></div>
-        <div class="see"><button class="seebtn" type="button" id="seeMore" aria-expanded="false"><svg class="seeline" aria-hidden="true"><rect></rect></svg><p>See More Options</p><img class="chev" src="${I.chevron}" alt=""></button></div>
+        <div class="see"><button class="seebtn" type="button" id="seeMore" aria-expanded="false"><svg class="seeline" aria-hidden="true"><rect></rect></svg><p>Higher amounts</p><img class="chev" src="${I.chevron}" alt=""></button></div>
       </div>
     </section>
 
@@ -1383,7 +1405,7 @@ function renderAB(){
             <svg class="rcline" aria-hidden="true"><path/></svg>
             <span class="notch l"></span><span class="notch r"></span>
             <div class="grid" id="grid"></div>
-            <div class="seerow"><button class="seebtn" type="button" id="seeLess"><svg class="seeline" aria-hidden="true"><rect></rect></svg><p>See Less Options</p><img class="chev" src="${I.chevron}" alt=""></button></div>
+            <div class="seerow"><button class="seebtn" type="button" id="seeLess"><svg class="seeline" aria-hidden="true"><rect></rect></svg><p>Fewer amounts</p><img class="chev" src="${I.chevron}" alt=""></button></div>
           </div>
         </div>
         <div class="scrollpad" id="scrollpad"></div>
@@ -1453,6 +1475,8 @@ const OFFER_SECONDS=5*60;
 // down in the hours field and looks static, which is the opposite of what a countdown is for.
 // 15 min ticks in the seconds field and still reads as minutes, so it shows as mm:ss.
 const OFFER_WINDOW=15*60;
+// The limited-time band's window, set to start on her spec's own face: 14m 44s.
+const LT_WINDOW=14*60+44;
 function startCountdown(sec){
   if(ticker){clearInterval(ticker);ticker=null}   // openAB starts one; the flows may restart it
   ab.cd=sec;
@@ -1579,31 +1603,60 @@ const SEL=+(new URLSearchParams(location.search).get('sel')||0);
    The two "ask" brackets (50 and 100) point UP at the next tile; from ₹250 the band stops
    asking and just states what you get, which is what .noask below de-emphasises. */
 const KPILL=`<b>ASTRO50</b> applied<span class="cdpill"><b>Expires today</b></span>`;
+const KPILL_HI=`<b>ASTRO50</b> applied<span class="cdpill"><b>Aaj tak valid</b></span>`;
 const V3COPY={
-  b50 :["You're missing out on <b>₹{b1}</b> extra","Pick <b>₹{t1}</b>, get <b>₹{c1}</b> in your wallet"],
-  b100:["You're getting <b>₹{b1}</b> extra","Pick <b>₹{t2}</b>, get <b>₹{c2}</b> in your wallet"],
+  b50 :["You're missing out on <b>₹{b1}</b> extra","Pick <b>₹{t1}</b>{now}, get <b>₹{c1}</b> in your wallet"],
+  b100:["You're getting <b>₹{b1}</b> extra","Pick <b>₹{t2}</b>{now}, get <b>₹{c2}</b> in your wallet"],
   b250:["You're getting <b>₹{b2}</b> extra","Best deal · <b>₹{c2}</b> in your wallet"],
   bhi :["You're getting <b>₹{bs}</b> extra","<b>₹{cs}</b> in your wallet"],
-  k50 :[KPILL,"Pick <b>₹{t1}</b>, get <b>₹{c1}</b> in your wallet"],
-  k100:[KPILL,"Pick <b>₹{t2}</b>, get <b>₹{c2}</b> in your wallet"],
+  k50 :[KPILL,"Pick <b>₹{t1}</b>{now}, get <b>₹{c1}</b> in your wallet"],
+  k100:[KPILL,"Pick <b>₹{t2}</b>{now}, get <b>₹{c2}</b> in your wallet"],
   k250:[KPILL,"Best deal · <b>₹{c2}</b> in your wallet"],
   khi :[KPILL,"<b>₹{cs}</b> in your wallet with ASTRO50"],
-  c50 :["Only <b>{M}</b> with {astro}","Pick <b>₹{t1}</b>, chat for <b>{M1}</b>"],
-  c100:["<b>{M}</b> with {astro}","Pick <b>₹{t2}</b>, chat for <b>{M2}</b>"],
-  c250:["<b>{M}</b> with {astro}","Best deal · <b>₹{b2}</b> extra on ₹{t2}"],
-  chi :["<b>{M}</b> with {astro}","<b>₹{bs}</b> extra on ₹{s}"]
+  c50 :["Only {M} with {astro}","Pick <b>₹{t1}</b>{now}, chat for {M1}"],
+  c100:["{M} with {astro}","Pick <b>₹{t2}</b>{now}, chat for {M2}"],
+  c250:["{M} with {astro}","Best deal · <b>₹{b2}</b> extra on ₹{t2}"],
+  chi :["{M} with {astro}","<b>₹{bs}</b> extra on ₹{s}"]
+};
+/* Hindi, romanised, exactly the lines in her table and nothing beyond them. The bold runs sit in
+   DIFFERENT places to English — "₹150 extra" is one bold phrase here where English bolds only the
+   figure — so this cannot be generated from the English by swapping words. Same {token} names, so
+   fillCopy() feeds both tables from the one pricing source. */
+const V3COPY_HI={
+  b50 :["<b>₹{b1} extra</b> miss ho raha hai","<b>₹{t1}</b>{now} choose karo, <b>₹{c1}</b> wallet mein"],
+  b100:["<b>₹{b1} extra</b> mil raha hai","<b>₹{t2}</b>{now} choose karo, <b>₹{c2}</b> wallet mein"],
+  b250:["<b>₹{b2} extra</b> mil raha hai","Best deal · <b>₹{c2}</b> wallet mein"],
+  bhi :["<b>₹{bs} extra</b> mil raha hai","<b>₹{cs}</b> wallet mein"],
+  k50 :[KPILL_HI,"<b>₹{t1}</b>{now} choose karo, <b>₹{c1}</b> wallet mein"],
+  k100:[KPILL_HI,"<b>₹{t2}</b>{now} choose karo, <b>₹{c2}</b> wallet mein"],
+  k250:[KPILL_HI,"Best deal · <b>₹{c2}</b> wallet mein"],
+  khi :[KPILL_HI,"<b>₹{cs}</b> wallet mein ASTRO50 ke saath"],
+  c50 :["{astro} ke saath sirf {M}","<b>₹{t1}</b>{now} choose karo, {M1} baat karo"],
+  c100:["{astro} ke saath {M}","<b>₹{t2}</b>{now} choose karo, {M2} baat karo"],
+  c250:["{astro} ke saath {M}","Best deal · <b>₹{b2} extra</b> ₹{t2} par"],
+  chi :["{astro} ke saath {M}","<b>₹{bs} extra</b> ₹{s} par"]
 };
 // FLOOR, not round: the band is promising talk time, and rounding 49.6 up to "50 mins" is a
 // promise the wallet cannot keep on the last minute.
 const v3Mins=v=>flowRate?Math.floor(creditFor(v)/flowRate):0;
-const v3M=v=>{const m=v3Mins(v);return m+(m===1?' min':' mins')};
+/* Past an hour the exact minute count stops meaning anything — "83 mins" is not a duration anyone
+   pictures — so it collapses to "more than 1 hour". One minute stays singular.
+   Returns MARKUP, and the c* templates therefore do NOT wrap {M} in <b>: on the hour form only
+   "1 hour" is bold, the "more than" qualifier is not. */
+const v3M=v=>{const m=v3Mins(v);
+  if(m>60) return ab.hindi?'<b>1 ghante</b> se zyada':'more than <b>1 hour</b>';
+  return `<b>${m} ${m===1?'min':'mins'}</b>`};
 // Plain digits, NO thousands separator — her call, Sep 23. At 12px on a strip this narrow
 // "₹5,200" reads as two numbers, and the SKU tiles beside it are unseparated too ("₹10000").
 const nf=n=>String(n);
 function fillCopy(s){
   const t1=BASE[1][0], t2=BASE[2][0];
+  // {now} is empty except inside a limited-time window, where every "Pick ₹100" becomes
+  // "Pick ₹100 now". It sits INSIDE the sentence rather than being appended, because Hindi puts
+  // it before the verb ("₹100 abhi choose karo") and English after the amount.
+  const now=ab.lt?(ab.hindi?' abhi':' now'):'';
   const tok={t1,t2,b1:bonusFor(t1),b2:bonusFor(t2),c1:creditFor(t1),c2:creditFor(t2),
-    bs:bonusFor(ab.sel),cs:creditFor(ab.sel),s:ab.sel,
+    bs:bonusFor(ab.sel),cs:creditFor(ab.sel),s:ab.sel,now,
     astro:flowAstro,M:v3M(ab.sel),M1:v3M(t1),M2:v3M(t2)};
   return s.replace(/\{(\w+)\}/g,(_,k)=>{const v=tok[k];return typeof v==='number'?nf(v):v});
 }
@@ -1613,7 +1666,12 @@ function v3Band(){
   // Explicit comparisons, not endsWith('50') — '250' ends with '50' too.
   const st=ab.sel<=BASE[0][0]?'50':ab.sel<BASE[2][0]?'100':ab.sel===BASE[2][0]?'250':'hi';
   const ask=st==='50'||st==='100';
-  const [l1,l2]=V3COPY[p+st].map(fillCopy);
+  let [l1,l2]=(ab.hindi?V3COPY_HI:V3COPY)[p+st].map(fillCopy);
+  /* Limited-time window: line 1 is REPLACED in all three flows — the clock outranks whatever that
+     bracket would have said — while line 2 keeps its own copy and only gains "now". The chip
+     carries the `cd` class, which is what the ticker writes into and what renderBand() reads to
+     mark the screen `.timed`; that is correct here because this clock really is running. */
+  if(ab.lt) l1=`Limited-time bonus<span class="cdpill"><b class="cd">${cdText()}</b></span>`;
   // Only the wallet's ₹50 earns the amber warning — there the band is a miss, everywhere else
   // it is a win and carries the seal. The seal stays the plain #039855 discount.svg: the dark
   // recolour belongs to the deep-green promo band, and a band's seal always follows its green.
@@ -1656,7 +1714,7 @@ function bandInner(){
   // Wallet flow (v3 b* copy), on EVERY amount. ₹50 is the only one that reads as a miss — it earns
   // no bonus — and it is the only one that turns gold; from ₹100 up the same band states what the
   // bonus actually is and, up to ₹250, points at the next tile.
-  if(isGold()||ab.wflow) return v3Band();
+  if(isGold()||ab.wflow||ab.lt) return v3Band();
   const cd = `<b class="cd">${cdText()}</b>`;
   const l1 = ab.mode==='coupon' ? `<b>ASTRO50</b> applied${ab.noTimer?'':` · ends in ${cd}`}`
            : ab.mode==='offer'  ? `First 5 mins chat at <b>₹5/min</b> · <b>80% Off</b>`
@@ -1768,6 +1826,7 @@ function renderCard(animate=true,counts=true){
   A('card').className='ac '+(g?'gold':'green');
   A('payblock').classList.toggle('gold',g);
   A('cardE').hidden=g;                       // ₹50 earns no bonus; drop the eyebrow
+  A('cardE').textContent=ab.hindi?'BADHAI HO!':'CONGRATULATIONS!';
   const n=A('cardN'), token=++animToken;
   const setN=x=>{ab.shown=x;n.textContent=fmt(x);alignCardRupee()};
   if(!animate||RM||b===0){setN(total);return}
@@ -2143,7 +2202,10 @@ function openAB(mode,sel,banner=false,auto=true,extra){
   // The band always carries a countdown on this screen, so the default flows get one too — except
   // the coupon, whose chip is now a static "Expiring soon". Its ticker would have nothing to write.
   // The promo band takes OFFER_WINDOW wherever it is opened, so it reads 15 min on every route in.
-  if(mode==='coupon'){ if(ticker){clearInterval(ticker);ticker=null} }
+  // The limited-time band shows the only clock on screen when it is on, so it takes the ticker
+  // even in coupon mode — where the chip is otherwise static and the ticker is deliberately off.
+  if(ab.lt) startCountdown(LT_WINDOW);
+  else if(mode==='coupon'){ if(ticker){clearInterval(ticker);ticker=null} }
   else startCountdown(mode==='offer'?OFFER_WINDOW:OFFER_SECONDS);
   mount(renderAB(), phone.querySelector('.screen.am')?null:'in-right');
   // Wait out the skeleton — the card's reveal used to fire at 450ms, which is now underneath it,
@@ -2151,8 +2213,8 @@ function openAB(mode,sel,banner=false,auto=true,extra){
   // which is already well past SKEL_MS.
   if(auto)later(()=>renderCard(true,false),SKEL_MS+450);
 }
-function withPopup(kind,mode,onDone){
-  openAB(mode,50,false,false);
+function withPopup(kind,mode,onDone,extra){
+  openAB(mode,50,false,false,extra);
   phone.insertAdjacentHTML('beforeend',popup(kind));
   later(()=>{const o=phone.querySelector('.overlay');if(o){o.style.transition='opacity .25s';o.style.opacity='0';later(()=>{o.remove();onDone();renderCard(true,false)},250)}},2300);
 }
@@ -2179,6 +2241,16 @@ function go(route,rate){
     // from a 24h window. It keeps its own .bn-promo green — renderBand()'s `timed` flag, the one
     // that adds .bn-dark, excludes promo — but the root does gain .timed now that a `.cd` exists.
     case 'continue': flowType='offer'; flowAstro='Astro Vipasana'; flowRate=flowRate||12; mount(renderLow()); later(()=>withPopup('offer','offer',()=>{ab.banner=true;startCountdown(OFFER_WINDOW);renderBand()}),1600); break;
+    /* The six copy variants from her v3 table that no flow above reaches. Each is one of the three
+       flows with a single flag added — `hindi` swaps the copy table, `lt` swaps line 1 for the live
+       clock — so they are flags on the SAME routes, not screens of their own. The astrologer pair
+       runs at ₹12/min because that is the rate her minute figures (4/20/62/66) come from. */
+    case 'walletHi': flowType='wallet'; flowAstro=''; openAB('default',100,false,true,{wflow:true,hindi:true}); break;
+    case 'walletLt': flowType='wallet'; flowAstro=''; openAB('default',100,false,true,{wflow:true,lt:true}); break;
+    case 'chatHi': flowType='insufficient'; flowAstro='Astro Hemali'; flowRate=12; mount(renderLow()); later(()=>openAB('default',100,false,true,{cflow:true,hindi:true}),1600); break;
+    case 'chatLt': flowType='insufficient'; flowAstro='Astro Hemali'; flowRate=12; mount(renderLow()); later(()=>openAB('default',100,false,true,{cflow:true,lt:true}),1600); break;
+    case 'againHi': flowType='coupon'; flowAstro='Astro Vipasana'; flowRate=flowRate||5; mount(renderLow()); later(()=>withPopup('coupon','coupon',()=>later(()=>{ab.banner=true;renderBand()},800),{hindi:true}),1600); break;
+    case 'againLt': flowType='coupon'; flowAstro='Astro Vipasana'; flowRate=flowRate||5; mount(renderLow()); later(()=>withPopup('coupon','coupon',()=>later(()=>{ab.banner=true;renderBand()},800),{lt:true}),1600); break;
   }
 }
 // v1's global tap router. The Add Money screen binds its own handler in initAM(), so this one
