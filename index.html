@@ -762,6 +762,12 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    shud have decreased not increased". The visible strip is cardTop - bannerTop, so only the card
    can change it; the band's 42px padding-bottom is hidden underneath and does nothing. */
 .am .rcpt{position:absolute;left:16px;right:16px;top:139px;height:229px;z-index:2;transition:top .42s cubic-bezier(.2,.8,.2,1)}
+/* The card's top is hardcoded, so it crops whatever of the band does not fit above it — fine while
+   every line was one line, but Hindi runs longer than English and wraps line 2, and the third line
+   went under the card. `.band3l` drops the card by exactly one more line so the band is never cut.
+   Set from the band's measured height in renderBand(), not from the language: English wraps too on
+   the longest coupon copy, and a language check would miss that. */
+.am.band3l .rcpt{top:157px}
 .am .rcptline{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 /* Was 3/2, which is exactly what Chrome draws for `1px dashed`; she asked for shorter dashes,
    so the path is now 2/2. The notch below is still a real CSS dashed border and so is still
@@ -1809,6 +1815,11 @@ function renderBand(){
   // sweep stands down while it ticks. Read off the rendered band rather than re-deriving which
   // modes carry a timer — the copy is the only authority on whether a .cd is actually showing.
   amRoot.classList.toggle('timed', !!A('band').querySelector('.cd'));
+  // Two 18px lines plus the 1px gap is 37; anything past ~45 means a line wrapped, so the card has
+  // to step down or it crops the band. Measured, because which copy wraps depends on the language,
+  // the amount and the astrologer's name length all at once.
+  const tblock=A('band').querySelector('.bandin>div');
+  amRoot.classList.toggle('band3l', !!tblock && tblock.offsetHeight>45);
   // And the badges only sweep while the pick earns nothing — see the .lure rule in the CSS.
   amRoot.classList.toggle('lure', isGold());
 }
