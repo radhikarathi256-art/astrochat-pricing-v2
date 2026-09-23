@@ -778,8 +778,19 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .am.rows2 .stack,.am.rows2 .rcpt{height:325px}
 .am.rows2 .see{top:255px}
 .am.rows2 .rcpt .notch{top:228px}
-.am .seebtn{display:flex;align-items:center;border:.8px dashed #D0D5DD;border-radius:12px;padding:4px 4px 4px 12px}
+/* The pill's border is DRAWN, not a CSS border. Chrome's `dashed` dash length is locked to ~3x
+   the border width with no property to change it, so this pill's dashes came out longer than the
+   receipt outline's 2-2 sitting right next to it. drawSeeBtns() strokes the rect at 1:1 px, the
+   same way #rcptPath is drawn, so the two patterns finally match. */
+.am .seebtn{position:relative;display:flex;align-items:center;border-radius:12px;padding:4px 4px 4px 12px}
+.am .seeline{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.am .seeline rect{fill:none;stroke:#D0D5DD;stroke-width:.8;stroke-dasharray:2 2;stroke-linecap:butt}
 .am .seebtn p{font-size:12px;line-height:18px;color:#667085;white-space:nowrap}
+/* Both pills are in the DOM at once and cross-fade, so a static `.up` on the See Less one never
+   animated — you only ever saw the finished state. Keying BOTH chevrons on `.am.open` rotates
+   them together through the swap, so it reads as the one arrow flipping over. The .4s transition
+   comes from `.am .chev` above. */
+.am.open .seebtn .chev{transform:rotate(180deg)}
 
 /* ---------- amount tile ---------- */
 .am .col{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center}
@@ -1297,7 +1308,7 @@ function renderAB(){
       <div class="rcpt" id="rcpt"><svg class="rcptline" id="rcptLine" aria-hidden="true"><path id="rcptPath"/></svg><span class="notch l"></span><span class="notch r"></span></div>
       <div class="stack">
         <div class="skus" id="skus"></div>
-        <div class="see"><button class="seebtn" type="button" id="seeMore" aria-expanded="false"><p>See More Options</p><img class="chev" src="${I.chevron}" alt=""></button></div>
+        <div class="see"><button class="seebtn" type="button" id="seeMore" aria-expanded="false"><svg class="seeline" aria-hidden="true"><rect></rect></svg><p>See More Options</p><img class="chev" src="${I.chevron}" alt=""></button></div>
       </div>
     </section>
 
@@ -1309,7 +1320,7 @@ function renderAB(){
             <svg class="rcline" aria-hidden="true"><path/></svg>
             <span class="notch l"></span><span class="notch r"></span>
             <div class="grid" id="grid"></div>
-            <div class="seerow"><button class="seebtn" type="button" id="seeLess"><p>See Less Options</p><img class="chev up" src="${I.chevron}" alt=""></button></div>
+            <div class="seerow"><button class="seebtn" type="button" id="seeLess"><svg class="seeline" aria-hidden="true"><rect></rect></svg><p>See Less Options</p><img class="chev" src="${I.chevron}" alt=""></button></div>
           </div>
         </div>
         <div class="scrollpad" id="scrollpad"></div>
@@ -1841,6 +1852,23 @@ function drawRcpt(){
    Called from a ResizeObserver rather than from the render functions: .rc's height is set by the
    band above it and by the grid, both of which re-render on their own schedules, and an observer
    catches every one of those without having to find each call site. */
+/* The See More / See Less pill's dashed outline, drawn at 1:1 for the same reason the receipt is:
+   an SVG scaled to the box would stretch the dashes with it, and a CSS `dashed` border can't be
+   told to use 2-2. offsetWidth/Height, NOT getBoundingClientRect — the phone is scaled to the
+   viewport, so the rect would come back in screen px and the dashes would drift off the card's. */
+const SEE_R=12, SEE_W=.8;
+function drawSeeBtns(){
+  if(!amRoot) return;
+  amRoot.querySelectorAll('.seebtn').forEach(b=>{
+    const r=b.querySelector('.seeline>rect'); if(!r) return;
+    const W=b.offsetWidth, H=b.offsetHeight, o=SEE_W/2;
+    if(!W||!H) return;                          // hidden sheet measures 0; the observer calls back
+    r.parentNode.setAttribute('viewBox',`0 0 ${W} ${H}`);
+    r.setAttribute('x',o); r.setAttribute('y',o);
+    r.setAttribute('width',W-SEE_W); r.setAttribute('height',H-SEE_W);
+    r.setAttribute('rx',SEE_R-o);
+  });
+}
 const RC_R=24;
 function drawRc(){
   if(!amRoot) return;
@@ -1870,10 +1898,14 @@ function initAM(root){
   ab.open=false; ab.sumOpen=false; ab.pmOpen=false; ab.shown=null;
   // Set before the renders: .rows2 resizes .rcpt, and drawRcpt() below measures that box.
   amRoot.classList.toggle('rows2', ab.rows===2);
-  renderTiles(); renderBand(); renderCard(false); renderSummary(); renderPM(); drawRcpt(); drawRc();
+  renderTiles(); renderBand(); renderCard(false); renderSummary(); renderPM(); drawRcpt(); drawRc(); drawSeeBtns();
   // Redraw the open sheet's outline whenever its box changes — grid re-render, band appearing or
   // going, rotation. Scoped to this root so it dies with the screen on remount.
   new ResizeObserver(drawRc).observe(amRoot.querySelector('.rc'));
+  // The pills are a fixed size, but the web font lands after first paint and the sheet's one
+  // measures 0 until it is shown, so observe both rather than drawing once.
+  const seeRO=new ResizeObserver(drawSeeBtns);
+  amRoot.querySelectorAll('.seebtn').forEach(b=>seeRO.observe(b));
   // Once per page; on a remount the surviving canvas is re-parented into the new root by
   // mountCoins(), which renderTiles() has just called.
   initCoins();
