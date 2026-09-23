@@ -660,7 +660,12 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    steps are near-identical to #039855, so the copy (which ends at ~86%) still sits on what reads
    as solid green — the "no word may sit on the gradient" rule is kept while the ramp gets longer
    and therefore smoother. */
-.am .banner.bn-promo,.am .band3.bn-promo{color:#fff;background:linear-gradient(90deg,#039855 0%,#039855 80%,#0BA05C 86%,#3CB783 90%,#7CD0AC 94%,#BCE8D5 97%,#E9F9F2 99%,#fff 100%)}
+/* Sep 23: this band and the coupon band SWAPPED greens. It is the one carrying a live countdown
+   now, so it takes the deep green under v1's standing rule — deeper green only while a clock is
+   ticking. Only the COLOURS moved: the seven stop positions are this band's own, measured against
+   this band's copy (solid to 80% = 262px of 328), so recolouring in place can't push a word onto
+   the ramp. Never swap the stop geometry between the two bands — the copy doesn't travel with it. */
+.am .banner.bn-promo,.am .band3.bn-promo{color:#fff;background:linear-gradient(90deg,#065F41 0%,#065F41 80%,#0A6C4A 86%,#3FA87A 90%,#7CC3A5 94%,#AFE0CA 97%,#E3F3EC 99%,#fff 100%)}
 /* .l2's default is a dark green meant for the pale bands; on this solid one it has to go white,
    same as .l1. */
 .am .bn-promo .bandin .l1,.am .bn-promo .bandin .l2{color:#fff}
@@ -669,11 +674,14 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .am .bn-promo .bandin .l2 b{font-weight:800;font-variant-numeric:tabular-nums}
 /* she asked for the tag to tick over faster on this flow only */
 .am .bn-promo .bandin .tag{animation-duration:1.5s}
-/* Chat Again → ASTRO50. Deepest green of the set, carrying v1's sparkle field AND v1's light
-   sweep, with the countdown running. Identical on every tile. The stars and the sweep are
-   SIBLINGS of .bandin, not children, so they inherit the band's own 32px corners; .bandin is
-   lifted above them (everything here is positioned, so DOM order alone would put them on top). */
-.am .banner.coupon,.am .band3.coupon{color:#fff;background:linear-gradient(90deg,#065F41 0%,#066B44 88%,#3FA87A 94%,#AFE0CA 97.5%,#fff 100%)}
+/* Chat Again → ASTRO50. Carries v1's sparkle field AND v1's light sweep. Identical on every tile.
+   The stars and the sweep are SIBLINGS of .bandin, not children, so they inherit the band's own
+   32px corners; .bandin is lifted above them (everything here is positioned, so DOM order alone
+   would put them on top).
+   Sep 23: LIGHTER green, because its pill now reads a static "Expiring soon" instead of a clock —
+   deep green is reserved for a band that is actually ticking. Colours only; the four stop
+   positions are still this band's own (solid to 88%). */
+.am .banner.coupon,.am .band3.coupon{color:#fff;background:linear-gradient(90deg,#039855 0%,#04A25C 88%,#3CB783 94%,#BCE8D5 97.5%,#fff 100%)}
 .am .coupon .bandin{z-index:1}
 .am .coupon .bandin .l1,.am .coupon .bandin .l2{color:#fff}
 .am .coupon .bandin .l2{font-weight:600}
@@ -698,8 +706,16 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    DARK GREEN band, so opacity is a straight visibility dial. UP = brighter, more visible.
    DOWN = the white fades into the green and they vanish. There is no value that is both fainter
    and more visible; if the ask is "more visible", this number must RISE. */
-.am .coupon .bn-stars{position:absolute;right:0;top:0;width:236px;height:44px;z-index:0;object-fit:cover;object-position:right top;pointer-events:none;opacity:.2;
+   Sep 23: both green bands carry the stars now, so this is shared. */
+.am .coupon .bn-stars,.am .bn-promo .bn-stars{position:absolute;right:0;top:0;width:236px;height:44px;z-index:0;object-fit:cover;object-position:right top;pointer-events:none;opacity:.2;
   -webkit-mask-image:linear-gradient(to left,#000 0%,rgba(0,0,0,.5) 26%,rgba(0,0,0,.12) 52%,transparent 72%);mask-image:linear-gradient(to left,#000 0%,rgba(0,0,0,.5) 26%,rgba(0,0,0,.12) 52%,transparent 72%)}
+/* The stars are white, so their visibility is white-on-green CONTRAST, and the coupon band is the
+   lighter green — .2 there reads noticeably fainter than the same .2 on the deep promo band.
+   Raised to .3 to land them at the same apparent strength, per the direction rule above. */
+.am .coupon .bn-stars{opacity:.3}
+.am .bn-promo .bandin{z-index:1}
+/* Sweep stays on the coupon band ONLY. The promo band has a running clock, and the badge-sweep
+   rule below already says it: one moving thing at a time, or they compete. */
 .am .coupon .sweep{z-index:0;height:62px;bottom:auto}
 /* Sep 22: the two decorative drift arrows that used to sit top-right of the astrologer band are
    GONE — she asked for them removed. They were pure decoration ("the rate falls") and were
@@ -1351,10 +1367,13 @@ let flowAstro='Astro Hemali';
 let flowType='wallet'; // 'insufficient' when the user came from an astrologer's Chat button with too little balance // astrologer the user is trying to reach (null when opened from the wallet)
 function cdText(){
   const s=ab.cd;
-  // Both the coupon and the offer run for hours, so they need the H:MM:SS face; the short flows
-  // keep M:SS. Keyed on mode, not on the remaining seconds, so the format never changes shape
-  // mid-countdown.
-  if(ab.mode==='coupon'||ab.mode==='offer'){return `${Math.floor(s/3600)}:${String(Math.floor(s%3600/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`}
+  // The H:MM:SS face is gone (Sep 23). Nothing runs for hours any more — the coupon shows no clock
+  // at all and the offer is a 15-minute window — and an hours field that is permanently "0:" makes
+  // a live timer look stopped, which defeats the point of showing one.
+  // The offer pads its minutes so the chip keeps ONE width all the way down; below ten minutes an
+  // unpadded face drops a character and the pill, which hugs its text, visibly narrows. Keyed on
+  // mode rather than on the seconds left, so the shape can never change mid-countdown.
+  if(ab.mode==='offer') return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
   return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
 }
 /* ---------- ADD MONEY (pricing-v2 design) ---------- */
@@ -1452,7 +1471,10 @@ function renderAB(){
   </div>`;
 }
 const OFFER_SECONDS=5*60;
-const OFFER_WINDOW=24*3600;   // the View History → Continue Chat band's "expires in" window
+// The promo band's "Offer expires in" window. 24h -> 15 min on Sep 23: a day-long clock counts
+// down in the hours field and looks static, which is the opposite of what a countdown is for.
+// 15 min ticks in the seconds field and still reads as minutes, so it shows as mm:ss.
+const OFFER_WINDOW=15*60;
 function startCountdown(sec){
   if(ticker){clearInterval(ticker);ticker=null}   // openAB starts one; the flows may restart it
   ab.cd=sec;
@@ -1586,18 +1608,22 @@ function bandInner(){
   // 80% (262px of 328) and nothing may sit on the ramp past it. "First recharge offer expires in"
   // plus the chip measured 304.6px and put the chip itself on the gradient. Re-measure the INK
   // right edge of both lines — not the block box, which is full-width — before lengthening either.
-  if(ab.mode==='offer') return `<div class="bandin"><img class="tag" src="${I.discount}" alt=""><div><p class="l1">Offer expires in <span class="cdpill"><b class="cd">${cdText()}</b></span></p><p class="l2">Bonus on first recharge over <b>₹100</b></p></div></div>`;
+  // Sep 23: gained the sparkle field and the deep green (see the CSS). The seal swaps with it —
+  // discount-dark.svg is the #065F41 recolour, which is what belongs on the dark band; the plain
+  // #039855 one now goes to the coupon band. Whenever a band changes green, its seal follows.
+  if(ab.mode==='offer') return `<div class="bandin"><img class="tag" src="${I['discount-dark']}" alt=""><div><p class="l1">Offer expires in <span class="cdpill"><b class="cd">${cdText()}</b></span></p><p class="l2">Bonus on first recharge over <b>₹100</b></p></div></div><img class="bn-stars" src="${I.stars}" alt="" aria-hidden="true">`;
   // ASTRO50. Same on every tile — the ₹50 is flat, so no figure here moves with the selection.
-  // The <b class="cd"> is what startCountdown()'s ticker rewrites each second.
-  // discount-dark.svg is the same seal recoloured #065F41 — the coupon strip's own left-edge
-  // green — because the default #039855 read as a brighter green sitting on a darker one.
-  // Countdown lifted out of plain copy into its own chip, sitting INLINE right after the words it
-  // belongs to — a corner-anchored version read as a detached clock. It keeps class `cd`, which is
-  // the only hook the ticker and renderBand()'s `.timed` check use.
+  // Sep 23: NO live clock. The chip holds a static "Expiring soon" and, exactly like the promo
+  // band's old static "24 hours", it deliberately carries NO `cd` class — `cd` is both the
+  // ticker's write target and the hook renderBand()'s `.timed` check reads, so a `cd` here would
+  // restart a clock that isn't shown and silence the SKU badge sweeps for nothing.
+  // "expires in" had to go with it: "expires in Expiring soon" is not a sentence. The line is now
+  // the coupon's NAME and the chip is its status — her wording, "ASTRO 50 coupon" + the bubble.
+  // Seal swapped to the plain #039855 discount.svg to match the lighter green it now sits on.
   // Benefit line deliberately does NOT carry the promo band's "over ₹100" qualifier: ASTRO50 is
   // flat and pays out at ₹50 too (the ₹50 tile badges +₹50 under this coupon), so a threshold here
   // would be claiming a condition the pricing does not actually impose.
-  if(ab.mode==='coupon') return `<div class="bandin"><img class="tag" src="${I['discount-dark']}" alt=""><div><p class="l1">ASTRO 50 expires in <span class="cdpill"><b class="cd">${cdText()}</b></span></p><p class="l2">Get <b>₹${COUPON_FLAT}</b> extra on your first recharge</p></div></div><img class="bn-stars" src="${I.stars}" alt="" aria-hidden="true"><span class="sweep"></span>`;
+  if(ab.mode==='coupon') return `<div class="bandin"><img class="tag" src="${I.discount}" alt=""><div><p class="l1">ASTRO 50 coupon <span class="cdpill"><b>Expiring soon</b></span></p><p class="l2">Get <b>₹${COUPON_FLAT}</b> extra on your first recharge</p></div></div><img class="bn-stars" src="${I.stars}" alt="" aria-hidden="true"><span class="sweep"></span>`;
   if(ab.cflow&&flowRate){
     // Lead with the SAVING, not the price. The bonus is what makes this rate possible, so the band
     // now names the gap it creates; the two rates stay underneath as the proof.
@@ -2101,8 +2127,11 @@ function mount(html, anim){
 function afterMount(){ const am=phone.querySelector('.screen.am'); if(am) initAM(am); else amRoot=null; }
 function openAB(mode,sel,banner=false,auto=true,extra){
   ab={mode,sel,banner,shown:null,cd:0,dropped:new Set(),...extra};
-  // The band always carries a countdown on this screen, so the default flows get one too.
-  startCountdown(mode==='coupon'?5*3600:OFFER_SECONDS);
+  // The band always carries a countdown on this screen, so the default flows get one too — except
+  // the coupon, whose chip is now a static "Expiring soon". Its ticker would have nothing to write.
+  // The promo band takes OFFER_WINDOW wherever it is opened, so it reads 15 min on every route in.
+  if(mode==='coupon'){ if(ticker){clearInterval(ticker);ticker=null} }
+  else startCountdown(mode==='offer'?OFFER_WINDOW:OFFER_SECONDS);
   mount(renderAB(), phone.querySelector('.screen.am')?null:'in-right');
   // Wait out the skeleton — the card's reveal used to fire at 450ms, which is now underneath it,
   // so she'd never see it play. The popup flows pass auto=false and reveal after the popup fades,
@@ -2127,7 +2156,7 @@ function go(route,rate){
     // red "not enough to connect" strip below the 4-min minimum, the green rate strip above it.
     // SEL is temporary, so the copy switcher can land on the tile its button labels quote.
     case 'listingChat': flowType='insufficient'; flowAstro='Astro Hemali'; flowRate=flowRate||15; mount(renderLow()); later(()=>openAB('default',SEL||100,false,true,{cflow:true}),1600); break;
-    case 'again': flowType='coupon'; flowAstro='Astro Vipasana'; flowRate=flowRate||5; mount(renderLow()); later(()=>withPopup('coupon','coupon',()=>later(()=>{ab.banner=true;startCountdown(5*3600);renderBand()},800)),1600); break;
+    case 'again': flowType='coupon'; flowAstro='Astro Vipasana'; flowRate=flowRate||5; mount(renderLow()); later(()=>withPopup('coupon','coupon',()=>later(()=>{ab.banner=true;renderBand()},800)),1600); break;
     case 'history': mount(renderChat()); break;
     // Still six tiles here, but the coins stay on ₹250 like every other flow — her call Sep 23.
     // `coin` is left on `ab` so a future flow can still move them; nothing passes it today.
