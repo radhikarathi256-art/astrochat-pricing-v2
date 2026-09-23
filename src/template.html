@@ -1228,6 +1228,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
   <label for="edL1">Line 1<input id="edL1" type="text" autocomplete="off" spellcheck="false"></label>
   <label for="edL2">Line 2<input id="edL2" type="text" autocomplete="off" spellcheck="false"></label>
   <p class="hint">Wrap words in *stars* to highlight them. Leave a box empty to keep the built-in line shown in grey.</p>
+  <button type="button" id="edShare">Copy link to send</button>
   <button type="button" id="edReset">Reset to built-in copy</button>
 </aside>
 <button class="flows-btn" id="flowsBtn" aria-haspopup="dialog">Flows ▾</button>
@@ -1702,7 +1703,12 @@ function bandInner(){
    and every mode keeps its own icon, colour and layout.
    The input is escaped and only `*...*` is turned into markup — she types plain words, and
    nothing she types can inject a tag. */
-const bandCopy={l1:'',l2:''};
+/* ?l1=&l2= carry the edited copy in the link itself, so whoever is reviewing can type their
+   wording, hit "Copy link to send", and paste that link into chat. Opening it replays the same
+   flow with their words already in place — and it is also what gets read back into this file. */
+const edQS=new URLSearchParams(location.search);
+const bandCopy={l1:edQS.get('l1')||'',l2:edQS.get('l2')||''};
+let curRoute='home';
 const edEsc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const edFmt=s=>edEsc(s).replace(/\*([^*]+)\*/g,'<b class="hl">$1</b>');
 const edPanel=document.getElementById('edPanel');
@@ -1721,11 +1727,32 @@ function edApply(el){
   if(bandCopy.l2&&p2) p2.innerHTML=edFmt(bandCopy.l2);
 }
 if(edPanel){
+  edPanel.querySelector('#edL1').value=bandCopy.l1;
+  edPanel.querySelector('#edL2').value=bandCopy.l2;
   edPanel.addEventListener('input',e=>{
     if(e.target.id==='edL1') bandCopy.l1=e.target.value;
     else if(e.target.id==='edL2') bandCopy.l2=e.target.value;
     else return;
     if(onAM()) renderBand();
+  });
+  // The link has to carry the flow as well as the words: the same two lines sit on a different
+  // band in every flow, so without `start` it would open on the home screen and show nothing.
+  const edShare=edPanel.querySelector('#edShare');
+  edShare.addEventListener('click',async()=>{
+    const u=new URL(location.href);
+    u.search='';
+    u.searchParams.set('start',curRoute);
+    if(SEL) u.searchParams.set('sel',SEL);
+    if(COPY!==1) u.searchParams.set('copy',COPY);
+    if(bandCopy.l1) u.searchParams.set('l1',bandCopy.l1);
+    if(bandCopy.l2) u.searchParams.set('l2',bandCopy.l2);
+    const link=u.toString();
+    // navigator.clipboard is https-only; the local preview is plain http, so fall back to a
+    // prompt() the link can be copied out of by hand rather than failing silently.
+    let ok=false;
+    try{ await navigator.clipboard.writeText(link); ok=true; }catch{}
+    if(ok){ edShare.textContent='Link copied ✓'; setTimeout(()=>{edShare.textContent='Copy link to send'},1600); }
+    else prompt('Copy this link and send it:',link);
   });
   edPanel.querySelector('#edReset').addEventListener('click',()=>{
     bandCopy.l1=bandCopy.l2='';
@@ -2170,6 +2197,7 @@ function withPopup(kind,mode,onDone){
 }
 function go(route,rate){
   clearTimers();
+  curRoute=route; // the share link has to reopen on the flow whose band was being edited
   flowRate = rate ? +rate : null; // whatever the tapped card charges; null when none was tapped
   document.getElementById('flowsSheet').classList.remove('open');
   switch(route){
