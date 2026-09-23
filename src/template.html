@@ -730,7 +730,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    OPACITY DIRECTION — the thing that kept going wrong: stars.svg is 45 solid var(--white) shapes on a
    DARK GREEN band, so opacity is a straight visibility dial. UP = brighter, more visible.
    DOWN = the white fades into the green and they vanish. There is no value that is both fainter
-   and more visible; if the ask is "more visible", this number must RISE. */
+   and more visible; if the ask is "more visible", this number must RISE.
    Sep 23: both green bands carry the stars now, so this is shared. */
 .am .coupon .bn-stars,.am .bn-promo .bn-stars{position:absolute;right:0;top:0;width:236px;height:44px;z-index:0;object-fit:cover;object-position:right top;pointer-events:none;opacity:.2;
   -webkit-mask-image:linear-gradient(to left,#000 0%,rgba(0,0,0,.5) 26%,rgba(0,0,0,.12) 52%,transparent 72%);mask-image:linear-gradient(to left,#000 0%,rgba(0,0,0,.5) 26%,rgba(0,0,0,.12) 52%,transparent 72%)}
@@ -1606,7 +1606,9 @@ const V3COPY={
 // promise the wallet cannot keep on the last minute.
 const v3Mins=v=>flowRate?Math.floor(creditFor(v)/flowRate):0;
 const v3M=v=>{const m=v3Mins(v);return m+(m===1?' min':' mins')};
-const nf=n=>n.toLocaleString('en-IN');
+// Plain digits, NO thousands separator — her call, Sep 23. At 12px on a strip this narrow
+// "₹5,200" reads as two numbers, and the SKU tiles beside it are unseparated too ("₹10000").
+const nf=n=>String(n);
 function fillCopy(s){
   const t1=BASE[1][0], t2=BASE[2][0];
   const tok={t1,t2,b1:bonusFor(t1),b2:bonusFor(t2),c1:creditFor(t1),c2:creditFor(t2),
