@@ -897,7 +897,13 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    shoulder, which is exactly the fault an earlier 58 had. */
 .am .rc .notch{bottom:77px}
 .am .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.am .seerow{display:flex;justify-content:center;margin-top:30px}
+/* 41.5 is NOT a taste number — it is the closed card's gap, measured. There the button is placed
+   by `.see{top:159px}` against a fixed 96px `.skus` block whose tile+chip only fills 89.5 of it,
+   so the real chip-bottom-to-button gap is 159 - (28 + 89.5) = 41.5. This card stacks in normal
+   flow instead, so the same gap has to be stated as a margin. At 30 the button sat 11.5px tighter
+   than the closed card's and she caught it. Re-derive this if `.see`'s top or the tile metrics
+   move — the two layouts share no constant and will silently drift apart again. */
+.am .seerow{display:flex;justify-content:center;margin-top:41.5px}
 .am .scrollpad{height:0}
 /* scroll indicator — 3px, persistent while the sheet is open.
    It used to only flash: .on for 2s on open and 1.4s per scroll, then fade out. That is the iOS
