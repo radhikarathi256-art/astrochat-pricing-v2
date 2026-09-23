@@ -14,12 +14,32 @@
      markup as a fallback and is hidden only once the component actually upgrades. -->
 <script type="module" src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.6.2/dist/dotlottie-wc.js"></script>
 <style>
+/* ── Design tokens ───────────────────────────────────────────────────────────
+   Every name below is a published style in the Figma file (Payments-Android —
+   an Untitled UI library). A raw hex left in this stylesheet means "no style
+   exists for this": the payment-brand logo colours, the green/gold card skins,
+   and the display type sizes (10, 11, 13.5, 31, 42px) are all deliberate.
+   Gradients cannot carry a style in Figma, so the bands below are written as
+   color-mix over white — the same mapping the "background colour spec"
+   annotations on the component library now document.
+   ─────────────────────────────────────────────────────────────────────────── */
 :root{
-  --brand:#EF6939;--brand-500:#F28761;
-  --g50:#F9FAFB;--g100:#F2F4F7;--g200:#EAECF0;--g300:#D0D5DD;--g400:#98A2B3;--g500:#667085;--g600:#475467;--g700:#344054;--g800:#1D2939;
-  --s50:#ECFDF3;--s200:#A6F4C5;--s500:#12B76A;--s600:#039855;--s700:#027A48;
-  --ab-bg:#EEF0F3;
+  --brand-color:#EF6939;--brand-500:#F28761;--brand-900:#560000;
+  --gray-25:#FCFCFD;--gray-50:#F9FAFB;--gray-100:#F2F4F7;--gray-200:#EAECF0;--gray-300:#D0D5DD;
+  --gray-400:#98A2B3;--gray-500:#667085;--gray-600:#475467;--gray-700:#344054;--gray-800:#1D2939;--gray-900:#101828;
+  --success-50:#ECFDF3;--success-100:#D1FADF;--success-200:#A6F4C5;--success-400:#32D583;
+  --success-500:#12B76A;--success-600:#039855;--success-700:#027A48;--success-800:#05603A;--success-900:#054F31;
+  --warning-50:#FFFAEB;--warning-100:#FEF0C7;--warning-300:#FEC84B;--warning-400:#FDB022;--warning-600:#DC6803;--warning-900:#7A2E0E;
+  --error-50:#FEF3F2;--error-100:#FEE4E2;--error-500:#F04438;--error-700:#B42318;--error-800:#912018;
+  --white:#FFFFFF;--black:#000000;
+  --ab-bg:#EEF0F3;                     /* phone chrome — no Figma style */
+  /* Text styles: Inter, letter-spacing 0, weights 400/500/600/700 */
   --font:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+  --fs-xs:12px;--lh-xs:18px;           /* Body X Small 12 */
+  --fs-sm:14px;--lh-sm:20px;           /* Body Medium 14  */
+  --fs-md:16px;--lh-md:24px;           /* Body large 16   */
+  --fs-lg:18px;--lh-lg:28px;           /* Body XL 18      */
+  --fs-xl:20px;--lh-xl:30px;           /* Body 2XL 20     */
 }
 /* `user-select:none` is what kills the blue selection box. Tapping a tile quickly counts as a
    double-click, and the browser then selects the nearest text run — which is why the "Add Money"
@@ -28,7 +48,7 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
 ::selection{background:transparent}
 html,body{height:100%;background:#fff}
-body{font-family:var(--font);color:var(--g800);overflow:hidden;-webkit-font-smoothing:antialiased}
+body{font-family:var(--font);color:var(--gray-800);overflow:hidden;-webkit-font-smoothing:antialiased}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;text-align:inherit}
 img{display:block}
 /* The grey ring around a tapped tile. `:focus-visible` alone is NOT enough to keep it off a
@@ -41,20 +61,20 @@ body.kbd :focus-visible{outline:2px solid rgba(16,24,40,.35);outline-offset:2px}
 
 /* ---------- shell ---------- */
 .shell{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px}
-.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;max-width:760px;color:var(--g600);font-size:12px}
-.toolbar b{color:var(--g800);font-weight:600;margin-right:4px}
-.toolbar button{background:#2f2f33;border:1px solid #707076;color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;text-align:center}
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;max-width:760px;color:var(--gray-600);font-size:var(--fs-xs)}
+.toolbar b{color:var(--gray-800);font-weight:600;margin-right:4px}
+.toolbar button{background:#2f2f33;border:1px solid #707076;color:#fff;border-radius:8px;padding:6px 10px;font-size:var(--fs-xs);text-align:center}
 .toolbar button:hover{background:#3b3b40}
 /* Live alert-banner copy editor, desktop only. Same dark chrome as .toolbar so it reads as
    prototype furniture and not as part of the design. */
 .edpanel{position:fixed;right:16px;top:16px;z-index:50;width:250px;display:flex;flex-direction:column;gap:8px;
-  background:#2f2f33;border:1px solid #707076;border-radius:12px;padding:12px;color:#fff;font-size:12px;line-height:16px}
+  background:#2f2f33;border:1px solid #707076;border-radius:12px;padding:12px;color:#fff;font-size:var(--fs-xs);line-height:16px}
 .edpanel b{font-weight:600}
 .edpanel label{display:flex;flex-direction:column;gap:4px;color:#c9c9cf}
 .edpanel input{background:#1c1c1f;border:1px solid #707076;border-radius:8px;padding:6px 8px;color:#fff;font:inherit;width:100%}
 .edpanel input::placeholder{color:#8a8a93}
 .edpanel .hint{color:#9a9aa2}
-.edpanel button{background:#4a4a52;border:1px solid #707076;color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;text-align:center}
+.edpanel button{background:#4a4a52;border:1px solid #707076;color:#fff;border-radius:8px;padding:6px 10px;font-size:var(--fs-xs);text-align:center}
 .edpanel button:hover{background:#5a5a63}
 body.mobile .edpanel{display:none}
 /* The panel is fixed, so it would sit on top of the phone on a narrow desktop window. Reserve
@@ -73,9 +93,9 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .flows-sheet.open{display:flex;position:fixed;inset:0;z-index:101;background:rgba(0,0,0,.45);align-items:flex-end}
 .flows-btn,.flows-sheet .panel{zoom:var(--ui,1)}
 .flows-sheet .panel{width:100%;background:#fff;border-radius:18px 18px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px;animation:up .25s ease-out}
-.flows-sheet h4{font-size:15px;font-weight:700;color:var(--g800);margin-bottom:4px}
-.flows-sheet .panel button{border:1px solid var(--g300);border-radius:12px;padding:12px 14px;font-size:14px;font-weight:500;color:var(--g700)}
-.flows-sheet .panel button small{display:block;font-weight:400;font-size:12px;color:var(--g500);margin-top:2px}
+.flows-sheet h4{font-size:15px;font-weight:700;color:var(--gray-800);margin-bottom:4px}
+.flows-sheet .panel button{border:1px solid var(--gray-300);border-radius:12px;padding:12px 14px;font-size:var(--fs-sm);font-weight:500;color:var(--gray-700)}
+.flows-sheet .panel button small{display:block;font-weight:400;font-size:var(--fs-xs);color:var(--gray-500);margin-top:2px}
 @keyframes up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
 
 /* ---------- photos (uploaded) / stand-ins ---------- */
@@ -85,7 +105,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 
 /* ---------- HOME ---------- */
 .home{display:flex;flex-direction:column;background:#fff}
-.home-head{border-bottom:1px solid var(--g300);flex-shrink:0;background:#fff}
+.home-head{border-bottom:1px solid var(--gray-300);flex-shrink:0;background:#fff}
 .home .topnav{height:64px;display:flex;align-items:center;gap:16px;padding-left:16px}
 .brand{display:flex;gap:7px;align-items:center}
 .home .logo{position:relative;width:95.4px;height:20px}
@@ -94,11 +114,11 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .home .logo .b{left:38.8px;top:7px;width:12.6px;height:12.6px}
 .home .logo .c{left:52.2px;top:0;width:37.3px;height:19.7px}
 .home .logo span{left:89.4px;top:5px;height:15px;width:6px;display:flex;align-items:center;justify-content:center}
-.home .logo span i{transform:rotate(-90deg);font-style:normal;font-size:6.4px;line-height:6px;color:var(--brand);white-space:nowrap}
+.home .logo span i{transform:rotate(-90deg);font-style:normal;font-size:6.4px;line-height:6px;color:var(--brand-color);white-space:nowrap}
 .navright{flex:1;display:flex;gap:12px;align-items:center;justify-content:flex-end;padding-right:8px}
-.wpill{position:relative;background:var(--g700);display:flex;flex-direction:column;align-items:center;gap:3px;padding:2px 2px 4px;border-radius:16px 16px 12px 12px;overflow:hidden}
-.wpill .inner{background:#fff;border:1px solid var(--g300);border-radius:20px;display:flex;gap:8px;align-items:center;padding:3px 4px 3px 6px;position:relative;z-index:1}
-.wpill .inner p{font-size:14px;color:#2d2d2d}
+.wpill{position:relative;background:var(--gray-700);display:flex;flex-direction:column;align-items:center;gap:3px;padding:2px 2px 4px;border-radius:16px 16px 12px 12px;overflow:hidden}
+.wpill .inner{background:#fff;border:1px solid var(--gray-300);border-radius:20px;display:flex;gap:8px;align-items:center;padding:3px 4px 3px 6px;position:relative;z-index:1}
+.wpill .inner p{font-size:var(--fs-sm);color:#2d2d2d}
 .wpill .cb{font-size:10px;color:#fff;letter-spacing:-.32px;white-space:nowrap;position:relative;z-index:1}
 /* light sweep: kept for the ASTRO50 coupon banner (both its timer and non-timer states).
    The offer banner deliberately has none. */
@@ -112,70 +132,70 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 @keyframes sweep{0%,40%{transform:translateX(0) skewX(-18deg)}80%,100%{transform:translateX(475%) skewX(-18deg)}}
 
 /* wallet chip: single row, gift <-> add alternating (option I) */
-.wchip{height:32px;display:flex;align-items:center;gap:6px;padding:0 3px 0 9px;background:#fff;border:1px solid var(--g300);border-radius:16px;white-space:nowrap;font-size:13px;font-weight:600;color:var(--g800);transition:transform .12s}
+.wchip{height:32px;display:flex;align-items:center;gap:6px;padding:0 3px 0 9px;background:#fff;border:1px solid var(--gray-300);border-radius:16px;white-space:nowrap;font-size:13px;font-weight:600;color:var(--gray-800);transition:transform .12s}
 .wchip:active{transform:scale(.96)}
 .wchip .bal{display:flex;align-items:center;gap:5px}
 .swap{position:relative;width:26px;height:26px;flex-shrink:0}
 .swap .lay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;border-radius:50%;animation-duration:6s;animation-iteration-count:infinite;animation-timing-function:cubic-bezier(.45,0,.25,1)}
-.swap .lg{background:var(--s50);border:1px solid #abefc6;animation-name:swapGift}
+.swap .lg{background:var(--success-50);border:1px solid #abefc6;animation-name:swapGift}
 .swap .lp{animation-name:swapPlus}
 .swap .lp img{width:24px;height:24px}
 @keyframes swapGift{0%,40%{opacity:1;transform:scale(1) rotate(0)}50%,90%{opacity:0;transform:scale(.3) rotate(-120deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
 @keyframes swapPlus{0%,40%{opacity:0;transform:scale(.3) rotate(120deg)}50%,90%{opacity:1;transform:scale(1) rotate(0)}100%{opacity:0;transform:scale(.3) rotate(120deg)}}
 .giftw{position:relative;display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;font-size:15px;line-height:1}
 .home .giftw .g{display:inline-block;transform-origin:50% 85%;animation:gift6 6s ease-in-out infinite}
-.giftw i{position:absolute;width:4px;height:4px;border-radius:50%;background:#fdb022;opacity:0;animation:spark6 6s ease-out infinite}
+.giftw i{position:absolute;width:4px;height:4px;border-radius:50%;background:var(--warning-400);opacity:0;animation:spark6 6s ease-out infinite}
 .giftw i:nth-of-type(1){top:-1px;right:-2px}
-.giftw i:nth-of-type(2){top:3px;left:-3px;width:3px;height:3px;animation-delay:.1s;background:#12b76a}
+.giftw i:nth-of-type(2){top:3px;left:-3px;width:3px;height:3px;animation-delay:.1s;background:var(--success-500)}
 .giftw i:nth-of-type(3){bottom:0;right:-3px;width:3px;height:3px;animation-delay:.2s;background:#f472b6}
 @keyframes gift6{0%,10%,34%,100%{transform:rotate(0) scale(1)}14%{transform:translateY(-2px) rotate(-14deg) scale(1.18)}18%{transform:translateY(-2px) rotate(12deg) scale(1.18)}22%{transform:rotate(-8deg) scale(1.1)}26%{transform:rotate(5deg)}30%{transform:rotate(0)}}
 @keyframes spark6{0%,12%{opacity:0;transform:scale(.2)}17%{opacity:1;transform:scale(1.2)}28%,100%{opacity:0;transform:scale(.4) translateY(-4px)}}
 .chips{display:flex;gap:8px;padding:0 16px 12px;overflow-x:auto;scrollbar-width:none}
 .chips::-webkit-scrollbar{display:none}
-.home .chip{height:32px;flex-shrink:0;display:flex;align-items:center;gap:4px;padding:3px 12px;border:1px solid var(--g300);border-radius:8px;background:#fff;box-shadow:0 1px 2px rgba(16,24,40,.05);font-size:12px;line-height:18px;color:var(--g700);white-space:nowrap}
-.vline{width:1px;height:32px;background:var(--g300);flex-shrink:0}
+.home .chip{height:32px;flex-shrink:0;display:flex;align-items:center;gap:4px;padding:3px 12px;border:1px solid var(--gray-300);border-radius:8px;background:#fff;box-shadow:0 1px 2px rgba(16,24,40,.05);font-size:var(--fs-xs);line-height:var(--lh-xs);color:var(--gray-700);white-space:nowrap}
+.vline{width:1px;height:32px;background:var(--gray-300);flex-shrink:0}
 .home-scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:12px 16px 16px;display:flex;flex-direction:column;gap:16px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .home-scroll::-webkit-scrollbar{display:none}
 .promo{flex-shrink:0;height:60px;border-radius:14px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;padding:0 8px 0 16px;background:linear-gradient(100deg,#8a5bd6 0%,#b48ae8 55%,#d9c4f7 100%);color:#fff}
 .promo.img{padding:0;background:none}
 .promo.img img{width:100%;height:100%;object-fit:contain}
-.promo h5{font-size:15px;font-weight:800;line-height:20px;white-space:nowrap}
+.promo h5{font-size:15px;font-weight:800;line-height:var(--lh-sm);white-space:nowrap}
 .promo p{font-size:11px;line-height:15px;opacity:.95;white-space:nowrap}
 .promo p b{font-weight:700}
 .promo .rn{white-space:nowrap;background:#fff;color:#7a45c9;font-weight:700;font-size:13px;border-radius:10px;padding:9px 10px;box-shadow:0 2px 8px rgba(60,20,120,.25)}
 .recent{flex-shrink:0;border-radius:12px;padding:12px 8px;display:flex;flex-direction:column;gap:8px;background:linear-gradient(112.5deg,#fefdf8 1.3%,#ffedd2 49.8%,#fefdf8 104%)}
 .recent-h{display:flex;justify-content:space-between;align-items:center}
-.recent-h p{font-weight:600;font-size:16px;line-height:24px;color:var(--g800)}
-.recent-h span{font-weight:600;font-size:12px;color:var(--brand)}
+.recent-h p{font-weight:600;font-size:var(--fs-md);line-height:var(--lh-md);color:var(--gray-800)}
+.recent-h span{font-weight:600;font-size:var(--fs-xs);color:var(--brand-color)}
 .rc-row{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;margin:0 -8px;padding:4px 8px 10px}
 .rc-row::-webkit-scrollbar{display:none}
 .home .rc{background:#fff;flex-shrink:0;display:flex;gap:6px;padding:8px 6px;border-radius:16px;box-shadow:0 0 16px 2px rgba(16,24,40,.08),0 2px 4px -2px rgba(16,24,40,.06)}
-.rc-name{font-weight:600;font-size:16px;line-height:24px;color:var(--g700)}
+.rc-name{font-weight:600;font-size:var(--fs-md);line-height:var(--lh-md);color:var(--gray-700)}
 .price{display:flex;gap:6px;align-items:center;height:23px}
-.price s{font-weight:500;font-size:12px;color:var(--g400)}
-.price b{font-weight:600;font-size:14px;line-height:20px;color:var(--s700)}
+.price s{font-weight:500;font-size:var(--fs-xs);color:var(--gray-400)}
+.price b{font-weight:600;font-size:var(--fs-sm);line-height:var(--lh-sm);color:var(--success-700)}
 .rc-btns{display:flex;gap:6px;margin-top:5px}
-.btn-o,.btn-f{display:flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--brand);border-radius:8px;font-weight:600;font-size:12px;line-height:18px;box-shadow:0 1px 2px rgba(16,24,40,.05);white-space:nowrap}
-.btn-o{background:#fff;color:var(--brand);padding:6px 8px}
-.btn-f{background:var(--brand);color:#fff;padding:6px 14px;flex:1}
+.btn-o,.btn-f{display:flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--brand-color);border-radius:8px;font-weight:600;font-size:var(--fs-xs);line-height:var(--lh-xs);box-shadow:0 1px 2px rgba(16,24,40,.05);white-space:nowrap}
+.btn-o{background:#fff;color:var(--brand-color);padding:6px 8px}
+.btn-f{background:var(--brand-color);color:#fff;padding:6px 14px;flex:1}
 .avwrap{position:relative;flex-shrink:0}
 .odot{position:absolute;border:solid #fff}
-.sec-title{font-weight:600;font-size:16px;line-height:24px;color:#41404d}
+.sec-title{font-weight:600;font-size:var(--fs-md);line-height:var(--lh-md);color:#41404d}
 .cards{display:flex;flex-direction:column;gap:12px}
 .card{background:#fff;height:238px;flex-shrink:0;padding:12px 12px 16px;border-radius:16px;display:flex;flex-direction:column;gap:12px;overflow:hidden;box-shadow:0 0 16px 2px rgba(16,24,40,.08),0 2px 4px -2px rgba(16,24,40,.06)}
 .card-top{flex:1;display:flex;gap:16px;align-items:center}
-.card-name{font-weight:700;font-size:20px;line-height:30px;color:var(--g700)}
-.meta{display:flex;align-items:center;gap:8px;margin-top:12px;font-weight:500;font-size:14px;line-height:20px;color:var(--g600)}
-.rating{display:flex;gap:4px;align-items:center;border:1px solid var(--g200);border-radius:4px;padding:2px 6px}
-.dot4{width:4px;height:4px;border-radius:50%;background:var(--g500);flex-shrink:0}
-.line{display:flex;gap:4px;align-items:center;font-weight:500;font-size:14px;line-height:20px;color:var(--g500)}
-.card-price{display:flex;gap:6px;align-items:center;line-height:28px}
-.card-price s{font-weight:500;font-size:14px;color:var(--g400)}
-.card-price b{font-weight:600;font-size:18px;color:var(--s700)}
+.card-name{font-weight:700;font-size:var(--fs-xl);line-height:var(--lh-xl);color:var(--gray-700)}
+.meta{display:flex;align-items:center;gap:8px;margin-top:12px;font-weight:500;font-size:var(--fs-sm);line-height:var(--lh-sm);color:var(--gray-600)}
+.rating{display:flex;gap:4px;align-items:center;border:1px solid var(--gray-200);border-radius:4px;padding:2px 6px}
+.dot4{width:4px;height:4px;border-radius:50%;background:var(--gray-500);flex-shrink:0}
+.line{display:flex;gap:4px;align-items:center;font-weight:500;font-size:var(--fs-sm);line-height:var(--lh-sm);color:var(--gray-500)}
+.card-price{display:flex;gap:6px;align-items:center;line-height:var(--lh-lg)}
+.card-price s{font-weight:500;font-size:var(--fs-sm);color:var(--gray-400)}
+.card-price b{font-weight:600;font-size:var(--fs-lg);color:var(--success-700)}
 .card-btns{display:flex;gap:12px}
-.card-btns button{flex:1;display:flex;gap:8px;align-items:center;justify-content:center;background:var(--brand);border:1px solid var(--brand);border-radius:12px;padding:8px 14px;color:#fff;font-weight:600;font-size:14px;line-height:20px;box-shadow:0 1px 2px rgba(16,24,40,.05)}
-.tabbar{flex-shrink:0;display:flex;border-top:1px solid var(--g300);background:#fff;padding:0 16px}
-.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px 8px 24px;font-size:11px;line-height:16px;color:var(--g500)}
+.card-btns button{flex:1;display:flex;gap:8px;align-items:center;justify-content:center;background:var(--brand-color);border:1px solid var(--brand-color);border-radius:12px;padding:8px 14px;color:#fff;font-weight:600;font-size:var(--fs-sm);line-height:var(--lh-sm);box-shadow:0 1px 2px rgba(16,24,40,.05)}
+.tabbar{flex-shrink:0;display:flex;border-top:1px solid var(--gray-300);background:#fff;padding:0 16px}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px 8px 24px;font-size:11px;line-height:16px;color:var(--gray-500)}
 .home .tab.on{color:var(--brand-500);font-weight:600}
 
 /* ---------- ADD BALANCE ---------- */
@@ -184,16 +204,16 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .ab-nav{height:64px;display:flex;align-items:center;justify-content:space-between;padding:8px 16px}
 .ab-title{display:flex;align-items:center;gap:2px;padding:2px 6px 2px 0}
 .ab-title .back{width:24px;height:24px;display:flex;align-items:center;justify-content:center}
-.ab-title p{font-weight:600;font-size:16px;line-height:24px;color:var(--g700);white-space:nowrap}
-.wbadge{background:var(--g100);border-radius:20px;display:flex;gap:8px;align-items:center;padding:4px 8px;font-weight:600;font-size:12px;line-height:18px;color:var(--g600)}
+.ab-title p{font-weight:600;font-size:var(--fs-md);line-height:var(--lh-md);color:var(--gray-700);white-space:nowrap}
+.wbadge{background:var(--gray-100);border-radius:20px;display:flex;gap:8px;align-items:center;padding:4px 8px;font-weight:600;font-size:var(--fs-xs);line-height:var(--lh-xs);color:var(--gray-600)}
 .ab-body{position:absolute;top:64px;left:0;right:0;bottom:0;overflow-y:auto;padding:24px 16px 170px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .ab-body::-webkit-scrollbar{display:none}
 /* square bottom corners: the wallet card sits on top of them, so rounding there only showed
    as two nicks of green either side of the card */
-.ab .banner{position:relative;background:#039855;border-radius:16px 16px 0 0;overflow:hidden;margin-bottom:-20px;display:flex;gap:8px;align-items:center;padding:8px 16px 28px;color:#fff;font-size:12px;line-height:17px;font-weight:500;letter-spacing:.36px}
-/* Dark green whenever a countdown is shown; the non-timer states use the lighter #039855. */
-.ab .banner.bn-dark{background:#027A48}
-.ab .banner b{font-weight:800;font-size:14px;letter-spacing:.42px;color:#fff;font-variant-numeric:tabular-nums}
+.ab .banner{position:relative;background:var(--success-600);border-radius:16px 16px 0 0;overflow:hidden;margin-bottom:-20px;display:flex;gap:8px;align-items:center;padding:8px 16px 28px;color:#fff;font-size:var(--fs-xs);line-height:17px;font-weight:500;letter-spacing:.36px}
+/* Dark green whenever a countdown is shown; the non-timer states use the lighter var(--success-600). */
+.ab .banner.bn-dark{background:var(--success-700)}
+.ab .banner b{font-weight:800;font-size:var(--fs-sm);letter-spacing:.42px;color:#fff;font-variant-numeric:tabular-nums}
 .ab .banner .bn-txt{position:relative;z-index:1;flex:1;min-width:0}
 /* decorative sparkle field tucked into the top-right corner, faded out towards the text.
    White at .2 so the brightest star lands ~14% over the band and reads as twinkle, not dots. */
@@ -201,8 +221,8 @@ body.mobile .phone{border-radius:0;box-shadow:none}
   -webkit-mask-image:linear-gradient(to left,#000 8%,rgba(0,0,0,.45) 42%,transparent 78%);mask-image:linear-gradient(to left,#000 8%,rgba(0,0,0,.45) 42%,transparent 78%)}
 /* no margin: the two lines are separate <p>s, but must sit exactly as far apart as the two
    wrapped lines of the green strip, which are spaced by line-height alone */
-.ab .banner .bn-sub{font-size:12px;line-height:17px;font-weight:500;color:#fff}
-.ab .banner .bn-sub b{font-weight:800;font-size:14px;letter-spacing:.42px;color:#fff}
+.ab .banner .bn-sub{font-size:var(--fs-xs);line-height:17px;font-weight:500;color:#fff}
+.ab .banner .bn-sub b{font-weight:800;font-size:var(--fs-sm);letter-spacing:.42px;color:#fff}
 .ab .banner .bn-sub s{opacity:.75}
 .ab .banner .bn-icon{position:relative;z-index:1;flex:none;width:28px;height:28px;transform-origin:50% 50%;animation:seal 3.2s ease-in-out infinite}
 /* discount seal: rests, then gives one wobble-pop so it reads as a stamp, not an alert */
@@ -223,19 +243,19 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .warn-wrap{display:grid;grid-template-rows:0fr;margin-bottom:0;transition:grid-template-rows .45s cubic-bezier(.2,.8,.2,1),margin-bottom .45s cubic-bezier(.2,.8,.2,1)}
 .ab .warn-wrap.open{grid-template-rows:1fr;margin-bottom:-20px}
 .warn-inner{min-height:0;overflow:hidden;border-radius:16px 16px 0 0}
-.warn{display:flex;gap:8px;align-items:center;padding:8px 16px 28px;border-radius:16px 16px 0 0;background:#FEF3F2;
+.warn{display:flex;gap:8px;align-items:center;padding:8px 16px 28px;border-radius:16px 16px 0 0;background:var(--error-50);
   background-image:linear-gradient(83.82deg,rgba(255,251,250,0) 4.67%,#F9DEDC 43.48%,#FFE4E2 67.28%,rgba(255,251,250,0) 107.86%);
   transform:translateY(24px);opacity:0;transition:transform .45s cubic-bezier(.2,.8,.2,1),opacity .3s ease}
 .ab .warn-wrap.open .warn{transform:none;opacity:1}
 .warn img{flex-shrink:0}
-.warn p{flex:1;font-size:12px;line-height:18px;color:#560000;font-weight:400}
+.warn p{flex:1;font-size:var(--fs-xs);line-height:var(--lh-xs);color:var(--brand-900);font-weight:400}
 .warn b{font-weight:700}
 .receipt{position:relative;z-index:2;background:#fff;border-radius:20px;box-shadow:0 6px 18px rgba(16,24,40,.08);padding-bottom:16px}
 .receipt::before,.receipt::after{content:"";position:absolute;top:124px;width:28px;height:28px;border-radius:50%;background:var(--ab-bg);z-index:3}
 .receipt::before{left:-14px;box-shadow:inset -4px 0 6px rgba(16,24,40,.08)}
 .receipt::after{right:-14px;box-shadow:inset 4px 0 6px rgba(16,24,40,.08)}
 .hero{position:relative;height:185px;border-radius:20px;overflow:hidden;display:flex;flex-direction:column;align-items:center;gap:5px}
-.hero-top{position:relative;width:100%;height:118px;border:4px solid #fff;border-bottom:0;border-radius:20px 20px 0 0;padding:42px 2px 0;display:flex;flex-direction:column;align-items:center;gap:6px;background:linear-gradient(176.6deg,#f2f4f7 16.6%,#fff 87.3%);overflow:hidden}
+.hero-top{position:relative;width:100%;height:118px;border:4px solid #fff;border-bottom:0;border-radius:20px 20px 0 0;padding:42px 2px 0;display:flex;flex-direction:column;align-items:center;gap:6px;background:linear-gradient(176.6deg,var(--gray-100) 16.6%,#fff 87.3%);overflow:hidden}
 .burst{position:absolute;left:50%;top:78px;width:520px;height:520px;margin:-260px 0 0 -260px;pointer-events:none;
   background:repeating-conic-gradient(from 0deg,rgba(152,162,179,.16) 0deg 5deg,transparent 5deg 15deg);
   -webkit-mask:radial-gradient(circle,transparent 42px,#000 60px,#000 120px,transparent 200px);mask:radial-gradient(circle,transparent 42px,#000 60px,#000 120px,transparent 200px);
@@ -250,9 +270,9 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 @keyframes spin{to{transform:rotate(360deg)}}
 .hero-top::after{content:"";position:absolute;left:0;right:0;bottom:0;height:56px;background:linear-gradient(to bottom,rgba(255,255,255,0),#fff 85%);pointer-events:none}
 /* "Your Wallet Gets" tab hanging from the card's top edge (Figma 4683:1267) */
-.hero-label{position:absolute;z-index:2;top:0;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:4px;padding:6px 12px;background:#fff;border-radius:0 0 12px 12px;box-shadow:inset 0 -4px 6px rgba(0,0,0,.1);font-weight:500;font-size:12px;line-height:18px;letter-spacing:0;color:#667085;white-space:nowrap}
+.hero-label{position:absolute;z-index:2;top:0;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:4px;padding:6px 12px;background:#fff;border-radius:0 0 12px 12px;box-shadow:inset 0 -4px 6px rgba(0,0,0,.1);font-weight:500;font-size:var(--fs-xs);line-height:var(--lh-xs);letter-spacing:0;color:var(--gray-500);white-space:nowrap}
 .hero-label img{width:14px;height:14px;flex-shrink:0}
-.ab .amt{position:relative;z-index:1;display:flex;gap:0;align-items:baseline;justify-content:center;color:#1D2939;padding:0 8px}
+.ab .amt{position:relative;z-index:1;display:flex;gap:0;align-items:baseline;justify-content:center;color:var(--gray-800);padding:0 8px}
 .ab .amt::before{content:"";position:absolute;inset:-6px -46px;z-index:-1;pointer-events:none;border-radius:50%;opacity:0;
   background:radial-gradient(closest-side,rgba(18,183,106,.30),rgba(18,183,106,.14) 55%,rgba(18,183,106,0))}
 .ab .amt.land::before{animation:heroFlash .95s ease-out}
@@ -263,7 +283,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 /* ₹ top-aligned with the digits: the flex line aligns the two baselines, then alignRupee()
    lifts the ₹ by the cap-height difference. Line-height plays no part, which is what the old
    half-leading maths got wrong — it left the ₹ sitting a few px low. */
-.ab .amt .r{position:relative;width:auto;height:auto;font-weight:500;font-size:24px;line-height:24px;letter-spacing:-.48px;color:#344054}
+.ab .amt .r{position:relative;width:auto;height:auto;font-weight:500;font-size:24px;line-height:var(--lh-md);letter-spacing:-.48px;color:var(--gray-700)}
 .ab .amt .n{font-weight:700;font-size:42px;line-height:60px;letter-spacing:-2.1px;display:flex;white-space:nowrap}
 .ab .amt .n .last{display:inline-block}
 /* Figma 4683:1307: 1.5px outside stroke, gradient white → white (45%) → green #059152. ₹50 (4683:1300) has no stroke. */
@@ -271,7 +291,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .ab .amt .n .stk{position:absolute;left:-8px;top:-6px;padding:6px 10px 6px 8px;z-index:-1;white-space:nowrap;pointer-events:none;color:transparent;
   -webkit-text-stroke:3px transparent;background:linear-gradient(118deg,#fff 0%,#fff 45%,#059152 100%);-webkit-background-clip:text;background-clip:text}
 .ab .amt.s50 .n .stk{display:none}
-.ab .amt.rolling .n .last{color:var(--g800);-webkit-text-stroke:1.5px rgba(3,152,85,.55);text-shadow:0 0 10px rgba(18,183,106,.35);animation:roll .12s linear infinite}
+.ab .amt.rolling .n .last{color:var(--gray-800);-webkit-text-stroke:1.5px rgba(3,152,85,.55);text-shadow:0 0 10px rgba(18,183,106,.35);animation:roll .12s linear infinite}
 @keyframes roll{0%{transform:translateY(-6%)}50%{transform:translateY(6%)}100%{transform:translateY(-6%)}}
 /* Figma 4683:1297 (₹50) */
 .ab .amt.s50{gap:0}
@@ -283,7 +303,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 /* The gradient is drawn 170% of the pill's width and slowly panned back and forth, so the bright
    core drifts across instead of sitting still. Every variant has to restate background-size:
    each one re-declares the `background` shorthand, which resets size back to auto. */
-.strip{position:relative;width:100%;border-radius:12px;padding:9px 6px;text-align:center;font-weight:500;font-size:12px;line-height:16px;letter-spacing:.3px;color:var(--s600);overflow:hidden;
+.strip{position:relative;width:100%;border-radius:12px;padding:9px 6px;text-align:center;font-weight:500;font-size:var(--fs-xs);line-height:16px;letter-spacing:.3px;color:var(--success-600);overflow:hidden;
   background:linear-gradient(90deg,rgba(231,246,238,.3) 0%,rgba(216,249,228,.76) 25%,rgba(166,244,197,.85) 50%,rgba(217,249,228,.75) 75%,rgba(231,246,238,.3) 100%) center/170% 100% no-repeat;
   animation:drift 7s ease-in-out infinite alternate}
 @keyframes drift{from{background-position:0% 0}to{background-position:100% 0}}
@@ -294,24 +314,24 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 
 
 /* green bonus strip (Figma 4573:1698) */
-.strip.gx{width:256px;padding:9px 5px;border-radius:12px;color:#027A48;font-size:12px;line-height:17px;font-weight:500;letter-spacing:.36px;text-align:center;white-space:normal;
+.strip.gx{width:256px;padding:9px 5px;border-radius:12px;color:var(--success-700);font-size:var(--fs-xs);line-height:17px;font-weight:500;letter-spacing:.36px;text-align:center;white-space:normal;
   background:linear-gradient(90deg,rgba(231,246,238,.3) 15.865%,rgba(216,249,228,.763) 38.462%,rgba(166,244,197,.6) 50%,rgba(217,249,228,.75) 62.981%,rgba(231,246,238,.3) 86.377%) center/170% 100% no-repeat}
-.strip.gx b{font-weight:800;font-size:14px;letter-spacing:.42px;color:#027A48}
+.strip.gx b{font-weight:800;font-size:var(--fs-sm);letter-spacing:.42px;color:var(--success-700)}
 /* ₹50 no-bonus strip (Figma 4683:1287): amber band, hugs its text */
-.strip.nb50{width:auto;padding:9px 5px;border-radius:12px;color:#93370D;font-size:12px;line-height:16px;font-weight:500;letter-spacing:.36px;white-space:nowrap;
-  background:linear-gradient(90deg,rgba(254,240,199,.3) 15.865%,rgba(254,240,199,.763) 38.462%,#FEF0C7 50%,rgba(254,240,199,.75) 62.981%,rgba(254,240,199,.3) 86.377%) center/170% 100% no-repeat}
-.strip.nb50 b{font-weight:800;font-size:14px;letter-spacing:.42px}
-.strip.big{font-size:14px;line-height:20px;letter-spacing:.2px}
+.strip.nb50{width:auto;padding:9px 5px;border-radius:12px;color:#93370D;font-size:var(--fs-xs);line-height:16px;font-weight:500;letter-spacing:.36px;white-space:nowrap;
+  background:linear-gradient(90deg,rgba(254,240,199,.3) 15.865%,rgba(254,240,199,.763) 38.462%,var(--warning-100) 50%,rgba(254,240,199,.75) 62.981%,rgba(254,240,199,.3) 86.377%) center/170% 100% no-repeat}
+.strip.nb50 b{font-weight:800;font-size:var(--fs-sm);letter-spacing:.42px}
+.strip.big{font-size:var(--fs-sm);line-height:var(--lh-sm);letter-spacing:.2px}
 /* the pop has to re-list drift, or selecting a tile would replace it and freeze the gradient */
 .strip.pulse{animation:pop .45s ease-out,drift 7s ease-in-out infinite alternate}
 @keyframes pop{0%{transform:scale(.94)}60%{transform:scale(1.03)}100%{transform:scale(1)}}
 .tiles{display:grid;grid-template-columns:repeat(3,1fr);column-gap:14px;row-gap:16px;padding:9px 16px 0}
 .tile-col{display:flex;flex-direction:column;align-items:center}
-.tile{position:relative;width:100%;height:auto;aspect-ratio:4/3;border:1px solid var(--g300);border-radius:14px;background:#fff;box-shadow:0 4px 8px rgba(0,0,0,.04);display:flex;align-items:center;justify-content:center;color:var(--g700);transition:transform .12s ease}
+.tile{position:relative;width:100%;height:auto;aspect-ratio:4/3;border:1px solid var(--gray-300);border-radius:14px;background:#fff;box-shadow:0 4px 8px rgba(0,0,0,.04);display:flex;align-items:center;justify-content:center;color:var(--gray-700);transition:transform .12s ease}
 .tile:active{transform:scale(.96)}
 .tile .val{position:relative;display:flex;align-items:flex-start;padding-bottom:4px}
-.tile .val i{font-style:normal;font-weight:700;font-size:12px;line-height:21px}
-.tile .val span{font-weight:600;font-size:20px;line-height:26px}
+.tile .val i{font-style:normal;font-weight:700;font-size:var(--fs-xs);line-height:21px}
+.tile .val span{font-weight:600;font-size:var(--fs-xl);line-height:26px}
 .tile .sel{position:absolute;inset:-1px;width:calc(100% + 2px);height:calc(100% + 2px);pointer-events:none}
 .tile .sel.justpick{animation:selin .28s cubic-bezier(.2,.8,.2,1)}
 @keyframes selin{from{opacity:0;transform:translate(3px,-3px)}to{opacity:1;transform:none}}
@@ -329,10 +349,10 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .coin.c3{width:12px;height:12px;right:12px;top:46px;animation:bob 1.6s ease-in-out .6s infinite}
 @keyframes bob{0%,100%{transform:translateY(0) rotateY(0)}50%{transform:translateY(-3px) rotateY(60deg)}}
 
-.addfly{position:absolute;left:calc(100% + 6px);top:14px;white-space:nowrap;font-size:14px;line-height:20px;font-weight:700;letter-spacing:0;color:#027A48;background:var(--s50);border:1px solid #abefc6;border-radius:10px;padding:1px 7px;opacity:0;transform:translateY(10px) scale(.7);pointer-events:none;transition:opacity .25s ease-out,transform .4s cubic-bezier(.2,1.4,.4,1)}
+.addfly{position:absolute;left:calc(100% + 6px);top:14px;white-space:nowrap;font-size:var(--fs-sm);line-height:var(--lh-sm);font-weight:700;letter-spacing:0;color:var(--success-700);background:var(--success-50);border:1px solid #abefc6;border-radius:10px;padding:1px 7px;opacity:0;transform:translateY(10px) scale(.7);pointer-events:none;transition:opacity .25s ease-out,transform .4s cubic-bezier(.2,1.4,.4,1)}
 .addfly.in{opacity:1;transform:none}
 .addfly.merge{opacity:0;transform:translateX(-30px) scale(.5);transition:opacity .55s ease-in,transform .7s cubic-bezier(.5,0,.8,.4)}
-.bonus.nudge{border:0;cursor:pointer;font-size:11px;letter-spacing:0;padding:4px 7px;background:linear-gradient(180deg,#F79009,#DC6803);box-shadow:0 2px 6px rgba(220,104,3,.35);animation:nudge 2.4s ease-in-out infinite}
+.bonus.nudge{border:0;cursor:pointer;font-size:11px;letter-spacing:0;padding:4px 7px;background:linear-gradient(180deg,#F79009,var(--warning-600));box-shadow:0 2px 6px rgba(220,104,3,.35);animation:nudge 2.4s ease-in-out infinite}
 @keyframes nudge{0%,70%,100%{transform:translateY(0)}78%{transform:translateY(-2px)}86%{transform:translateY(0)}92%{transform:translateY(-1px)}}
 .ab .coinfall{position:absolute;inset:0;border-radius:13px;overflow:hidden;pointer-events:none;z-index:0;-webkit-mask-image:linear-gradient(90deg,#000 0 21%,transparent 24% 76%,#000 79% 100%);mask-image:linear-gradient(90deg,#000 0 21%,transparent 24% 76%,#000 79% 100%)}
 .ab .coinfall .coin{position:absolute;top:0;opacity:0;animation:coinFall 3.6s linear infinite}
@@ -346,9 +366,9 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 @keyframes coinFall{0%{transform:translateY(-22px) rotate(0);opacity:0}12%{opacity:.95}80%{opacity:.95}100%{transform:translateY(82px) rotate(220deg);opacity:0}}
 .tile .val{z-index:1}
 .tile .sel{z-index:2}
-.bonus{position:relative;z-index:3;margin-top:-15px;padding:4px 8px;border-radius:12px;color:#fff;font-weight:600;font-size:12px;line-height:18px;letter-spacing:-.12px;white-space:nowrap;background:linear-gradient(-0.556deg,#05603A 10.094%,#027A48 23.329%,#027A48 83.868%,rgba(2,122,72,0) 109.72%);}
+.bonus{position:relative;z-index:3;margin-top:-15px;padding:4px 8px;border-radius:12px;color:#fff;font-weight:600;font-size:var(--fs-xs);line-height:var(--lh-xs);letter-spacing:-.12px;white-space:nowrap;background:linear-gradient(-0.556deg,var(--success-800) 10.094%,var(--success-700) 23.329%,var(--success-700) 83.868%,rgba(2,122,72,0) 109.72%);}
 .ab .see{display:flex;justify-content:center;margin-top:20px}
-.ab .see button{display:flex;align-items:center;padding:2px 4px 2px 12px;border:1px dashed var(--g300);border-radius:12px;font-size:12px;font-weight:500;line-height:18px;color:var(--g500)}
+.ab .see button{display:flex;align-items:center;padding:2px 4px 2px 12px;border:1px dashed var(--gray-300);border-radius:12px;font-size:var(--fs-xs);font-weight:500;line-height:var(--lh-xs);color:var(--gray-500)}
 .ab .chev{width:22px;height:22px;display:block;transition:transform .45s cubic-bezier(.2,.8,.2,1)}
 .ab .chev.up{transform:rotate(180deg)}
 .more-wrap{display:grid;grid-template-rows:0fr;transition:grid-template-rows .5s cubic-bezier(.2,.8,.2,1)}
@@ -377,41 +397,41 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .ab .pm-sheet::-webkit-scrollbar{display:none}
 .ab .pm-overlay.open .pm-sheet{transform:none}
 .ab .pm-head{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:32px;padding:24px 16px 12px;background:#FCF4E9;border-radius:32px 32px 0 0}
-.ab .pm-head p{flex:1;font-size:16px;font-weight:700;color:#344054;line-height:normal}
+.ab .pm-head p{flex:1;font-size:var(--fs-md);font-weight:700;color:var(--gray-700);line-height:normal}
 .ab .pm-x{width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:12px}
 .ab .pm-x img{width:16px;height:16px}
 .ab .pm-body{display:flex;flex-direction:column;gap:32px;padding:8px 16px 0}
 .ab .pm-group{display:flex;flex-direction:column;gap:8px}
-.ab .pm-gt{font-size:14px;font-weight:500;color:#344054;line-height:normal}
-.ab .pm-card{background:#fff;border:1px solid #EAECF0;border-radius:18px;padding:12px;display:flex;flex-direction:column}
+.ab .pm-gt{font-size:var(--fs-sm);font-weight:500;color:var(--gray-700);line-height:normal}
+.ab .pm-card{background:#fff;border:1px solid var(--gray-200);border-radius:18px;padding:12px;display:flex;flex-direction:column}
 .ab .pm-list{gap:16px}
 .ab .pm-row{display:flex;align-items:center;justify-content:space-between;cursor:pointer}
-.ab .pm-name{display:flex;align-items:center;gap:10px;font-size:14px;line-height:20px;font-weight:500;color:#475467}
-.ab .pm-logo{display:flex;align-items:center;justify-content:center;border:1px solid #D0D5DD;flex-shrink:0;background:#fff}
+.ab .pm-name{display:flex;align-items:center;gap:10px;font-size:var(--fs-sm);line-height:var(--lh-sm);font-weight:500;color:var(--gray-600)}
+.ab .pm-logo{display:flex;align-items:center;justify-content:center;border:1px solid var(--gray-300);flex-shrink:0;background:#fff}
 .ab .pm-logo img{width:100%;height:100%;object-fit:cover;display:block}
 .ab .pm-row .pm-logo-raw{width:32px;height:32px}
 .ab .pm-radio{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:100px}
 .ab .pm-radio img{width:20px;height:20px}
 .ab .pm-row:active .pm-radio{background:rgba(239,105,57,.08)}
-.ab .pm-div{display:block;height:1px;background:repeating-linear-gradient(90deg,#EAECF0 0 2px,transparent 2px 4px)}
+.ab .pm-div{display:block;height:1px;background:repeating-linear-gradient(90deg,var(--gray-200) 0 2px,transparent 2px 4px)}
 .pm-more{display:flex;align-items:center;gap:8px;padding:0 4px}
 /* dotted like .pm-div, with the fade moved to a mask so the dots stay crisp instead of
    dissolving into a smear. Chip border matches See More Options on the wallet page. */
-.pm-grad{flex:1;height:1px;background:repeating-linear-gradient(90deg,#D0D5DD 0 2px,transparent 2px 4px)}
+.pm-grad{flex:1;height:1px;background:repeating-linear-gradient(90deg,var(--gray-300) 0 2px,transparent 2px 4px)}
 .ab .pm-grad.l{-webkit-mask-image:linear-gradient(90deg,transparent,#000);mask-image:linear-gradient(90deg,transparent,#000)}
 .ab .pm-grad.r{-webkit-mask-image:linear-gradient(90deg,#000,transparent);mask-image:linear-gradient(90deg,#000,transparent)}
-.pm-chip{display:flex;align-items:center;height:26px;padding:0 4px 0 12px;border:1px dashed var(--g300);border-radius:12px;font-size:12px;line-height:18px;color:var(--g500);white-space:nowrap}
+.pm-chip{display:flex;align-items:center;height:26px;padding:0 4px 0 12px;border:1px dashed var(--gray-300);border-radius:12px;font-size:var(--fs-xs);line-height:var(--lh-xs);color:var(--gray-500);white-space:nowrap}
 .pm-chip img{width:22px;height:22px}
-.ab .pm-cta{position:absolute;left:0;right:0;bottom:0;z-index:3;background:#fff;border:1px solid #D0D5DD;border-bottom:0;border-radius:12px 12px 0 0;box-shadow:0 -6px 20px rgba(0,0,0,.2);
+.ab .pm-cta{position:absolute;left:0;right:0;bottom:0;z-index:3;background:#fff;border:1px solid var(--gray-300);border-bottom:0;border-radius:12px 12px 0 0;box-shadow:0 -6px 20px rgba(0,0,0,.2);
   transform:translateY(110%);transition:transform .38s cubic-bezier(.2,.9,.3,1) .04s}
 .ab .pm-overlay.open .pm-cta{transform:none}
 /* same rule as the wallet summary row: only the amount is bold, the sentence around it stays
    grey, and the amount only turns green when the wallet credit beats what is actually paid
    (see `under` in summaryHTML). Previously "get" and "added" were green and the amount was
    green unconditionally, so ₹110 read as a win next to a ₹118 charge. */
-.ab .pm-credit{border:2px solid #fff;border-radius:12px 12px 0 0;padding:12px 12px 8px;text-align:center;font-size:14px;line-height:20px;color:#475467}
-.ab .pm-credit .gb{font-weight:700;color:#027A48}
-.ab .pm-credit.under .gb{color:#475467}
+.ab .pm-credit{border:2px solid #fff;border-radius:12px 12px 0 0;padding:12px 12px 8px;text-align:center;font-size:var(--fs-sm);line-height:var(--lh-sm);color:var(--gray-600)}
+.ab .pm-credit .gb{font-weight:700;color:var(--success-700)}
+.ab .pm-credit.under .gb{color:var(--gray-600)}
 .ab .pm-btnwrap{padding:8px 16px 24px}
 .ab .pm-btnwrap .paybtn.pm-pay{width:100%;display:block}
 .ab .pp .pm-logo-raw{width:20px;height:20px;border-radius:4px}
@@ -421,32 +441,32 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 /* option B row + option B3 button */
 .ps-card{padding:8px 8px 8px 12px}
 .ab .ps-card.open{padding:12px}
-.ps-info{gap:6px;padding:0;color:#475467;font-size:14px;line-height:20px}
+.ps-info{gap:6px;padding:0;color:var(--gray-600);font-size:var(--fs-sm);line-height:var(--lh-sm)}
 .ps-info img{width:16px;height:16px;flex-shrink:0}
 .ps-info .amt-get{font-weight:700}
-.ps-info .amt-get{color:#027A48}
-.ps-card.under .ps-info .amt-get{color:#475467}
+.ps-info .amt-get{color:var(--success-700)}
+.ps-card.under .ps-info .amt-get{color:var(--gray-600)}
 /* same 12px as the "Pay with" label; the wallet line truncates when it runs out of room */
-.ps-link{display:flex;align-items:center;flex:none;font-size:12px;line-height:18px;font-weight:500;color:#667085;white-space:nowrap}
+.ps-link{display:flex;align-items:center;flex:none;font-size:var(--fs-xs);line-height:var(--lh-xs);font-weight:500;color:var(--gray-500);white-space:nowrap}
 
-.pay{border:1px solid #D0D5DD;border-bottom:0}
+.pay{border:1px solid var(--gray-300);border-bottom:0}
 .ps-wrap{padding:12px 16px;background:#fff}
-.ps-card{background:#fff;border:1px solid #EAECF0;border-radius:12px;padding:8px 4px;cursor:pointer;transition:padding .35s cubic-bezier(.2,.8,.2,1),border-radius .35s}
+.ps-card{background:#fff;border:1px solid var(--gray-200);border-radius:12px;padding:8px 4px;cursor:pointer;transition:padding .35s cubic-bezier(.2,.8,.2,1),border-radius .35s}
 .ab .ps-card.open{padding:12px;border-radius:16px}
 .ps-top{display:flex;align-items:center;justify-content:space-between;gap:6px}
 /* the breakdown on the right is fixed-width; at ₹10,000 the wallet line yields instead of overflowing */
-.ps-info{display:flex;align-items:center;gap:2px;padding:0;min-width:0;white-space:nowrap;color:#475467;font-size:14px;line-height:20px}
+.ps-info{display:flex;align-items:center;gap:2px;padding:0;min-width:0;white-space:nowrap;color:var(--gray-600);font-size:var(--fs-sm);line-height:var(--lh-sm)}
 .ps-info>span{overflow:hidden;text-overflow:ellipsis}
 .ps-pay{font-weight:500;margin-right:4px}
-.ab .ps-card.open .ps-pay{color:#475467}
-.ps-gst{font-size:12px;line-height:18px;margin-right:4px}
+.ab .ps-card.open .ps-pay{color:var(--gray-600)}
+.ps-gst{font-size:var(--fs-xs);line-height:var(--lh-xs);margin-right:4px}
 .ps-gst .g-o{display:none}
 .ab .ps-card.open .ps-gst .g-c{display:none}
 .ab .ps-card.open .ps-gst .g-o{display:inline}
 .ps-get{transition:opacity .2s}
-.ps-get b{font-weight:700;color:#475467}
-.ab .ps-card.plain .ps-get .amt-get{color:#475467}
-.ps-card.extra .ps-get .amt-get{color:#027A48}
+.ps-get b{font-weight:700;color:var(--gray-600)}
+.ab .ps-card.plain .ps-get .amt-get{color:var(--gray-600)}
+.ps-card.extra .ps-get .amt-get{color:var(--success-700)}
 .ab .ps-card.open .ps-get{opacity:0;width:0;overflow:hidden}
 /* same chevron as the See More Options control */
 .ps-chev{width:22px;height:22px;flex-shrink:0}
@@ -458,35 +478,35 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .ab .ps-dash{display:block;height:1px;background:repeating-linear-gradient(90deg,var(--dc) 0 2px,transparent 2px 4px)}
 .ab .ps-calc{display:flex;flex-direction:column;gap:2px;padding:0 12px}
 .ab .ps-line{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.ab .ps-line span:first-child{font-size:12px;line-height:18px;color:#667085}
-.ab .ps-line span:last-child{font-size:14px;line-height:20px}
-.ab .ps-line.r1 span:last-child{color:#344054}
-.ab .ps-line.r2 span:last-child{color:#1D2939}
+.ab .ps-line span:first-child{font-size:var(--fs-xs);line-height:var(--lh-xs);color:var(--gray-500)}
+.ab .ps-line span:last-child{font-size:var(--fs-sm);line-height:var(--lh-sm)}
+.ab .ps-line.r1 span:last-child{color:var(--gray-700)}
+.ab .ps-line.r2 span:last-child{color:var(--gray-800)}
 .ab .ps-line.tot{padding:0 12px}
-.ab .ps-line.tot span{font-size:14px!important;line-height:20px;font-weight:600;color:#1D2939!important}
+.ab .ps-line.tot span{font-size:var(--fs-sm)!important;line-height:var(--lh-sm);font-weight:600;color:var(--gray-800)!important}
 .ab .ps-credit{display:flex;flex-direction:column}
-.ab .ps-box{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #027A48;border-radius:12px;padding:8px 12px;color:#027A48}
-.ab .ps-box span{font-size:12px;line-height:18px;font-weight:600}
-.ab .ps-box b{font-size:14px;line-height:24px;font-weight:700}
-.ab .ps-panel{margin:-12px 0 0;padding:24px 12px 12px;border-radius:0 0 12px 12px;background:#F2F4F7;display:flex;flex-direction:column;gap:8px}
-.ab .ps-line.p1 span:last-child{color:#1D2939}
-.ab .ps-line.pg span{color:#027A48!important}
-.ab .ps-line.pt span:first-child{color:#475467}
-.ab .ps-line.pt span:last-child{color:#344054}
+.ab .ps-box{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid var(--success-700);border-radius:12px;padding:8px 12px;color:var(--success-700)}
+.ab .ps-box span{font-size:var(--fs-xs);line-height:var(--lh-xs);font-weight:600}
+.ab .ps-box b{font-size:var(--fs-sm);line-height:var(--lh-md);font-weight:700}
+.ab .ps-panel{margin:-12px 0 0;padding:24px 12px 12px;border-radius:0 0 12px 12px;background:var(--gray-100);display:flex;flex-direction:column;gap:8px}
+.ab .ps-line.p1 span:last-child{color:var(--gray-800)}
+.ab .ps-line.pg span{color:var(--success-700)!important}
+.ab .ps-line.pt span:first-child{color:var(--gray-600)}
+.ab .ps-line.pt span:last-child{color:var(--gray-700)}
 .pay-cta{padding:8px 16px 24px}
 
 .pay{position:absolute;left:0;right:0;bottom:0;z-index:6;background:#fff;border-radius:18px 18px 0 0;box-shadow:0 -3px 16px rgba(20,26,38,.09);overflow:hidden}
-.pay-sum{display:flex;align-items:center;gap:8px;padding:14px 12px 14px 18px;border-bottom:1px solid var(--g200);font-size:13.5px;line-height:18px;color:var(--g500)}
+.pay-sum{display:flex;align-items:center;gap:8px;padding:14px 12px 14px 18px;border-bottom:1px solid var(--gray-200);font-size:13.5px;line-height:var(--lh-xs);color:var(--gray-500)}
 .pay-sum p:first-child{flex:1}
 .pay-cta{display:flex;align-items:center;gap:16px;padding:8px 16px 24px}
 .ab .payw{flex:1;display:flex;flex-direction:column;gap:2px}
-.ab .payw .l{display:flex;align-items:center;font-size:12px;line-height:18px;color:var(--g600)}
-.ab .pp{display:flex;gap:4px;align-items:center;font-weight:700;font-size:16px;color:var(--g700)}
-.ab .pp > img{width:20px;height:20px;border-radius:4px;border:.6px solid var(--g300)}
-.ab .paybtn{width:200px;border:1px solid #EF6939;border-radius:12px;background:var(--brand);padding:10px 18px;text-align:center;color:#fff;white-space:nowrap;box-shadow:0 1px 2px rgba(16,24,40,.05);transition:transform .1s}
+.ab .payw .l{display:flex;align-items:center;font-size:var(--fs-xs);line-height:var(--lh-xs);color:var(--gray-600)}
+.ab .pp{display:flex;gap:4px;align-items:center;font-weight:700;font-size:var(--fs-md);color:var(--gray-700)}
+.ab .pp > img{width:20px;height:20px;border-radius:4px;border:.6px solid var(--gray-300)}
+.ab .paybtn{width:200px;border:1px solid var(--brand-color);border-radius:12px;background:var(--brand-color);padding:10px 18px;text-align:center;color:#fff;white-space:nowrap;box-shadow:0 1px 2px rgba(16,24,40,.05);transition:transform .1s}
 .ab .paybtn:active{transform:scale(.98)}
-.ab .paybtn b{font-weight:600;font-size:16px;line-height:24px}
-.ab .paybtn small{font-size:12px;line-height:18px;margin-left:4px}
+.ab .paybtn b{font-weight:600;font-size:var(--fs-md);line-height:var(--lh-md)}
+.ab .paybtn small{font-size:var(--fs-xs);line-height:var(--lh-xs);margin-left:4px}
 
 /* ---------- LOW WALLET ---------- */
 .low{background:#fff;display:flex;align-items:center;justify-content:center}
@@ -497,9 +517,9 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .low-art img{width:124px;height:124px;border-radius:50%;object-fit:cover}
 .low-art dotlottie-wc:defined ~ img{display:none}
 @keyframes breathe{50%{transform:scale(1.05)}}
-.low-in h2{font-weight:700;font-size:20px;line-height:30px;color:var(--g600);text-align:center}
+.low-in h2{font-weight:700;font-size:var(--fs-xl);line-height:var(--lh-xl);color:var(--gray-600);text-align:center}
 .low-in > div{display:flex;flex-direction:column;align-items:center}
-.low-in p{margin-top:8px;width:268px;font-size:16px;line-height:24px;color:var(--g700);text-align:center}
+.low-in p{margin-top:8px;width:268px;font-size:var(--fs-md);line-height:var(--lh-md);color:var(--gray-700);text-align:center}
 @keyframes fade{from{opacity:0}to{opacity:1}}
 
 /* ---------- POPUP + CONFETTI ---------- */
@@ -516,37 +536,37 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .pop .badge{position:relative;z-index:2;width:52px;height:52px;margin-bottom:-26px;animation:wiggle 1.2s ease-in-out .3s}
 @keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-14deg) scale(1.1)}50%{transform:rotate(10deg)}75%{transform:rotate(-5deg)}}
 .pop-card{width:100%;background:#fff;border-radius:16px;padding:4px 4px 24px;display:flex;flex-direction:column;gap:12px;align-items:center}
-.pop-title{width:100%;border-radius:12px 12px 0 0;padding:32px 12px 20px;text-align:center;font-weight:700;font-size:18px;line-height:28px;color:var(--g800);background:linear-gradient(118.9deg,#e3cffd 22.4%,#fff 81%)}
-.pop-body{padding:0 12px;text-align:center;font-size:16px;line-height:28px;color:var(--g600)}
-.pop-body b{font-weight:700;color:var(--g800)}
+.pop-title{width:100%;border-radius:12px 12px 0 0;padding:32px 12px 20px;text-align:center;font-weight:700;font-size:var(--fs-lg);line-height:var(--lh-lg);color:var(--gray-800);background:linear-gradient(118.9deg,#e3cffd 22.4%,#fff 81%)}
+.pop-body{padding:0 12px;text-align:center;font-size:var(--fs-md);line-height:var(--lh-lg);color:var(--gray-600)}
+.pop-body b{font-weight:700;color:var(--gray-800)}
 .pop-body .semi{font-weight:600}
-.pop-body .g{color:#027A48}
+.pop-body .g{color:var(--success-700)}
 
 /* ---------- CHAT ---------- */
 .chat{background:#f6f4f1}
-.chat-head{position:absolute;top:0;left:0;right:0;z-index:4;background:#fff;box-shadow:0 1px 0 var(--g200)}
+.chat-head{position:absolute;top:0;left:0;right:0;z-index:4;background:#fff;box-shadow:0 1px 0 var(--gray-200)}
 .chat-nav{height:64px;display:flex;align-items:center;gap:10px;padding:0 16px 0 12px}
 .chat-nav .back{width:32px;height:32px;display:flex;align-items:center;justify-content:center}
 .chat-nav .back img{width:22px;height:22px}
-.chat-nav h3{font-weight:700;font-size:16px;line-height:24px;color:var(--g800)}
-.chat-nav .on{display:flex;align-items:center;gap:5px;font-weight:600;font-size:12px;color:#027A48}
-.chat-nav .on::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--s600)}
+.chat-nav h3{font-weight:700;font-size:var(--fs-md);line-height:var(--lh-md);color:var(--gray-800)}
+.chat-nav .on{display:flex;align-items:center;gap:5px;font-weight:600;font-size:var(--fs-xs);color:var(--success-700)}
+.chat-nav .on::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--success-600)}
 .msgs{position:absolute;top:64px;left:0;right:0;bottom:0;overflow-y:auto;padding:12px 16px 210px;display:flex;flex-direction:column;gap:12px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .msgs::-webkit-scrollbar{display:none}
-.msg{max-width:268px;padding:8px 12px;border-radius:14px;font-size:14px;line-height:22px;color:var(--g800);display:flex;flex-wrap:wrap;align-items:flex-end;column-gap:8px}
-.msg time{font-size:10px;line-height:14px;color:var(--g500);margin-left:auto}
+.msg{max-width:268px;padding:8px 12px;border-radius:14px;font-size:var(--fs-sm);line-height:22px;color:var(--gray-800);display:flex;flex-wrap:wrap;align-items:flex-end;column-gap:8px}
+.msg time{font-size:10px;line-height:14px;color:var(--gray-500);margin-left:auto}
 .msg.in{background:#fff;align-self:flex-start;box-shadow:0 1px 2px rgba(16,24,40,.05)}
 .msg.out{background:#fde2d6;align-self:flex-end}
-.sys{background:var(--g100);border:1px solid var(--g300);border-radius:10px;padding:8px 12px;text-align:center;font-size:14px;line-height:22px;color:var(--g600)}
+.sys{background:var(--gray-100);border:1px solid var(--gray-300);border-radius:10px;padding:8px 12px;text-align:center;font-size:var(--fs-sm);line-height:22px;color:var(--gray-600)}
 .sheet{position:absolute;left:0;right:0;bottom:0;z-index:5;border-radius:16px 16px 0 0;padding:0 4px;background:linear-gradient(#7d58a1,#4a3460);display:flex;flex-direction:column;align-items:center;animation:sheetup .45s cubic-bezier(.2,.9,.3,1)}
 @keyframes sheetup{from{transform:translateY(100%)}to{transform:none}}
-.sheet-top{display:flex;gap:6px;align-items:center;justify-content:center;padding:6px 0 11px;color:#fff;font-weight:700;font-size:14px}
+.sheet-top{display:flex;gap:6px;align-items:center;justify-content:center;padding:6px 0 11px;color:#fff;font-weight:700;font-size:var(--fs-sm)}
 .sheet-top img{width:19px;height:23px;animation:twinkle 1.6s ease-in-out infinite}
 @keyframes twinkle{0%,100%{transform:scale(1) rotate(0);opacity:1}50%{transform:scale(.8) rotate(12deg);opacity:.75}}
 .sheet-card{width:100%;margin-top:-3px;background:#fff;border-radius:24px 26px 0 0;padding:16px 16px 20px;display:flex;flex-direction:column;gap:12px}
-.sheet-row{display:flex;gap:12px;align-items:center;font-size:16px;line-height:24px;color:var(--g800)}
-.sheet-row b{font-weight:600;color:var(--s700)}
-.sheet-card > button{background:var(--brand);border:1px solid var(--brand);border-radius:12px;padding:8px 16px;text-align:center;color:#fff;font-weight:600;font-size:16px;line-height:24px;box-shadow:0 1px 3px rgba(16,24,40,.1),0 1px 2px rgba(16,24,40,.06)}
+.sheet-row{display:flex;gap:12px;align-items:center;font-size:var(--fs-md);line-height:var(--lh-md);color:var(--gray-800)}
+.sheet-row b{font-weight:600;color:var(--success-700)}
+.sheet-card > button{background:var(--brand-color);border:1px solid var(--brand-color);border-radius:12px;padding:8px 16px;text-align:center;color:#fff;font-weight:600;font-size:var(--fs-md);line-height:var(--lh-md);box-shadow:0 1px 3px rgba(16,24,40,.1),0 1px 2px rgba(16,24,40,.06)}
 
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 @media (prefers-reduced-motion:reduce){.swap .lp{display:none}}
@@ -554,13 +574,13 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 /* ================= Add Money (from pricing-v2), scoped to .am ================= */
 
 /* ---------- header ---------- */
-.am .nav{position:absolute;left:0;right:0;top:0;border-bottom:1px solid #D0D5DD;background:#fff;z-index:5}
+.am .nav{position:absolute;left:0;right:0;top:0;border-bottom:1px solid var(--gray-300);background:#fff;z-index:5}
 .am .topnav{height:64px;display:flex;align-items:center;padding:8px 16px}
 .am .topnav .ttl{flex:1;display:flex;align-items:center;gap:2px}
 .am .topnav .back{width:24px;height:24px;display:flex;align-items:center;justify-content:center;padding:4px}
-.am .topnav h1{font-size:18px;font-weight:600;line-height:28px;color:#344054}
-.am .badge{display:flex;align-items:center;gap:8px;background:#F2F4F7;border-radius:20px;padding:4px 8px}
-.am .badge p{font-size:12px;font-weight:600;line-height:18px;color:#475467}
+.am .topnav h1{font-size:var(--fs-lg);font-weight:600;line-height:var(--lh-lg);color:var(--gray-700)}
+.am .badge{display:flex;align-items:center;gap:8px;background:var(--gray-100);border-radius:20px;padding:4px 8px}
+.am .badge p{font-size:var(--fs-xs);font-weight:600;line-height:var(--lh-xs);color:var(--gray-600)}
 
 .am .chev{width:22px;height:22px;transition:transform .4s cubic-bezier(.2,.8,.2,1)}
 .am .chev.up{transform:rotate(180deg)}
@@ -574,7 +594,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 
 /* ---------- offer band ---------- */
 /* Light green fading out to WHITE ON THE RIGHT, dark green text. (Earlier passes were solid
-   #039855/#027A48 with white text; before that a v2 fade downward. This is the third and current
+   var(--success-600)/var(--success-700) with white text; before that a v2 fade downward. This is the third and current
    shape.) The fade runs left-to-right, so it never touches the text's left edge and the last word
    still lands on a pale background — which is why the copy has to stay short enough not to reach
    the white end. Keeps v1's timer rule: a countdown shows a stronger green, no countdown a softer
@@ -583,8 +603,11 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    countdown variant and stays put, since the whole point of that pair is that a running timer
    reads stronger than a static message. Each stop is pulled the same fraction of the way to
    white, so the ramp keeps its shape and still clears the copy before the white end. */
-.am .banner,.am .band3{color:#05603A;background:linear-gradient(90deg,#E9FCF2 0%,#F0FDF6 40%,#F8FEFB 78%,#fff 100%);border-radius:32px 32px 0 0;transition:background .3s,transform .42s cubic-bezier(.2,.8,.2,1),margin-bottom .42s cubic-bezier(.2,.8,.2,1)}
-.am .banner.bn-dark,.am .band3.bn-dark{background:linear-gradient(90deg,#CDF8E0 0%,#DEFBEB 40%,#F2FDF8 78%,#fff 100%)}
+/* The six band gradients. A Figma gradient stop cannot carry a paint style, so each stop is
+   written here as its style faded over white — the mapping the "Alert band — background colour
+   spec" annotation in Figma documents. Change one, change the other. */
+.am .banner,.am .band3{color:var(--success-800);background:linear-gradient(90deg,var(--success-50) 0%,color-mix(in srgb,var(--success-50) 80%,#fff) 40%,color-mix(in srgb,var(--success-50) 35%,#fff) 78%,#fff 100%);border-radius:32px 32px 0 0;transition:background .3s,transform .42s cubic-bezier(.2,.8,.2,1),margin-bottom .42s cubic-bezier(.2,.8,.2,1)}
+.am .banner.bn-dark,.am .band3.bn-dark{background:linear-gradient(90deg,var(--success-100) 0%,color-mix(in srgb,var(--success-100) 70%,#fff) 40%,color-mix(in srgb,var(--success-100) 25%,#fff) 78%,#fff 100%)}
 /* The tops below are measured from the nav's real height (64px + 1px border = 65px).
    Change anything in .nav and all four must move with it. */
 /* flush with the receipt card below it, which sits at 16px either side */
@@ -620,12 +643,12 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    the size for all of them and WEIGHT is the only thing that carries emphasis: the figures
    (₹ amounts, rates, the countdown) sit at 800 against 400-600 copy.
    Anything added here must NOT reintroduce a font-size. */
-.am .bandin .l1,.am .bandin .l2{font-size:12px;line-height:16px}
+.am .bandin .l1,.am .bandin .l2{font-size:var(--fs-xs);line-height:16px}
 .am .bandin .l1{font-weight:600;letter-spacing:.1px}
 .am .bandin .l1 b{font-weight:800;font-variant-numeric:tabular-nums}
 /* Wallet flow only: regular copy with the figure as the single bold thing on the line. */
 .am .bandin .l1.reg{font-weight:400}
-.am .bandin .l2{margin-top:1px;font-weight:500;color:#027A48}
+.am .bandin .l2{margin-top:1px;font-weight:500;color:var(--success-700)}
 /* Line 2 never had a bold rule of its own, so a <b> in it fell back to the browser's 700 and the
    band's own colour — half a step from the copy around it, which is why the figures did not read
    as figures. 800 matches .l1 b. NO colour here: the coupon and promo bands are white-on-green
@@ -633,18 +656,18 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .am .bandin .l2 b{font-weight:800;font-variant-numeric:tabular-nums}
 /* The highlight, used only by the low-balance band's copy. Deliberately a class and not plain
    `b`, because every other band sets its own text colour (gold #93370D, coupon/promo white, red
-   #912018) and darkening `b` globally would fight all four. b.hl outranks `.am .bandin .l2` on
+   var(--error-800)) and darkening `b` globally would fight all four. b.hl outranks `.am .bandin .l2` on
    specificity, so it wins wherever it IS used and is inert everywhere else.
-   #05603A is the same green the old struck-through rate line used — one shade darker than .l2's
-   #027A48, enough to separate the number without turning it into a second colour on the band. */
-.am .bandin b.hl{color:#05603A;font-weight:800;font-variant-numeric:tabular-nums}
+   var(--success-800) is the same green the old struck-through rate line used — one shade darker than .l2's
+   var(--success-700), enough to separate the number without turning it into a second colour on the band. */
+.am .bandin b.hl{color:var(--success-800);font-weight:800;font-variant-numeric:tabular-nums}
 /* …except where the band sets its own colour. The edit panel lets *stars* put a b.hl on ANY
-   band now, and #05603A on the coupon's dark green is invisible. On those four the highlight
+   band now, and var(--success-800) on the coupon's dark green is invisible. On those four the highlight
    is the 800 weight alone. */
 .am .red .bandin b.hl,.am .gold .bandin b.hl,.am .coupon .bandin b.hl,.am .bn-promo .bandin b.hl{color:inherit}
 /* Astrologer flow, tile too small to connect: same left-to-right fade, red. */
-.am .banner.red,.am .band3.red{color:#912018;background:linear-gradient(90deg,#FCE7E7 0%,#FDEEEE 40%,#FEF8F8 78%,#fff 100%)}
-.am .red .bandin .l1,.am .red .bandin .l2{color:#912018}
+.am .banner.red,.am .band3.red{color:var(--error-800);background:linear-gradient(90deg,var(--error-100) 0%,color-mix(in srgb,var(--error-100) 60%,#fff) 40%,color-mix(in srgb,var(--error-100) 25%,#fff) 78%,#fff 100%)}
+.am .red .bandin .l1,.am .red .bandin .l2{color:var(--error-800)}
 /* Continue-chat flow (View History → Continue Chat): the first-5-minutes promo. The ONLY band
    that is solid green with white text — every other one is a pale wash with dark text. The fade
    still runs rightward and the copy must clear the white end, so keep this line short. */
@@ -657,7 +680,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    the band to 60px so it stopped reaching under the receipt card. Any new band class has to be
    checked against the v1 CSS above before it is used. */
 /* Seven stops, not four: three stops crammed into the last 12% banded visibly. The first two
-   steps are near-identical to #039855, so the copy (which ends at ~86%) still sits on what reads
+   steps are near-identical to var(--success-600), so the copy (which ends at ~86%) still sits on what reads
    as solid green — the "no word may sit on the gradient" rule is kept while the ramp gets longer
    and therefore smoother. */
 /* Sep 23: this band and the coupon band SWAPPED greens. It is the one carrying a live countdown
@@ -665,7 +688,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    ticking. Only the COLOURS moved: the seven stop positions are this band's own, measured against
    this band's copy (solid to 80% = 262px of 328), so recolouring in place can't push a word onto
    the ramp. Never swap the stop geometry between the two bands — the copy doesn't travel with it. */
-.am .banner.bn-promo,.am .band3.bn-promo{color:#fff;background:linear-gradient(90deg,#065F41 0%,#065F41 80%,#0A6C4A 86%,#3FA87A 90%,#7CC3A5 94%,#AFE0CA 97%,#E3F3EC 99%,#fff 100%)}
+.am .banner.bn-promo,.am .band3.bn-promo{color:#fff;background:linear-gradient(90deg,var(--success-800) 0%,var(--success-800) 80%,var(--success-800) 86%,color-mix(in srgb,var(--success-600) 78%,#fff) 90%,color-mix(in srgb,var(--success-600) 54%,#fff) 94%,color-mix(in srgb,var(--success-600) 31%,#fff) 97%,color-mix(in srgb,var(--success-600) 11%,#fff) 99%,#fff 100%)}
 /* .l2's default is a dark green meant for the pale bands; on this solid one it has to go white,
    same as .l1. */
 .am .bn-promo .bandin .l1,.am .bn-promo .bandin .l2{color:#fff}
@@ -681,7 +704,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    Sep 23: LIGHTER green, because its pill now reads a static "Expiring soon" instead of a clock —
    deep green is reserved for a band that is actually ticking. Colours only; the four stop
    positions are still this band's own (solid to 88%). */
-.am .banner.coupon,.am .band3.coupon{color:#fff;background:linear-gradient(90deg,#039855 0%,#04A25C 88%,#3CB783 94%,#BCE8D5 97.5%,#fff 100%)}
+.am .banner.coupon,.am .band3.coupon{color:#fff;background:linear-gradient(90deg,var(--success-600) 0%,var(--success-600) 88%,color-mix(in srgb,var(--success-600) 73%,#fff) 94%,color-mix(in srgb,var(--success-600) 25%,#fff) 97.5%,#fff 100%)}
 .am .coupon .bandin{z-index:1}
 .am .coupon .bandin .l1,.am .coupon .bandin .l2{color:#fff}
 .am .coupon .bandin .l2{font-weight:600}
@@ -697,12 +720,12 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    Scoped to .am, not .coupon: the promo band uses the same chip for its static "24 hours". */
 .am .cdpill{display:inline-flex;align-items:center;vertical-align:middle;margin-left:5px;
   background:#fff;border-radius:999px;padding:1px 8px;box-shadow:0 1px 3px rgba(2,40,26,.3)}
-.am .cdpill b{font-size:12px;line-height:16px;font-weight:800;color:#065F41;
+.am .cdpill b{font-size:var(--fs-xs);line-height:16px;font-weight:800;color:#065F41;
   font-variant-numeric:tabular-nums;letter-spacing:.2px}
 /* v1's exact treatment: anchored to the RIGHT, small (236px of a 342px band, not full-bleed),
    masked out towards the text so it never crowds the copy. Stretching it full-width was the
    version she called "horrible".
-   OPACITY DIRECTION — the thing that kept going wrong: stars.svg is 45 solid #FFFFFF shapes on a
+   OPACITY DIRECTION — the thing that kept going wrong: stars.svg is 45 solid var(--white) shapes on a
    DARK GREEN band, so opacity is a straight visibility dial. UP = brighter, more visible.
    DOWN = the white fades into the green and they vanish. There is no value that is both fainter
    and more visible; if the ask is "more visible", this number must RISE. */
@@ -721,14 +744,14 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    GONE — she asked for them removed. They were pure decoration ("the rate falls") and were
    competing with the copy for the right-hand end of the strip. `arrow-drift` is still in
    src/icons/ and so still inlined; nothing references it. */
-/* Lightened from #FEF0C7 (Sep 21). Its luminance already matched the green band's #E2FBEE almost
-   exactly — what made it read as the heavier of the two was CHROMA: #FEF0C7 spans 55 between its
+/* Lightened from var(--warning-100) (Sep 21). Its luminance already matched the green band's #E2FBEE almost
+   exactly — what made it read as the heavier of the two was CHROMA: var(--warning-100) spans 55 between its
    max and min channel against the green's 25. So the blue channel is lifted and the other two are
    left alone, which drops the spread to 32 without touching how light it is. Keep that in mind
    before "lightening" this further by raising all three channels — that washes it out instead. */
 .am .banner.gold,.am .band3.gold{background:#FEF5DE}
 /* Wallet flow only: the gold strip fades out to white, rightward, matching the green band. */
-.am .banner.gold.gfade,.am .band3.gold.gfade{background:linear-gradient(90deg,#FEF5DE 0%,#FEF8E9 40%,#FFFCF6 78%,#fff 100%)}
+.am .banner.gold.gfade,.am .band3.gold.gfade{background:linear-gradient(90deg,color-mix(in srgb,var(--warning-300) 18%,#fff) 0%,color-mix(in srgb,var(--warning-300) 12%,#fff) 40%,color-mix(in srgb,var(--warning-300) 5%,#fff) 78%,#fff 100%)}
 .am .gold .bandin .l1{color:#93370D;font-weight:700}
 .am .gold .bandin .l2{color:#B54708}
 .am .gold .bandin img{filter:hue-rotate(255deg) saturate(1.2)}
@@ -762,7 +785,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    the card edge, and at 1px the difference over that arc is not resolvable; replacing it with
    a masked gradient ring loses the white fill that punches the bite out of the card. */
 .am #rcptPath{fill:#fff;stroke:#C6CCD5;stroke-width:1;stroke-dasharray:2 2;stroke-linecap:butt}
-.am .notch{position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;border:1px dashed #D0D5DD}
+.am .notch{position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;border:1px dashed var(--gray-300)}
 .am .notch.l{left:-11px;clip-path:inset(0 0 0 50%)}
 .am .notch.r{right:-11px;clip-path:inset(0 50% 0 0)}
 /* Sep 22: was 28px below the bonus chips (120.5); she boxed that gap as too big next to the ~8px
@@ -805,8 +828,8 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    same way #rcptPath is drawn, so the two patterns finally match. */
 .am .seebtn{position:relative;display:flex;align-items:center;border-radius:12px;padding:4px 4px 4px 12px}
 .am .seeline{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
-.am .seeline rect{fill:none;stroke:#D0D5DD;stroke-width:.8;stroke-dasharray:2 2;stroke-linecap:butt}
-.am .seebtn p{font-size:12px;line-height:18px;color:#667085;white-space:nowrap}
+.am .seeline rect{fill:none;stroke:var(--gray-300);stroke-width:.8;stroke-dasharray:2 2;stroke-linecap:butt}
+.am .seebtn p{font-size:var(--fs-xs);line-height:var(--lh-xs);color:var(--gray-500);white-space:nowrap}
 /* Both pills are in the DOM at once and cross-fade, so a static `.up` on the See Less one never
    animated — you only ever saw the finished state. Keying BOTH chevrons on `.am.open` rotates
    them together through the swap, so it reads as the one arrow flipping over. The .4s transition
@@ -816,14 +839,14 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 /* ---------- amount tile ---------- */
 .am .col{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center}
 .am .opt{position:relative;width:100%;cursor:pointer}
-.am .box{position:relative;width:100%;aspect-ratio:1/0.81;background:#fff;border:1px solid #D0D5DD;border-radius:14px;
+.am .box{position:relative;width:100%;aspect-ratio:1/0.81;background:#fff;border:1px solid var(--gray-300);border-radius:14px;
   box-shadow:0 4px 8px rgba(0,0,0,.04);display:flex;align-items:center;justify-content:center;overflow:hidden;
   transition:border-color .2s,box-shadow .2s,transform .12s}
 .am .opt:active .box{transform:scale(.97)}
-.am .box.on{border:1.5px solid #EF6939;box-shadow:0 6px 14px rgba(239,105,57,.14)}
-.am .sku{position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:center;color:#344054}
-.am .sku .r{font-size:12px;font-weight:700;line-height:21px;height:18px;width:6px}
-.am .sku .n{font-size:20px;font-weight:600;line-height:26px;white-space:nowrap}
+.am .box.on{border:1.5px solid var(--brand-color);box-shadow:0 6px 14px rgba(239,105,57,.14)}
+.am .sku{position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:center;color:var(--gray-700)}
+.am .sku .r{font-size:var(--fs-xs);font-weight:700;line-height:21px;height:18px;width:6px}
+.am .sku .n{font-size:var(--fs-xl);font-weight:600;line-height:26px;white-space:nowrap}
 .am .corner{position:absolute;top:0;right:0;width:38px;height:38px;overflow:hidden;border-top-right-radius:13px;line-height:0;
   animation:cornerIn .28s cubic-bezier(.2,.9,.3,1.2)}
 .am .corner svg .tick{transform-origin:25.8px 13.2px;animation:tickIn .35s .08s cubic-bezier(.2,.9,.3,1.3) both}
@@ -833,12 +856,12 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    spilling past the SKU. Vertical padding holds the pill at its old 26px height so the
    spacing below it — and therefore the card height — is unaffected by the smaller type. */
 .am .chip{position:relative;z-index:4;margin-top:-11px;max-width:100%;display:flex;align-items:center;justify-content:center;padding:6px 8px;border-radius:12px;
-  background:linear-gradient(-0.5deg,#027A48 10.094%,#039855 23.329%,#039855 83.868%,rgba(3,152,85,0) 109.72%)}
+  background:linear-gradient(-0.5deg,var(--success-700) 10.094%,var(--success-600) 23.329%,var(--success-600) 83.868%,rgba(3,152,85,0) 109.72%)}
 .am .chip p{position:relative;z-index:1;font-size:10px;font-weight:600;line-height:14px;letter-spacing:-.1px;color:#fff;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
 /* The figure carries the hierarchy; "more" and the ₹ stay at 10px/600. line-height is pinned
    so the bigger inline type can't grow the line box and push the pill taller — the card's
    spacing below is measured off this pill's height. */
-.am .chip p b,.am .flyer p b{font-size:12px;font-weight:800;line-height:14px}
+.am .chip p b,.am .flyer p b{font-size:var(--fs-xs);font-weight:800;line-height:14px}
 /* Light sweep, collapsed row only — nine of these at once in the open grid reads as noise.
    Clipped by the pill's own overflow, and sits under the text via .chip p's z-index. */
 .am #skus .chip{overflow:hidden}
@@ -979,7 +1002,9 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 /* square along the bottom so the card sits flush on the sheet below it */
 .am .ac{position:relative;width:268px;height:108px;border-radius:18px 18px 0 0;padding:1.5px;display:flex;align-items:center;justify-content:center;isolation:isolate;
   box-shadow:0 6px 14px rgba(4,60,38,.16);transition:background .35s,box-shadow .35s}
-.am .ac.green{background:linear-gradient(150deg,rgba(255,255,255,.95),rgba(2,122,72,.45) 48%,rgba(255,255,255,.85))}
+/* Green maps exactly: White @95% · Success/700 @45% · White @85%. Gold has no token — the
+   Warning ramp is a saturated amber and no opacity of it reaches an antique gold. */
+.am .ac.green{background:linear-gradient(150deg,rgba(255,255,255,.95),color-mix(in srgb,var(--success-700) 45%,transparent) 48%,rgba(255,255,255,.85))}
 .am .ac.gold{background:linear-gradient(150deg,rgba(255,255,255,.95),rgba(150,110,25,.42) 48%,rgba(255,255,255,.88));box-shadow:0 6px 14px rgba(80,58,10,.14)}
 .am .ac .skin{position:absolute;inset:1.5px;border-radius:16.5px 16.5px 0 0;overflow:hidden;z-index:0}
 .am .ac.green .skin{background:radial-gradient(60% 90% at 50% 56%,rgba(255,255,255,.62),rgba(255,255,255,0) 60%),
@@ -1000,14 +1025,14 @@ body.mobile .phone{border-radius:0;box-shadow:none}
   100%{transform:none}}
 .am .ac .c{position:relative;z-index:2;text-align:center;padding:2px 18px 0}
 .am .ac .e{font-size:11.5px;font-weight:700;letter-spacing:.7px}
-.am .ac.green .e{color:#05603A}
+.am .ac.green .e{color:var(--success-800)}
 .am .ac.gold .e{color:#8A6A24}
 .am .ac .amt{position:relative;width:fit-content;margin:8px auto 0;display:flex;align-items:flex-start;justify-content:center;gap:3px}
 /* the tile's "+₹50" chip lifts off, arcs down and drops into the card; the bonus starts
    counting on at the moment it lands. Built in JS so it can measure both ends. */
 .am .flyer{position:absolute;z-index:8;pointer-events:none;display:flex;align-items:center;justify-content:center;
   border-radius:12px;box-shadow:0 10px 20px rgba(4,60,38,.32);will-change:transform,opacity;
-  background:linear-gradient(-0.5deg,#027A48 10%,#039855 23%,#039855 84%,#04A85D 110%)}
+  background:linear-gradient(-0.5deg,var(--success-700) 10%,var(--success-600) 23%,var(--success-600) 84%,#04A85D 110%)}
 .am .flyer p{font-size:10px;font-weight:600;line-height:14px;letter-spacing:-.1px;color:#fff;white-space:nowrap}
 /* the amount takes the hit as the chip lands */
 .am .ac .amt.absorb{animation:absorb .52s cubic-bezier(.24,1.6,.36,1)}
@@ -1016,15 +1041,15 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .am .ac.gold .amt{color:#3F3417}
 .am .ac .amt .r{font-size:17px;font-weight:700;line-height:1}
 .am .ac .amt .n{font-size:31px;font-weight:800;letter-spacing:-1px;line-height:1;font-variant-numeric:tabular-nums}
-.am .ac .t{margin-top:8px;font-size:12.5px;font-weight:500;color:#1D2939}
+.am .ac .t{margin-top:8px;font-size:12.5px;font-weight:500;color:var(--gray-800)}
 
 /* payment summary (original expanded content) */
 /* 16px gutter so "Payment Summary" starts on the same edge as "Pay with", the receipt
    card and the Pay button */
 .am .summary{position:relative;z-index:2;background:#fff;padding:0 16px}
 .am .sumrow{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 0 14px}
-.am .sumrow .sl{font-size:13.5px;line-height:18px;color:#667085;white-space:nowrap}
-.am .sumrow .sr{display:flex;align-items:center;gap:4px;font-size:13.5px;line-height:18px;color:#667085;white-space:nowrap}
+.am .sumrow .sl{font-size:13.5px;line-height:var(--lh-xs);color:var(--gray-500);white-space:nowrap}
+.am .sumrow .sr{display:flex;align-items:center;gap:4px;font-size:13.5px;line-height:var(--lh-xs);color:var(--gray-500);white-space:nowrap}
 /* Open, the "₹50 + ₹9 GST" summary goes — the breakdown below now says it in full, so leaving
    it would state the same number twice. Matches Figma's State=Open. Width is held by the
    collapsed value so the chevron doesn't slide sideways as the row opens. */
@@ -1038,22 +1063,22 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .am .ps-dash{display:block;height:1px;background:repeating-linear-gradient(90deg,var(--dc) 0 2px,transparent 2px 4px)}
 .am .ps-calc{display:flex;flex-direction:column;gap:2px;padding:0 12px}
 .am .ps-line{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.am .ps-line span:first-child{font-size:12px;line-height:18px;color:#667085}
-.am .ps-line span:last-child{font-size:14px;line-height:20px}
-.am .ps-line.r1 span:last-child{color:#344054}
-.am .ps-line.r2 span:last-child{color:#1D2939}
+.am .ps-line span:first-child{font-size:var(--fs-xs);line-height:var(--lh-xs);color:var(--gray-500)}
+.am .ps-line span:last-child{font-size:var(--fs-sm);line-height:var(--lh-sm)}
+.am .ps-line.r1 span:last-child{color:var(--gray-700)}
+.am .ps-line.r2 span:last-child{color:var(--gray-800)}
 .am .ps-line.tot{padding:0 12px}
-.am .ps-line.tot span{font-size:14px!important;line-height:20px;font-weight:600;color:#1D2939!important}
+.am .ps-line.tot span{font-size:var(--fs-sm)!important;line-height:var(--lh-sm);font-weight:600;color:var(--gray-800)!important}
 .am .ps-credit{display:flex;flex-direction:column}
-.am .ps-box{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #027A48;border-radius:12px;padding:8px 12px;color:#027A48}
-.am .ps-box span{font-size:12px;line-height:18px;font-weight:600}
-.am .ps-box b{font-size:14px;line-height:24px;font-weight:700}
-.am .ps-box.plain{border-color:#D0D5DD;color:#475467}
-.am .ps-panel{margin:-12px 0 0;padding:24px 12px 12px;border-radius:0 0 12px 12px;background:#F2F4F7;display:flex;flex-direction:column;gap:8px}
-.am .ps-line.p1 span:last-child{color:#1D2939}
-.am .ps-line.pg span{color:#027A48!important}
-.am .ps-line.pt span:first-child{color:#475467}
-.am .ps-line.pt span:last-child{color:#344054}
+.am .ps-box{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid var(--success-700);border-radius:12px;padding:8px 12px;color:var(--success-700)}
+.am .ps-box span{font-size:var(--fs-xs);line-height:var(--lh-xs);font-weight:600}
+.am .ps-box b{font-size:var(--fs-sm);line-height:var(--lh-md);font-weight:700}
+.am .ps-box.plain{border-color:var(--gray-300);color:var(--gray-600)}
+.am .ps-panel{margin:-12px 0 0;padding:24px 12px 12px;border-radius:0 0 12px 12px;background:var(--gray-100);display:flex;flex-direction:column;gap:8px}
+.am .ps-line.p1 span:last-child{color:var(--gray-800)}
+.am .ps-line.pg span{color:var(--success-700)!important}
+.am .ps-line.pt span:first-child{color:var(--gray-600)}
+.am .ps-line.pt span:last-child{color:var(--gray-700)}
 
 /* pay row */
 .am .cta{position:relative;z-index:2;background:#fff;display:flex;align-items:center;gap:16px;padding:8px 16px 24px}
@@ -1061,18 +1086,18 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 /* "Pay with" is 12px and "Payment Summary" 13.5px, so their P's carry different side
    bearings (.75px vs 1px) even though both boxes start at 16. Nudge the smaller one over so
    the two P stems land on the same vertical, which is what the eye actually tracks. */
-.am .payw .l{display:flex;align-items:center;font-size:12px;line-height:18px;color:#475467;margin-left:.25px}
+.am .payw .l{display:flex;align-items:center;font-size:var(--fs-xs);line-height:var(--lh-xs);color:var(--gray-600);margin-left:.25px}
 /* The logo is a full-bleed circle so its edge sits flush at 0, while the "P" of "Pay with"
    above carries ~1px of side bearing. Nudge the row over so the two line up optically. */
-.am .pp{display:flex;gap:4px;align-items:center;font-weight:700;font-size:16px;color:#344054;margin-left:1px}
-.am .pp .logo{width:20px;height:20px;border:.6px solid #D0D5DD;border-radius:4px;padding:1px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.am .pp{display:flex;gap:4px;align-items:center;font-weight:700;font-size:var(--fs-md);color:var(--gray-700);margin-left:1px}
+.am .pp .logo{width:20px;height:20px;border:.6px solid var(--gray-300);border-radius:4px;padding:1px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .am .pp .logo img{width:100%;height:100%;object-fit:cover;border-radius:3px}
 .am .pp .logo.raw{border:0;padding:0}
-.am .paybtn{width:200px;background:#EF6939;border-radius:12px;padding:12px 18px;text-align:center;color:#fff;white-space:nowrap;
+.am .paybtn{width:200px;background:var(--brand-color);border-radius:12px;padding:12px 18px;text-align:center;color:#fff;white-space:nowrap;
   box-shadow:0 2px 6px rgba(239,105,57,.28);transition:transform .1s}
 .am .paybtn:active{transform:scale(.98)}
-.am .paybtn b{font-size:16px;line-height:24px;font-weight:600;font-variant-numeric:tabular-nums}
-.am .paybtn small{font-size:12px;line-height:18px;opacity:.95}
+.am .paybtn b{font-size:var(--fs-md);line-height:var(--lh-md);font-weight:600;font-variant-numeric:tabular-nums}
+.am .paybtn small{font-size:var(--fs-xs);line-height:var(--lh-xs);opacity:.95}
 
 /* ---------- loading shimmer ---------- */
 /* The whole screen is priced by the wallet service — balance, bonus table, GST, the payment
@@ -1085,7 +1110,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
   transition:opacity .34s cubic-bezier(.2,.8,.2,1)}
 .am .skel.gone{opacity:0}
 .am.loading .badge{visibility:hidden}
-.am .sk{position:absolute;background:#EAECF0;border-radius:8px;overflow:hidden}
+.am .sk{position:absolute;background:var(--gray-200);border-radius:8px;overflow:hidden}
 /* One sweep for all of them: the highlight is a child travelling across each block, so every
    block animates on the same 1.15s clock and the page reads as one surface, not nine. */
 .am .sk::after{content:"";position:absolute;inset:0;transform:translateX(-100%);
@@ -1142,29 +1167,29 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .am .pm-sheet::-webkit-scrollbar{display:none}
 .am .pm-overlay.open .pm-sheet{transform:none}
 .am .pm-head{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:32px;padding:24px 16px 12px;background:#FCF4E9;border-radius:32px 32px 0 0}
-.am .pm-head p{flex:1;font-size:16px;font-weight:700;color:#344054}
+.am .pm-head p{flex:1;font-size:var(--fs-md);font-weight:700;color:var(--gray-700)}
 .am .pm-x{width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:12px}
 .am .pm-x img{width:16px;height:16px}
 .am .pm-body{display:flex;flex-direction:column;gap:32px;padding:8px 16px 0}
 .am .pm-group{display:flex;flex-direction:column;gap:8px}
-.am .pm-gt{font-size:14px;font-weight:500;color:#344054}
-.am .pm-card{background:#fff;border:1px solid #EAECF0;border-radius:18px;padding:12px;display:flex;flex-direction:column}
+.am .pm-gt{font-size:var(--fs-sm);font-weight:500;color:var(--gray-700)}
+.am .pm-card{background:#fff;border:1px solid var(--gray-200);border-radius:18px;padding:12px;display:flex;flex-direction:column}
 .am .pm-list{gap:16px}
 .am .pm-row{display:flex;align-items:center;justify-content:space-between;cursor:pointer;width:100%}
-.am .pm-name{display:flex;align-items:center;gap:10px;font-size:14px;line-height:20px;font-weight:500;color:#475467}
-.am .pm-logo{width:32px;height:32px;padding:2px;border-radius:8px;display:flex;align-items:center;justify-content:center;border:1px solid #D0D5DD;flex-shrink:0;background:#fff;overflow:hidden}
+.am .pm-name{display:flex;align-items:center;gap:10px;font-size:var(--fs-sm);line-height:var(--lh-sm);font-weight:500;color:var(--gray-600)}
+.am .pm-logo{width:32px;height:32px;padding:2px;border-radius:8px;display:flex;align-items:center;justify-content:center;border:1px solid var(--gray-300);flex-shrink:0;background:#fff;overflow:hidden}
 .am .pm-logo img{width:100%;height:100%;object-fit:cover}
 .am .pm-logo.raw{border:0;padding:0}
 .am .pm-radio{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:100px}
 .am .pm-radio img{width:20px;height:20px}
 .am .pm-row:active .pm-radio{background:rgba(239,105,57,.08)}
-.am .pm-div{display:block;height:1px;background:repeating-linear-gradient(90deg,#EAECF0 0 2px,transparent 2px 4px)}
-.am .pm-cta{position:absolute;left:0;right:0;bottom:0;z-index:3;background:#fff;border:1px solid #D0D5DD;border-bottom:0;border-radius:12px 12px 0 0;box-shadow:0 -6px 20px rgba(0,0,0,.2);
+.am .pm-div{display:block;height:1px;background:repeating-linear-gradient(90deg,var(--gray-200) 0 2px,transparent 2px 4px)}
+.am .pm-cta{position:absolute;left:0;right:0;bottom:0;z-index:3;background:#fff;border:1px solid var(--gray-300);border-bottom:0;border-radius:12px 12px 0 0;box-shadow:0 -6px 20px rgba(0,0,0,.2);
   transform:translateY(110%);transition:transform .38s cubic-bezier(.2,.9,.3,1) .04s}
 .am .pm-overlay.open .pm-cta{transform:none}
-.am .pm-credit{padding:12px 12px 8px;text-align:center;font-size:14px;line-height:20px;color:#344054}
-.am .pm-credit .g{font-weight:700;color:#027A48}
-.am .pm-credit .w{color:#475467}
+.am .pm-credit{padding:12px 12px 8px;text-align:center;font-size:var(--fs-sm);line-height:var(--lh-sm);color:var(--gray-700)}
+.am .pm-credit .g{font-weight:700;color:var(--success-700)}
+.am .pm-credit .w{color:var(--gray-600)}
 .am .pm-btnwrap{padding:8px 16px 24px}
 .am .pm-btnwrap .paybtn{width:100%;display:block}
 
@@ -1274,7 +1299,7 @@ function photo(key,size,initials){
 function card(rate){
   return `<div class="card">
     <div class="card-top">
-      <span class="avwrap">${photo('hemali',64,'AH')}<span class="odot" style="right:0;top:0;width:16px;height:16px;border-radius:8px;background:var(--s500);border-width:2.3px"></span></span>
+      <span class="avwrap">${photo('hemali',64,'AH')}<span class="odot" style="right:0;top:0;width:16px;height:16px;border-radius:8px;background:var(--success-500);border-width:2.3px"></span></span>
       <div><p class="card-name">Astro Hemali</p>
         <div class="meta"><span class="rating">4.7 <img src="${I.star}" alt="" width="14" height="14"></span><span class="dot4"></span>1240 sessions</div>
       </div>
@@ -1319,13 +1344,13 @@ function renderHome(){
         <div class="recent-h"><p>Recent Chats</p><span>View All</span></div>
         <div class="rc-row">
           <div class="rc" style="width:286px">
-            <span class="avwrap">${photo('vippsana',56,'AV')}<span class="odot" style="right:0;top:0;width:14px;height:14px;border-radius:5px;background:var(--s700);border-width:1.7px"></span></span>
+            <span class="avwrap">${photo('vippsana',56,'AV')}<span class="odot" style="right:0;top:0;width:14px;height:14px;border-radius:5px;background:var(--success-700);border-width:1.7px"></span></span>
             <div style="flex:1;min-width:0"><p class="rc-name">Astro Vippsana</p><div class="price"><s>₹25/min</s><b>₹20/min</b></div>
               <div class="rc-btns"><button class="btn-o" data-go="history">View History</button><button class="btn-f" data-go="again" data-rate="20"><img src="${I.bubble}" alt="" width="18" height="18">Chat Again</button></div>
             </div>
           </div>
           <div class="rc" style="width:312px">
-            <span class="avwrap">${photo('hemali',56,'AH')}<span class="odot" style="right:0;top:0;width:14px;height:14px;border-radius:5px;background:var(--g400);border-width:2.9px"></span></span>
+            <span class="avwrap">${photo('hemali',56,'AH')}<span class="odot" style="right:0;top:0;width:14px;height:14px;border-radius:5px;background:var(--gray-400);border-width:2.9px"></span></span>
             <div style="flex:1;min-width:0"><p class="rc-name">Astro Hemali</p><div class="price"><s>₹30/min</s><b>₹25/min</b></div>
               <div class="rc-btns"><button class="btn-o">View History</button><button class="btn-o" style="flex:1"><img src="${I.bubble}" alt="" width="18" height="18" style="filter:brightness(0) saturate(100%) invert(52%) sepia(70%) saturate(2400%) hue-rotate(345deg) brightness(98%)">Join Waitlist</button></div>
             </div>
