@@ -2288,8 +2288,8 @@ function go(route,rate){
   document.getElementById('flowsSheet').classList.remove('open');
   switch(route){
     case 'home': mount(renderHome(), phone.querySelector('.screen.am')?'out-right':null); break;
-    // wflow marks THIS route only — post3 also runs flowType 'wallet' but must not pick up the
-    // wallet band's copy or its gold fade. See bandInner()/renderBand().
+    // Sep 24: post3 now sets `wflow` as well, so both wallet routes share this band verbatim.
+    // What still separates them is `rows` — post3 opens on two SKU rows. See bandInner()/renderBand().
     case 'wallet': flowType='wallet'; flowAstro=''; openAB('default',100,false,true,{wflow:true}); break;
     // cflow = came from an astrologer card, so the band talks about connecting to THEM: the
     // red "not enough to connect" strip below the 4-min minimum, the green rate strip above it.
@@ -2299,7 +2299,12 @@ function go(route,rate){
     case 'history': mount(renderChat()); break;
     // Still six tiles here, but the coins stay on ₹250 like every other flow — her call Sep 23.
     // `coin` is left on `ab` so a future flow can still move them; nothing passes it today.
-    case 'post3': flowType='wallet'; flowAstro=''; openAB('default',100,false,true,{rows:2}); break;
+    // Sep 24: now carries `wflow` too, so the band reads exactly like the wallet flow — the v3 b*
+    // copy on every tile instead of the old "Recharge offer valid for <clock>". That also drops
+    // the band's countdown (the b* lines have no clock) and restores the gold fade on ₹50, which
+    // is what makes the two flows identical rather than merely similar. Reverses the Sep 22 note
+    // below the `wallet` case, which said post3 must NOT pick this up.
+    case 'post3': flowType='wallet'; flowAstro=''; openAB('default',100,false,true,{rows:2,wflow:true}); break;
     // Sep 22: this band ticks again. The static "24 hours" chip is now a live `.cd` counting down
     // from a 24h window. It keeps its own .bn-promo green — renderBand()'s `timed` flag, the one
     // that adds .bn-dark, excludes promo — but the root does gain .timed now that a `.cd` exists.
