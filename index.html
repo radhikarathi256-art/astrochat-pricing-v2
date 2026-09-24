@@ -715,7 +715,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    The stars and the sweep are SIBLINGS of .bandin, not children, so they inherit the band's own
    32px corners; .bandin is lifted above them (everything here is positioned, so DOM order alone
    would put them on top).
-   Sep 23: LIGHTER green, because its pill now reads a static "Expiring soon" instead of a clock —
+   Sep 23: LIGHTER green, because its pill now reads a static "Expiring Today" instead of a clock —
    deep green is reserved for a band that is actually ticking. Colours only; the four stop
    positions are still this band's own (solid to 88%). */
 .am .banner.coupon,.am .band3.coupon{color:#fff;background:linear-gradient(90deg,var(--success-600) 0%,var(--success-600) 88%,color-mix(in srgb,var(--success-600) 73%,#fff) 94%,color-mix(in srgb,var(--success-600) 25%,#fff) 97.5%,#fff 100%)}
@@ -1131,7 +1131,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .am .sk-chip{top:165.4px;width:78px;height:26.5px;border-radius:13px}
 .am .sk-chip.c1{left:38.35px}.am .sk-chip.c2{left:141px}.am .sk-chip.c3{right:38.35px}
 .am .sk-see{top:250.5px;left:50%;margin-left:-66px;width:132px;height:26px;border-radius:12px}
-/* post3's second row: one more 96px tile row, and the card grows to 325. Without these the
+/* post4's second row: one more 96px tile row, and the card grows to 325. Without these the
    skeleton lands short on that flow and the hand-off snaps.
    (The old band-hidden variant is gone — the band is now on screen in every wallet state, so the
    skeleton always draws it.) */
@@ -1199,7 +1199,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
     <button data-jump="listingChat">Listing → Chat</button>
     <button data-jump="again">Chat again (coupon)</button>
     <button data-jump="history">View history (offer)</button>
-    <button data-jump="post3">Post 3rd recharge</button>
+    <button data-jump="post4">Post 4th recharge</button>
   </div>
   <!-- The two band variants her v3 spec lists that no flow above reaches: the Hindi copy and the
        limited-time window. Each is its English sibling with one flag set, so they are jump routes
@@ -1234,7 +1234,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
     <li>Coin pop plays once. <i>Figma</i></li>
     <li>Badges lose their light sweep once ₹100 or above is selected. <i>live here</i></li>
     <li>The badge drop plays on every SKU tap; the pre-selected tile does not count as a tap. <i>live here</i></li>
-    <li>Post 3rd recharge opens on all 6 SKUs. <i>Figma</i></li>
+    <li>Post 4th recharge opens on all 6 SKUs. <i>Figma</i></li>
     <li>When the countdown runs out the banner changes state. <i>Figma</i></li>
     <li>The shower plays on ₹250 only — it is the best deal. <i>live here</i></li>
     <li>Discount banners keep their light sweep. <i>live here</i></li>
@@ -1250,7 +1250,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
     <button data-jump="listingChat">Listing → Chat<small>Low balance → Add Money to Wallet</small></button>
     <button data-jump="again">Chat again<small>Coupon applied → coupon bonuses</small></button>
     <button data-jump="history">View history<small>Continue chat → ₹12/min offer</small></button>
-    <button data-jump="post3">Post 3rd recharge<small>Two rows of SKUs, coins on ₹500</small></button>
+    <button data-jump="post4">Post 4th recharge<small>Two rows of SKUs, coins on ₹500</small></button>
     <button data-jump="walletHi">Wallet · Hindi<small>Same bonuses, Hindi band copy</small></button>
     <button data-jump="chatHi">Astrologer · Hindi<small>Minutes with Astro Hemali, in Hindi</small></button>
     <button data-jump="againHi">ASTRO50 · Hindi<small>Coupon band, Aaj tak valid</small></button>
@@ -1531,7 +1531,7 @@ function startCountdown(sec){
    Ported from pricing-v2's app.js. That file bound everything once at load because its DOM
    was static; here mount() rebuilds the screen, so every binding is re-made in initAM() and
    all lookups are scoped to amRoot rather than document. Selection lives in v1's `ab` so the
-   flows (wallet / listingChat / again / post3 / continue) still drive this screen. */
+   flows (wallet / listingChat / again / post4 / continue) still drive this screen. */
 let amRoot=null;
 const A = id => amRoot.querySelector('#'+id);
 const gstFor = v => Math.round(v*0.18);
@@ -1645,7 +1645,7 @@ const SEL=+(new URLSearchParams(location.search).get('sel')||0);
    fillCopy(), so no figure here is hardcoded — change BASE and the copy follows.
    The two "ask" brackets (50 and 100) point UP at the next tile; from ₹250 the band stops
    asking and just states what you get, which is what .noask below de-emphasises. */
-const KPILL=`<b>ASTRO50</b> applied<span class="cdpill"><b>Expires today</b></span>`;
+const KPILL=`<b>ASTRO50</b> applied<span class="cdpill"><b>Expiring Today</b></span>`;
 const KPILL_HI=`<b>ASTRO50</b> applied<span class="cdpill"><b>Aaj tak valid</b></span>`;
 const V3COPY={
   b50 :["You're missing out on <b>₹{b1}</b> extra","Pick <b>₹{t1}</b>{now}, get <b>₹{c1}</b> in your wallet"],
@@ -1748,7 +1748,7 @@ function bandInner(){
   // #039855 one now goes to the coupon band. Whenever a band changes green, its seal follows.
   if(ab.mode==='offer') return `<div class="bandin"><img class="tag" src="${I['discount-dark']}" alt=""><div><p class="l1">Offer expires in <span class="cdpill"><b class="cd">${cdText()}</b></span></p><p class="l2">Bonus on first recharge over <b>₹100</b></p></div></div><img class="bn-stars" src="${I.stars}" alt="" aria-hidden="true">`;
   // ASTRO50 (v3 k* copy). Line 1 is the coupon's NAME and the chip is its status — a STATIC
-  // "Expires today", deliberately with NO `cd` class: `cd` is both the ticker's write target and
+  // "Expiring Today", deliberately with NO `cd` class: `cd` is both the ticker's write target and
   // the hook renderBand()'s `.timed` check reads, so a `cd` here would restart a clock that isn't
   // shown and silence the SKU badge sweeps for nothing.
   // Line 2 now moves with the tile (it used to be a flat "₹50 extra" on every SKU) and states the
@@ -2264,7 +2264,7 @@ function mountSwapLottie(){
 function openAB(mode,sel,banner=false,auto=true,extra){
   ab={mode,sel,banner,shown:null,cd:0,dropped:new Set(),...extra};
   // The band always carries a countdown on this screen, so the default flows get one too — except
-  // the coupon, whose chip is now a static "Expiring soon". Its ticker would have nothing to write.
+  // the coupon, whose chip is now a static "Expiring Today". Its ticker would have nothing to write.
   // The promo band takes OFFER_WINDOW wherever it is opened, so it reads 15 min on every route in.
   // The limited-time band shows the only clock on screen when it is on, so it takes the ticker
   // even in coupon mode — where the chip is otherwise static and the ticker is deliberately off.
@@ -2288,8 +2288,8 @@ function go(route,rate){
   document.getElementById('flowsSheet').classList.remove('open');
   switch(route){
     case 'home': mount(renderHome(), phone.querySelector('.screen.am')?'out-right':null); break;
-    // Sep 24: post3 now sets `wflow` as well, so both wallet routes share this band verbatim.
-    // What still separates them is `rows` — post3 opens on two SKU rows. See bandInner()/renderBand().
+    // Sep 24: post4 now sets `wflow` as well, so both wallet routes share this band verbatim.
+    // What still separates them is `rows` — post4 opens on two SKU rows. See bandInner()/renderBand().
     case 'wallet': flowType='wallet'; flowAstro=''; openAB('default',100,false,true,{wflow:true}); break;
     // cflow = came from an astrologer card, so the band talks about connecting to THEM: the
     // red "not enough to connect" strip below the 4-min minimum, the green rate strip above it.
@@ -2303,8 +2303,8 @@ function go(route,rate){
     // copy on every tile instead of the old "Recharge offer valid for <clock>". That also drops
     // the band's countdown (the b* lines have no clock) and restores the gold fade on ₹50, which
     // is what makes the two flows identical rather than merely similar. Reverses the Sep 22 note
-    // below the `wallet` case, which said post3 must NOT pick this up.
-    case 'post3': flowType='wallet'; flowAstro=''; openAB('default',100,false,true,{rows:2,wflow:true}); break;
+    // below the `wallet` case, which said post4 must NOT pick this up.
+    case 'post4': flowType='wallet'; flowAstro=''; openAB('default',100,false,true,{rows:2,wflow:true}); break;
     // Sep 22: this band ticks again. The static "24 hours" chip is now a live `.cd` counting down
     // from a 24h window. It keeps its own .bn-promo green — renderBand()'s `timed` flag, the one
     // that adds .bn-dark, excludes promo — but the root does gain .timed now that a `.cd` exists.
