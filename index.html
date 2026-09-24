@@ -1409,15 +1409,12 @@ function cdText(){
   // The H:MM:SS face is gone (Sep 23). Nothing runs for hours any more — the coupon shows no clock
   // at all and the offer is a 15-minute window — and an hours field that is permanently "0:" makes
   // a live timer look stopped, which defeats the point of showing one.
-  // The offer pads its minutes so the chip keeps ONE width all the way down; below ten minutes an
-  // unpadded face drops a character and the pill, which hugs its text, visibly narrows. Keyed on
-  // mode rather than on the seconds left, so the shape can never change mid-countdown.
-  if(ab.mode==='offer') return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
-  // The limited-time band spells its units out — "14m 44s", not "14:44". Seconds are padded so the
-  // chip keeps one width; minutes are not, because this clock never reaches two digits again once
-  // it drops below ten and a leading zero there reads as a stopwatch rather than a deadline.
-  if(ab.lt) return `${Math.floor(s/60)}m ${String(s%60).padStart(2,'0')}s`;
-  return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+  // Sep 24: ONE face everywhere — "00 min : 15 s", unit after each number. The bare "14:44" read as
+  // a clock time rather than time left, and the three earlier variants (padded colon face, unpadded
+  // colon face, "14m 44s") meant the same countdown looked different depending on which band it sat
+  // in. Both numbers are padded so the pill, which hugs its text, keeps ONE width the whole way
+  // down; without that it visibly narrows as it crosses ten minutes and again at ten seconds.
+  return `${String(Math.floor(s/60)).padStart(2,'0')} min : ${String(s%60).padStart(2,'0')} s`;
 }
 /* ---------- ADD MONEY (pricing-v2 design) ---------- */
 // Markup only. Everything interactive lives in initAM(), which mount() re-runs after the
