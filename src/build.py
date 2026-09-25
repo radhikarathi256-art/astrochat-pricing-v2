@@ -20,9 +20,22 @@ def load(folder):
             out[name] = f"data:{MIME[ext.lower()]};base64,{data}"
     return out
 
+def font(name):
+    """One woff2 as a data URI, for the @font-face src.
+
+    Inter is inlined rather than pulled from fonts.googleapis.com at runtime. On a network that
+    blocks Google Fonts the link tag fails silently, the page falls back to system-ui, and the
+    whole prototype quietly renders in the wrong typeface — which is exactly what happened.
+    Inlining costs ~180KB and removes the failure mode entirely.
+    """
+    data = base64.b64encode(open(os.path.join(HERE, 'fonts', name), 'rb').read()).decode()
+    return f"data:font/woff2;base64,{data}"
+
 html = open(os.path.join(HERE, 'template.html'), encoding='utf-8').read()
 html = html.replace('/*ICONS*/{}/*END*/', json.dumps(load('icons')))
 html = html.replace('/*PHOTOS*/{}/*END*/', json.dumps(load('photos')))
+html = html.replace('/*INTER-LATIN*/', font('inter-latin.woff2'))
+html = html.replace('/*INTER-LATIN-EXT*/', font('inter-latin-ext.woff2'))
 out = os.path.join(ROOT, 'index.html')
 open(out, 'w', encoding='utf-8').write(html)
 print(f"Built {out} ({len(html)//1024} KB)")
