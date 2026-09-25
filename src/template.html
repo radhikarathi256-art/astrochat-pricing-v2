@@ -41,6 +41,13 @@
   --fs-md:16px;--lh-md:24px;           /* Body large 16   */
   --fs-lg:18px;--lh-lg:28px;           /* Body XL 18      */
   --fs-xl:20px;--lh-xl:30px;           /* Body 2XL 20     */
+  /* Motion. --ease-out is the house curve, already inlined in ~40 places; it is named here so
+     new work has something to point at. --ease-gentle is a softer ease-out (quint): it leaves
+     faster and spends longer easing into rest, so a collapse settles instead of stopping. Used
+     for See Less Options, where the sheet shrinking is a slow, reversible move rather than a
+     response to a tap that needs to feel instant. */
+  --ease-out:cubic-bezier(.2,.8,.2,1);
+  --ease-gentle:cubic-bezier(.22,1,.36,1);
 }
 /* `user-select:none` is what kills the blue selection box. Tapping a tile quickly counts as a
    double-click, and the browser then selects the nearest text run — which is why the "Add Money"
@@ -122,7 +129,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 /* ---------- HOME ---------- */
 .home{display:flex;flex-direction:column;background:#fff}
 .home-head{border-bottom:1px solid var(--gray-300);flex-shrink:0;background:#fff}
-.home .topnav{height:64px;display:flex;align-items:center;gap:16px;padding-left:16px}
+.home .topnav,.today .topnav{height:64px;display:flex;align-items:center;gap:16px;padding-left:16px}
 .brand{display:flex;gap:7px;align-items:center}
 .home .logo{position:relative;width:95.4px;height:20px}
 .home .logo img,.home .logo span{position:absolute}
@@ -219,7 +226,65 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .card-btns button{flex:1;display:flex;gap:8px;align-items:center;justify-content:center;background:var(--brand-color);border:1px solid var(--brand-color);border-radius:12px;padding:8px 14px;color:#fff;font-weight:600;font-size:var(--fs-sm);line-height:var(--lh-sm);box-shadow:0 1px 2px rgba(16,24,40,.05)}
 .tabbar{flex-shrink:0;display:flex;border-top:1px solid var(--gray-300);background:#fff;padding:0 16px}
 .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px 8px 24px;font-size:11px;line-height:16px;color:var(--gray-500)}
-.home .tab.on{color:var(--brand-500);font-weight:600}
+.home .tab.on,.today .tab.on{color:var(--brand-500);font-weight:600}
+.tab{cursor:pointer}
+
+/* ---------- TODAY ----------
+   Figma "Free user chat listing" 5202:43059. Shares .home's column shell and .tabbar, so only
+   what is genuinely new lives here. The hero is one warm wash with a scalloped bottom edge —
+   in Figma that edge is 21 hand-placed 20px white circles; here it is one repeating radial so
+   it survives a width change. */
+.today{display:flex;flex-direction:column;background:#fff}
+.today-scroll{flex:1;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.today-scroll::-webkit-scrollbar{display:none}
+.t-hero{position:relative;padding:0 16px 34px;background:linear-gradient(180deg,#FEF4E6 0%,#FEFDFC 95.2%)}
+/* The scallop. 20px circles on a 20px pitch, so each one meets its neighbours exactly — any
+   other pitch leaves cusps of hero colour between them. Sits ON the hero, not after it. */
+.t-hero:after{content:"";position:absolute;left:0;right:0;bottom:-10px;height:20px;
+  background:radial-gradient(circle at 10px 10px,#fff 10px,transparent 10.5px) 0 0/20px 20px repeat-x}
+.t-greet{padding-top:16px;font-size:26px;line-height:31px;font-weight:700;color:var(--gray-700);text-align:center}
+.t-insights{display:flex;flex-direction:column;gap:10px;margin-top:11px}
+.t-ins{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;
+  border:1px solid transparent;
+  background:linear-gradient(#fff,#fff) padding-box,linear-gradient(91deg,#FDECD3,#FBD49D) border-box}
+.t-ins .g{width:26px;height:26px;flex-shrink:0}
+.t-ins .g svg,.t-foot svg{display:block;width:100%;height:100%}
+.t-ins p{font-size:var(--fs-sm);line-height:20px;color:var(--gray-700)}
+.t-foot{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding:0 20px;
+  font-size:10px;line-height:12px;font-weight:300}
+/* Figma has this line in #fff, which over the near-white bottom of the hero is invisible.
+   Rendered in gray-400 instead so the prototype actually shows it — one line to revert. */
+.t-foot .upd{color:var(--gray-400);white-space:nowrap}
+.t-foot .ai{display:flex;align-items:center;gap:2px;color:#F9C471;font-style:italic;white-space:nowrap}
+.t-body{display:flex;flex-direction:column;gap:24px;padding:24px 16px 16px}
+.t-sec{display:flex;flex-direction:column;gap:12px}
+.t-sech{display:flex;justify-content:space-between;align-items:center}
+.t-sech h4{font-size:var(--fs-sm);line-height:20px;font-weight:500;color:var(--gray-600)}
+.t-sech span{font-size:var(--fs-xs);line-height:15px;font-weight:500;color:var(--gray-500)}
+/* Expert card: the purple shell is padding around a white inner card, so the gradient only ever
+   shows as the header strip plus a 4px rim. */
+.t-exp{border-radius:16px;padding:0 4px 4px;background:linear-gradient(180deg,#4A3460 0%,#7D58A1 100%)}
+.t-exp .hd{display:flex;align-items:center;justify-content:center;gap:7px;padding:5px 0 8px;
+  color:#fff;font-size:var(--fs-xs);line-height:15px;font-weight:700}
+.t-exp .hd img{width:15px;height:18px}
+.t-exp .in{display:flex;gap:10px;background:#fff;border-radius:12px;padding:8px 12px}
+.t-exp .av{position:relative;flex-shrink:0}
+.t-exp .av .odot{position:absolute;right:0;top:0;width:15px;height:15px;border-radius:50%;
+  background:var(--success-700);border:2px solid #fff}
+.t-exp .meta{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:5px}
+.t-exp .nm{font-size:var(--fs-md);line-height:23px;color:var(--gray-700)}
+.t-exp .pr{display:flex;align-items:baseline;gap:6px}
+.t-exp .pr s{font-size:var(--fs-xs);color:var(--gray-400)}
+.t-exp .pr b{font-size:var(--fs-sm);font-weight:600;color:var(--success-700)}
+.t-exp button{width:100%;background:var(--brand-color);border:1px solid var(--brand-color);
+  border-radius:12px;padding:8px 14px;color:#fff;font-weight:600;font-size:var(--fs-sm);
+  line-height:var(--lh-sm);box-shadow:0 1px 2px rgba(16,24,40,.05)}
+.t-sawal{display:flex;flex-direction:column;gap:18px;padding:16px 12px;border-radius:16px;
+  background:#fff;border:.6px solid var(--warning-600)}
+.t-sawal p{font-size:var(--fs-md);line-height:24px;color:var(--gray-700)}
+.t-moods{display:flex;gap:10px}
+.t-moods button{flex:1;background:#fff;border:1px solid var(--brand-color);border-radius:12px;
+  padding:8px 14px;color:var(--brand-color);font-size:var(--fs-sm);line-height:var(--lh-sm)}
 
 /* ---------- ADD BALANCE ---------- */
 .ab{background:var(--ab-bg)}
@@ -772,7 +837,11 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    hue-rotate(255deg), which landed on a colour that is in no palette and could not be named. */
 
 /* ---------- collapsed receipt ---------- */
-.am .collapsed{position:absolute;inset:0;transition:opacity .3s cubic-bezier(.2,.8,.2,1),transform .36s cubic-bezier(.2,.8,.2,1)}
+/* A transition is read off the END state, so this base rule is the CLOSE direction (See Less)
+   and `.screen.am.open .collapsed` below is the OPEN one. They are deliberately different:
+   opening answers a tap and stays snappy, closing is the page settling back up and gets the
+   longer, gentler curve. Keep the two rules in step with .openwrap's pair. */
+.am .collapsed{position:absolute;inset:0;transition:opacity .42s var(--ease-gentle),transform .52s var(--ease-gentle)}
 /* The outline is drawn, not a border. An elliptical border-radius was the only way to bow
    the bottom in CSS, but its radius of curvature where it meets the vertical side works out
    at ry²/rx — about 3px here — which is the pinch that read as a sharp corner. The path in
@@ -878,7 +947,11 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    spilling past the SKU. Vertical padding holds the pill at its old 26px height so the
    spacing below it — and therefore the card height — is unaffected by the smaller type. */
 .am .chip{position:relative;z-index:4;margin-top:-11px;max-width:100%;display:flex;align-items:center;justify-content:center;padding:6px 8px;border-radius:12px;
-  background:linear-gradient(-0.5deg,var(--success-700) 10.094%,var(--success-600) 23.329%,var(--success-600) 83.868%,rgba(3,152,85,0) 109.72%)}
+  /* Figma "Bonus badge / Style=Green" (4803:2367), exact. Top-to-bottom, and the fill's own
+     75% layer opacity is baked into every stop's alpha with #fff underneath — same pixels,
+     but it keeps working if the pill ever sits on a non-white surface. Last stop is
+     Success/600 at 38.5% of that, i.e. .385 x .75 = .28875. */
+  background:linear-gradient(180deg,rgba(2,122,72,.75) 0%,rgba(2,122,72,.75) 10%,rgba(3,152,85,.75) 23.3%,rgba(3,152,85,.75) 83.9%,rgba(3,152,85,.28875) 100%),#fff}
 .am .chip p{position:relative;z-index:1;font-size:10px;font-weight:600;line-height:14px;letter-spacing:-.1px;color:#fff;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
 /* The figure carries the hierarchy; "more" and the ₹ stay at 10px/600. line-height is pinned
    so the bigger inline type can't grow the line box and push the pill taller — the card's
@@ -916,11 +989,17 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 /* ---------- open list ---------- */
 /* Collapsed and expanded are two stacked layers. They cross-dissolve, but each also
    moves a little in the direction of travel so the swap reads as one motion. */
+/* Closing gets --ease-gentle over 420/520 rather than the house 300/360, so See Less reads as
+   the sheet settling instead of snapping. The visibility delay MUST equal the longest of the
+   two or the layer is hidden mid-fade and the dissolve cuts — it moves whenever they do. */
 .am .openwrap{position:absolute;left:0;right:0;top:65px;bottom:0;z-index:1;visibility:hidden;opacity:0;transform:translateY(14px);
-  transition:opacity .3s cubic-bezier(.2,.8,.2,1),transform .36s cubic-bezier(.2,.8,.2,1),visibility 0s .36s}
+  transition:opacity .42s var(--ease-gentle),transform .52s var(--ease-gentle),visibility 0s .52s}
 .screen.am.open .openwrap{visibility:visible;opacity:1;transform:none;
-  transition:opacity .3s cubic-bezier(.2,.8,.2,1),transform .36s cubic-bezier(.2,.8,.2,1)}
-.screen.am.open .collapsed{opacity:0;transform:translateY(-10px) scale(.985);pointer-events:none}
+  transition:opacity .3s var(--ease-out),transform .36s var(--ease-out)}
+/* Opening keeps the old snappy pair; without this the element would fall back to the base rule
+   above and the expand would slow down too. */
+.screen.am.open .collapsed{opacity:0;transform:translateY(-10px) scale(.985);pointer-events:none;
+  transition:opacity .3s var(--ease-out),transform .36s var(--ease-out)}
 /* staggered reveal, gated to the open/close transition so re-rendering tiles on every
    tap cannot replay it */
 @keyframes gridIn{from{opacity:0;transform:translateY(12px) scale(.96)}to{opacity:1;transform:none}}
@@ -1048,7 +1127,9 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    counting on at the moment it lands. Built in JS so it can measure both ends. */
 .am .flyer{position:absolute;z-index:8;pointer-events:none;display:flex;align-items:center;justify-content:center;
   border-radius:12px;box-shadow:0 10px 20px rgba(4,60,38,.32);will-change:transform,opacity;
-  background:linear-gradient(-0.5deg,var(--success-700) 10%,var(--success-600) 23%,var(--success-600) 84%,#04A85D 110%)}
+  /* Same fill as .am .chip — this IS that pill, lifted off the tile, so any drift between the
+     two would read as a colour change mid-flight. */
+  background:linear-gradient(180deg,rgba(2,122,72,.75) 0%,rgba(2,122,72,.75) 10%,rgba(3,152,85,.75) 23.3%,rgba(3,152,85,.75) 83.9%,rgba(3,152,85,.28875) 100%),#fff}
 .am .flyer p{font-size:10px;font-weight:600;line-height:14px;letter-spacing:-.1px;color:#fff;white-space:nowrap}
 /* the amount takes the hit as the chip lands */
 .am .ac .amt.absorb{animation:absorb .52s cubic-bezier(.24,1.6,.36,1)}
@@ -1340,12 +1421,18 @@ function card(rate){
     </div>
   </div>`;
 }
+// One tab bar for both Home and Today. Only the two tabs that have a screen behind them carry a
+// route; Timeline and Explore stay inert rather than pretending to navigate.
+function tabbar(active){
+  const tabs=[['Today','tab-today','today'],['Experts','tab-experts','home'],['Timeline','tab-timeline',''],['Explore','tab-explore','']];
+  return `<nav class="tabbar">${tabs.map(([t,k,r])=>
+    `<div class="tab${t===active?' on':''}"${r?` data-go="${r}" role="button" tabindex="0"`:''}><img src="${I[k]}" alt="" width="24" height="24">${t}</div>`).join('')}</nav>`;
+}
 function renderHome(){
-  const tabs=[['Today','tab-today'],['Experts','tab-experts'],['Timeline','tab-timeline'],['Explore','tab-explore']];
   const chips=['Chat','Call','Available','Marriage','Love','Career','Health','Vedic','Tarot','Numerology'];
   const promo=P.promo
-    ?`<div class="promo img"><img src="${P.promo}" alt="First Recharge Offer! Next chat: 5 min at ₹5/min. Recharge now"></div>`
-    :`<div class="promo"><div><h5>First Recharge Offer !</h5><p>Next chat: 5 min at <b>₹5/min</b></p></div><span class="rn">Recharge now</span></div>`;
+    ?`<div class="promo img"><img src="${P.promo}" alt="Continue chat! Next chat starting from ₹12/min. Recharge now"></div>`
+    :`<div class="promo"><div><h5>Continue chat!</h5><p>Next chat starting from <b>₹12/min</b></p></div><span class="rn">Recharge now</span></div>`;
   return `<div class="screen home">
     <div class="home-head">
       <div class="topnav">
@@ -1387,7 +1474,63 @@ function renderHome(){
         <div class="cards">${card(25)}${card(15)}${card(35)}</div>
       </div>
     </div>
-    <nav class="tabbar">${tabs.map(([t,k])=>`<div class="tab ${t==='Experts'?'on':''}"><img src="${I[k]}" alt="" width="24" height="24">${t}</div>`).join('')}</nav>
+    ${tabbar('Experts')}
+  </div>`;
+}
+/* Today — Figma 5202:43059 "Free user chat listing". Read-only surface: the only thing that
+   navigates off it is the wallet chip and the Experts tab, which is what she asked for. */
+function renderToday(){
+  const GLYPH={
+    aim:`<svg viewBox="0 0 24 24" fill="none" stroke="#F6A931" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5 8.5 15.5" stroke-linecap="round"/></svg>`,
+    talk:`<svg viewBox="0 0 24 24" fill="none" stroke="#F6A931" stroke-width="1.8"><path d="M20.5 12.2a7.6 7.6 0 0 1-11.1 6.8l-4.9 1.4 1.4-4.7a7.6 7.6 0 1 1 14.6-3.5Z" stroke-linejoin="round"/><circle cx="9.2" cy="12.2" r="1.1" fill="#F6A931" stroke="none"/><circle cx="12.8" cy="12.2" r="1.1" fill="#F6A931" stroke="none"/><circle cx="16.4" cy="12.2" r="1.1" fill="#F6A931" stroke="none"/></svg>`,
+    trend:`<svg viewBox="0 0 24 24" fill="none" stroke="#F6A931" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v16h16"/><path d="m7.5 15 3.5-4.2 3 2.6L20 7"/><path d="M16.2 7H20v3.8"/></svg>`};
+  const INS=[
+    ['aim','Relationship aur trust aapke liye sabse important themes hain.'],
+    ['talk','Rahul ke saath communication improve hona shuru hua hai.'],
+    ['trend','Kuch decisions ko lekar uncertainty abhi bhi baaki hai.']];
+  const moods=['Positive','Neutral','Negative'];
+  return `<div class="screen today">
+    <div class="topnav">
+      <img src="${I.hamburger}" alt="Menu" width="19.4" height="16">
+      <div class="navright">
+        <button class="wchip" data-go="wallet" aria-label="Wallet ₹0. Add money"><span class="bal"><img src="${I.wallet}" alt="" width="18" height="18">₹0</span></button>
+        <img src="${I['chat-top']}" alt="Messages" width="22" height="22">
+      </div>
+    </div>
+    <div class="today-scroll">
+      <div class="t-hero">
+        <h2 class="t-greet">Namaste Mansi Ji</h2>
+        <div class="t-insights">${INS.map(([g,t])=>`<div class="t-ins"><span class="g">${GLYPH[g]}</span><p>${t}</p></div>`).join('')}</div>
+        <div class="t-foot">
+          <span class="upd">Updated post chat on 26 Jan</span>
+          <span class="ai"><svg viewBox="0 0 24 24" fill="#F9C471" width="7" height="7"><path d="M12 1 14 9.5 22.5 11.5 14 13.5 12 22 10 13.5 1.5 11.5 10 9.5Z"/></svg>AI powered</span>
+        </div>
+      </div>
+      <div class="t-body">
+        <div class="t-sec">
+          <div class="t-sech"><h4>YOUR EXPERTS</h4><span>Consult Others →</span></div>
+          <div class="t-exp">
+            <div class="hd"><svg viewBox="0 0 24 24" fill="#FEC84B" width="15" height="18"><path d="M14 1.5 16.1 8.4 23 10.5 16.1 12.6 14 19.5 11.9 12.6 5 10.5 11.9 8.4Z"/><path d="M5.5 15 6.6 18.1 9.7 19.2 6.6 20.3 5.5 23.4 4.4 20.3 1.3 19.2 4.4 18.1Z"/></svg>Next FREE 2 minS chat in 14h : 23m</div>
+            <div class="in">
+              <span class="av">${photo('hemali',68,'AH')}<span class="odot"></span></span>
+              <div class="meta">
+                <p class="nm">Astro Hemali</p>
+                <div class="pr"><s>₹20/min</s><b>₹10/min</b></div>
+                <button data-go="continue" data-rate="12">Continue Chat</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="t-sec">
+          <div class="t-sech"><h4>DAILY CHECK-IN ✨</h4></div>
+          <div class="t-sawal">
+            <p>Aaj is relationship ko lekar aap kaisa feel kar rahe hain?</p>
+            <div class="t-moods">${moods.map(m=>`<button>${m}</button>`).join('')}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    ${tabbar('Today')}
   </div>`;
 }
 
@@ -2299,6 +2442,7 @@ function go(route,rate){
   document.getElementById('flowsSheet').classList.remove('open');
   switch(route){
     case 'home': mount(renderHome(), phone.querySelector('.screen.am')?'out-right':null); break;
+    case 'today': mount(renderToday(), phone.querySelector('.screen.am')?'out-right':null); break;
     // Sep 24: post4 now sets `wflow` as well, so both wallet routes share this band verbatim.
     // What still separates them is `rows` — post4 opens on two SKU rows. See bandInner()/renderBand().
     case 'wallet': flowType='wallet'; flowAstro=''; openAB('default',100,false,true,{wflow:true}); break;
