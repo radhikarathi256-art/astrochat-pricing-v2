@@ -74,6 +74,13 @@ body.kbd :focus-visible{outline:2px solid rgba(16,24,40,.35);outline-offset:2px}
 .toolbar b{color:var(--gray-800);font-weight:600;margin-right:4px}
 .toolbar button{background:#2f2f33;border:1px solid #707076;color:#fff;border-radius:8px;padding:6px 10px;font-size:var(--fs-xs);text-align:center}
 .toolbar button:hover{background:#3b3b40}
+/* Variant switches. Same pill as the jump buttons so the row reads as one control strip, but they
+   latch — :has() on the label is what lets the pill itself show the on state. */
+.vsw{display:flex;align-items:center;gap:6px;background:#2f2f33;border:1px solid #707076;color:#fff;border-radius:8px;padding:6px 10px;cursor:pointer;user-select:none}
+.vsw:hover{background:#3b3b40}
+.vsw:has(input:checked){background:var(--brand-color);border-color:var(--brand-color)}
+.vsw input{accent-color:#fff;width:13px;height:13px;margin:0;cursor:pointer}
+.vsw:has(input:checked) input{accent-color:#2f2f33}
 /* Scaffolding, desktop only — it sits under the copy editor in the same fixed right rail rather
    than in .shell, because .shell is a centred column that sizes the phone off the leftover height
    and any row there shrinks the prototype. `body.mobile` drops it outright: the phone build carries
@@ -1276,6 +1283,96 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .am .pm-btnwrap{padding:8px 16px 24px}
 .am .pm-btnwrap .paybtn{width:100%;display:block}
 
+/* ---------- NO UPI APP -> QR (Figma 5212:44123) ---------- */
+/* The header is .am's nav rebuilt at this scope so the two screens share a silhouette; only the
+   title and the absence of the wallet chip differ. */
+.qr,.proc,.paid{background:#fff}
+.qr .nav{position:absolute;left:0;right:0;top:0;border-bottom:1px solid var(--gray-300);background:#fff;z-index:5}
+.qr .topnav{display:flex;align-items:center;padding:20px 16px}
+.qr .ttl{display:flex;align-items:center;gap:12px}
+.qr .back{display:flex}
+.qr h1{font-size:var(--fs-lg);line-height:var(--lh-lg);font-weight:700;color:var(--gray-900)}
+.qr-body{position:absolute;left:0;right:0;top:65px;bottom:0;display:flex;flex-direction:column;align-items:center;padding:28px 32px}
+.qr-lead{text-align:center;font-size:var(--fs-sm);line-height:var(--lh-sm);color:var(--gray-600)}
+.qr-lead b{font-weight:700;color:var(--gray-900)}
+/* The mark sits in a white disc punched out of the code, the way every UPI QR carries one. */
+.qr-frame{position:relative;margin-top:24px;padding:14px;border:1px solid var(--gray-200);border-radius:16px;box-shadow:0 4px 16px rgba(16,24,40,.08)}
+.qr-img{display:block;width:180px;height:180px}
+/* A rounded badge, not a disc: the mark is a 39x20 wordmark and a circle crops it. */
+.qr-mark{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:50px;height:32px;border-radius:9px;background:#fff;
+  display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 4px #fff}
+.qr-mark img{width:36px;height:auto}
+.qr-valid{margin-top:20px;font-size:var(--fs-sm);line-height:var(--lh-sm);color:var(--gray-600)}
+.qr-valid b{font-weight:700;color:var(--gray-900);font-variant-numeric:tabular-nums}
+.qr-foot{margin-top:auto;margin-bottom:32px;text-align:center;font-size:var(--fs-xs);line-height:var(--lh-sm);color:var(--gray-500)}
+
+.proc-in,.paid-in{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:0 40px;text-align:center}
+.proc-in h2,.paid-in h2{font-size:var(--fs-xl);line-height:var(--lh-xl);font-weight:700;color:var(--gray-900)}
+.proc-in p,.paid-in p{font-size:var(--fs-sm);line-height:var(--lh-sm);color:var(--gray-600)}
+.spinner{width:44px;height:44px;margin-bottom:8px;border-radius:50%;border:3px solid var(--gray-200);border-top-color:var(--brand-color);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(1turn)}}
+/* The tick is drawn on rather than faded in: a stroke that writes itself reads as "done", a fade
+   only reads as "appeared". */
+.paid-tick{width:76px;height:76px;margin-bottom:8px;border-radius:50%;background:var(--success-50);display:flex;align-items:center;justify-content:center}
+.paid-tick svg{width:76px;height:76px;fill:none;stroke:var(--success-600);stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+.paid-tick path{stroke-dasharray:60;stroke-dashoffset:60;animation:tick .45s .12s cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes tick{to{stroke-dashoffset:0}}
+.paid-in p b{font-weight:700;color:var(--success-700)}
+.paid .confetti{position:absolute;inset:0;pointer-events:none;z-index:1}
+.paid .confetti dotlottie-wc{width:100%;height:100%;display:block}
+.paid-in{z-index:2}
+/* Purple runs through the success screen too — it is the same congratulation. */
+.v-purple .paid-tick{background:#F1ECFB}
+.v-purple .paid-tick svg{stroke:#6B33B8}
+.v-purple .paid-in p b{color:#6B33B8}
+
+/* ---------- VARIANTS ---------- */
+/* Three desktop switches, all scoped to .phone so they stack: NRI + purple + no band is one
+   screen. Everything here is an override of a rule above — nothing new is introduced, so a
+   variant can never drift into being its own design. */
+
+/* NRI: "Pay $10 and Connect" is ~40px wider than "Pay ₹118 (GST incl.)", and the button is the
+   one fixed-width thing in a flex row, so let it take the room it needs. */
+.v-nri .am .paybtn{width:auto;min-width:200px}
+
+/* No alert banner (Figma 5212:44126). The band is absolutely positioned at 80, the card at 139,
+   and the gap between the nav and the band is 15 — so dropping the band and moving the card to
+   80 leaves it exactly that far under the nav, which is what the Figma frames show. */
+.v-noband .am .banner,.v-noband .am .band3{display:none}
+.v-noband .am .rcpt,.v-noband .am .stack{top:80px}
+
+/* Purple theme (Figma 4395:47803). Her scope: every GREEN surface. The Pay button, the selected
+   tile's orange ring, the PhonePe mark and the red / amber bands are deliberately untouched —
+   they are not part of the bonus story, and recolouring them would make this a second brand
+   rather than a second accent. */
+/* :not() rather than source order — the red and amber bands keep their own colour, and these
+   rules have the same specificity as theirs, so without it purple would win simply by coming
+   last. */
+.v-purple .am .banner:not(.red):not(.gold),.v-purple .am .band3:not(.red):not(.gold){color:#4C1D95;background:linear-gradient(90deg,rgba(122,69,201,.20) 0%,rgba(122,69,201,.05) 60%,rgba(255,255,255,.05) 100%)}
+.v-purple .am .banner:not(.red):not(.gold) .l2,.v-purple .am .band3:not(.red):not(.gold) .l2{color:#6B33B8}
+.v-purple .am .banner.bn-dark:not(.red):not(.gold),.v-purple .am .band3.bn-dark:not(.red):not(.gold){background:linear-gradient(90deg,#84739E 0%,rgba(107,51,184,.5) 38%,rgba(122,69,201,.6) 72%,rgba(138,91,214,.4) 100%)}
+.v-purple .am .banner.bn-promo:not(.red):not(.gold),.v-purple .am .band3.bn-promo:not(.red):not(.gold){background:linear-gradient(90deg,#2E1065 0%,#412674 42%,#6B33B8 78%,#7A45C9 100%)}
+.v-purple .am .banner.coupon:not(.red):not(.gold),.v-purple .am .band3.coupon:not(.red):not(.gold){background:linear-gradient(90deg,#2E1065 0%,#412674 25%,#6B33B8 66.3%,#7A45C9 100%)}
+/* The bonus badge and the same pill in flight — they have to move together or the colour
+   changes mid-arc. Purple substitutes for the two Success steps the green fill uses. */
+.v-purple .am .chip,.v-purple .am .flyer{background:linear-gradient(180deg,rgba(107,51,184,.75) 0%,rgba(107,51,184,.75) 10%,rgba(122,69,201,.75) 23.3%,rgba(122,69,201,.75) 83.9%,rgba(122,69,201,.28875) 100%),#fff}
+.v-purple .am .flyer{box-shadow:0 10px 20px rgba(46,16,101,.32)}
+/* Congratulations card: fill, foil and type, all off the purple section. */
+.v-purple .am .ac.green{background:linear-gradient(150deg,rgba(255,255,255,.95),rgba(122,69,201,.42) 48%,rgba(255,255,255,.85));box-shadow:0 6px 14px rgba(46,16,101,.16)}
+.v-purple .am .ac.green .skin{background:radial-gradient(60% 90% at 50% 56%,rgba(255,255,255,.62),rgba(255,255,255,0) 60%),
+  conic-gradient(from 190deg at 50% 56%,#DED6F2,#B9A4E4 30deg,#F1ECFB 60deg,#BCA8E6 96deg,#E7DFF8 132deg,#AF98E0 168deg,#F1ECFB 204deg,#B7A2E4 244deg,#E2DAF5 288deg,#C3B0EA 324deg,#DED6F2 360deg)}
+.v-purple .am .ac.green .spin{background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.9) 0deg .5deg,rgba(255,255,255,0) .5deg 1.7deg),
+  repeating-conic-gradient(from 0deg,rgba(46,16,101,.6) 0deg .3deg,rgba(46,16,101,0) .3deg 1.7deg)}
+.v-purple .am .ac.green .e{color:#412674}
+.v-purple .am .ac.green .amt{color:#2E1065}
+/* The arc under the card is an inline SVG gradient, so the middle stop is restyled rather than
+   replaced — the geometry is shared with the green card. */
+.v-purple .am #arcG stop:nth-child(2){stop-color:#C9A9F8}
+.v-purple .am .veilfade{background:linear-gradient(180deg,rgba(247,242,254,0) 0%,rgba(243,236,252,.08) 8%,rgba(237,227,250,.22) 38.9%,rgba(231,220,247,.56) 74%,rgba(226,214,247,.94) 94%,#E2D6F7 100%)}
+.v-purple .am .pm-credit .g{color:#6B33B8}
+/* Both popups. The header wash is the green one's stops moved onto the purple ramp — Figma has
+   no purple variant of 5150:15945, so the light tint is Violet/300's neighbour on this ramp. */
+.v-purple .pop-title{background:linear-gradient(84deg,rgba(185,164,228,.55) 0%,rgba(185,164,228,.14) 44.7%,rgba(255,255,255,.1) 100%)}
 
 </style>
 </head>
@@ -1289,6 +1386,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
     <button data-jump="again">Chat again (coupon)</button>
     <button data-jump="history">View history (offer)</button>
     <button data-jump="post4">Post 4th recharge</button>
+    <button data-jump="qr">No UPI app → QR</button>
   </div>
   <!-- The two band variants her v3 spec lists that no flow above reaches: the Hindi copy and the
        limited-time window. Each is its English sibling with one flag set, so they are jump routes
@@ -1301,6 +1399,16 @@ body.mobile .phone{border-radius:0;box-shadow:none}
     <button data-jump="walletLt">Wallet · timer</button>
     <button data-jump="chatLt">Astrologer · timer</button>
     <button data-jump="againLt">ASTRO50 · timer</button>
+  </div>
+  <!-- Skins, not flows. Each one re-renders whichever path is currently on screen, and they stack,
+       so NRI + purple is one screen rather than a fourth combination to maintain. Desktop only —
+       .toolbar is hidden on mobile, where the phone IS the viewport and there is nowhere to put
+       them. -->
+  <div class="toolbar" role="group" aria-label="Variants">
+    <b>Variants</b>
+    <label class="vsw"><input type="checkbox" data-variant="nri"><span>NRI · USD</span></label>
+    <label class="vsw"><input type="checkbox" data-variant="purple"><span>Purple theme</span></label>
+    <label class="vsw"><input type="checkbox" data-variant="noband"><span>No alert banner</span></label>
   </div>
   <div class="stage" id="stage"><div class="phone" id="phone"></div></div>
 </div>
@@ -1340,6 +1448,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
     <button data-jump="again">Chat again<small>Coupon applied → coupon bonuses</small></button>
     <button data-jump="history">View history<small>Continue chat → ₹12/min offer</small></button>
     <button data-jump="post4">Post 4th recharge<small>Two rows of SKUs, coins on ₹500</small></button>
+    <button data-jump="qr">No UPI app → QR<small>Pay by scanning, then processing → success</small></button>
     <button data-jump="walletHi">Wallet · Hindi<small>Same bonuses, Hindi band copy</small></button>
     <button data-jump="chatHi">Astrologer · Hindi<small>Minutes with Astro Hemali, in Hindi</small></button>
     <button data-jump="againHi">ASTRO50 · Hindi<small>Coupon band, Aaj tak valid</small></button>
@@ -1359,6 +1468,22 @@ const later=(fn,ms)=>timers.push(setTimeout(fn,ms));
 function clearTimers(){timers.forEach(clearTimeout);timers=[];animToken++;if(ticker){clearInterval(ticker);ticker=null}}
 const fmt=n=>String(n);
 const RM=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* The three desktop switches. They are skins on the existing flows, not flows of their own, so
+   they live outside `ab` — openAB() rebuilds `ab` on every route and would wipe them.
+   `purple` and `noband` are pure CSS (classes on .phone); `nri` also swaps the pricing table,
+   drops GST and relabels the Pay button, so it is read by the JS below as well. */
+const V={nri:false,purple:false,noband:false};
+let lastRoute='home', lastRate=null;
+/* Every figure on the Add Money screen is written as "₹<n>" out of one pricing table, so the NRI
+   variant swaps the symbol as each block is written instead of keeping a second set of templates.
+   The replacement is a function because a plain "$" string is a back-reference in .replace(). */
+const cur = s => V.nri ? s.replace(/₹/g, () => '$') : s;
+const SYM = () => V.nri ? '$' : '₹';
+/* The band seal and the popup badge are the only green ARTWORK on these screens — CSS cannot
+   reach inside an <img>, so the purple variant points at its own copy of the SVG. Falls back to
+   the green one for any icon that has no purple twin. */
+const ico = k => I[V.purple && I[k+'-purple'] ? k+'-purple' : k];
 
 /* Drives the `body.kbd` gate on the focus ring — see the :focus-visible rules in the CSS.
    Capture phase on both, so a handler that stops propagation can't leave the flag stale. */
@@ -1534,8 +1659,13 @@ function renderToday(){
    FALLS as the amount rises here (150% at ₹100 down to 20% at ₹10,000), so a bigger recharge
    buys a worse per-minute rate — the opposite of v1's rule. Flagged, and chosen anyway. */
 const BASE=[[50,0],[100,150],[250,500],[500,300],[1000,500],[2000,800],[3000,1000],[4000,1200],[5000,1500],[10000,2000]];
+/* The NRI ladder (Figma 5168:16749). Six SKUs, not ten, so "See More Options" opens two rows and
+   that is the whole list. There is no GST on it — see gstFor() — so the Pay button is the recharge
+   amount and nothing else. */
+const USD=[[5,0],[10,1],[15,3],[25,3],[50,5],[100,10]];
+const table=()=>V.nri?USD:BASE;
 let ab={mode:'default',sel:100,banner:false,shown:null,cd:0};
-const baseBonusFor=v=>((BASE.find(x=>x[0]===v)||[])[1])||0;
+const baseBonusFor=v=>((table().find(x=>x[0]===v)||[])[1])||0;
 /* ASTRO50 is ITEMISED AT CHECKOUT, not folded into the bonus — her call Sep 21, reversing the
    earlier one. So "bonus" everywhere means the standing bonus table only (tile badges, the
    "Extra Bonus" line), and the ₹50 gets its own "Coupon Code Applied" row in the payment summary.
@@ -1575,7 +1705,7 @@ function renderAB(){
     <header class="nav">
       <div class="topnav">
         <button class="ttl" type="button" data-go="home" aria-label="Back to home"><span class="back"><img src="${I.back}" width="18" height="18" alt=""></span><h1>Add Money</h1></button>
-        <span class="badge"><img src="${I.wallet}" width="20" height="20" alt=""><p>₹0</p></span>
+        <span class="badge"><img src="${I.wallet}" width="20" height="20" alt=""><p>${SYM()}0</p></span>
       </div>
     </header>
 
@@ -1682,7 +1812,9 @@ function startCountdown(sec){
    flows (wallet / listingChat / again / post4 / continue) still drive this screen. */
 let amRoot=null;
 const A = id => amRoot.querySelector('#'+id);
-const gstFor = v => Math.round(v*0.18);
+// NRI pays no GST — the Figma screens bill the recharge amount flat, so the whole summary
+// collapses to one line there. See renderSummary().
+const gstFor = v => V.nri ? 0 : Math.round(v*0.18);
 const isGold = () => bonusFor(ab.sel)===0;   // ₹50 earns nothing, so the band turns gold
 
 const CORNER = `<span class="corner"><svg width="38" height="38" viewBox="0 0 38 38"><path d="M0 0H38V38Z" fill="#EF6939"/><path class="tick" d="M30.2 11.1L24.3 16.2L21.4 13.5L21.9 12.8L24.3 14.9L29.7 10.3L30.2 11.1Z" fill="#fff"/></svg></span>`;
@@ -1707,13 +1839,13 @@ function amTile([v], i){
 // ₹1000 · ₹2000. Same swap rule either way — drop ₹50 off the front and push the picked
 // amount onto the end, so whatever is selected is always visible without opening the sheet.
 function collapsedSet(){
-  const base=BASE.slice(0, ab.rows===2 ? 6 : 3);
+  const t=table(), base=t.slice(0, ab.rows===2 ? 6 : 3);
   if(base.some(a=>a[0]===ab.sel)) return base;
-  return [...base.slice(1), BASE.find(a=>a[0]===ab.sel)];
+  return [...base.slice(1), t.find(a=>a[0]===ab.sel)];
 }
 function renderTiles(){
-  A('skus').innerHTML = collapsedSet().map(amTile).join('');
-  A('grid').innerHTML = BASE.map(amTile).join('');
+  A('skus').innerHTML = cur(collapsedSet().map(amTile).join(''));
+  A('grid').innerHTML = cur(table().map(amTile).join(''));
   mountCoins();
 }
 
@@ -1783,7 +1915,11 @@ const creditFor=v=>v+bonusFor(v)+couponFor();
 // astrologer flows are different routes — but this is the bug that cost her a week in v1.)
 const effRate=v=>Math.round(flowRate*v/(v+baseBonusFor(v)));
 const minutesFor=v=>creditFor(v)/flowRate;
-const shortOfMin=()=>ab.cflow&&flowRate&&minutesFor(ab.sel)<MIN_MINUTES;
+/* The per-minute bands are priced in rupees against a rupee wallet. NRI tops up in dollars and
+   we have no exchange rate to convert the astrologer's ₹/min with, so rather than print an
+   invented figure those bands stand down there and the money copy is used instead — see v3Band().
+   If NRI ever ships, the astrologer's USD rate is what this needs, not a conversion. */
+const shortOfMin=()=>!V.nri&&ab.cflow&&flowRate&&minutesFor(ab.sel)<MIN_MINUTES;
 // ?sel= preselects a tile, so a link can land on a particular amount's band.
 const SEL=+(new URLSearchParams(location.search).get('sel')||0);
 /* ---------- band copy (v3, Sep 23) ----------
@@ -1844,7 +1980,7 @@ const v3M=v=>{const m=v3Mins(v);
 // "₹5,200" reads as two numbers, and the SKU tiles beside it are unseparated too ("₹10000").
 const nf=n=>String(n);
 function fillCopy(s){
-  const t1=BASE[1][0], t2=BASE[2][0];
+  const T=table(), t1=T[1][0], t2=T[2][0];
   // {now} is empty except inside a limited-time window, where every "Pick ₹100" becomes
   // "Pick ₹100 now". It sits INSIDE the sentence rather than being appended, because Hindi puts
   // it before the verb ("₹100 abhi choose karo") and English after the amount.
@@ -1855,10 +1991,11 @@ function fillCopy(s){
   return s.replace(/\{(\w+)\}/g,(_,k)=>{const v=tok[k];return typeof v==='number'?nf(v):v});
 }
 function v3Band(){
-  const coup=ab.mode==='coupon', money=!(ab.cflow&&flowRate);
+  const coup=ab.mode==='coupon', money=V.nri||!(ab.cflow&&flowRate);
   const p=coup?'k':money?'b':'c';
   // Explicit comparisons, not endsWith('50') — '250' ends with '50' too.
-  const st=ab.sel<=BASE[0][0]?'50':ab.sel<BASE[2][0]?'100':ab.sel===BASE[2][0]?'250':'hi';
+  const T=table();
+  const st=ab.sel<=T[0][0]?'50':ab.sel<T[2][0]?'100':ab.sel===T[2][0]?'250':'hi';
   const ask=st==='50'||st==='100';
   let [l1,l2]=(ab.hindi?V3COPY_HI:V3COPY)[p+st].map(fillCopy);
   /* Limited-time window: line 1 is REPLACED in all three flows — the clock outranks whatever that
@@ -1874,7 +2011,7 @@ function v3Band(){
      there the sentence is about minutes and a warning bell over "only 4 mins" reads as an error.
      So this keys on the copy branch `p`, not on `st` alone. */
   const icon=(st==='50'&&p==='b')?`<img src="${I.warning}" alt="">`
-    :`<img class="tag${ask?'':' still'}" src="${I.discount}" alt="">`;
+    :`<img class="tag${ask?'':' still'}" src="${ico('discount')}" alt="">`;
   const deco=coup?`<img class="bn-stars" src="${I.stars}" alt="" aria-hidden="true"><span class="sweep"></span>`:'';
   return `<div class="bandin${ask?'':' noask'}">${icon}<div><p class="l1">${l1}</p><p class="l2">${l2}</p></div></div>${deco}`;
 }
@@ -1894,7 +2031,7 @@ function bandInner(){
   // Sep 23: gained the sparkle field and the deep green (see the CSS). The seal swaps with it —
   // discount-dark.svg is the #065F41 recolour, which is what belongs on the dark band; the plain
   // #039855 one now goes to the coupon band. Whenever a band changes green, its seal follows.
-  if(ab.mode==='offer') return `<div class="bandin"><img class="tag" src="${I['discount-dark']}" alt=""><div><p class="l1">Offer expires in <span class="cdpill"><b class="cd">${cdText()}</b></span></p><p class="l2">Bonus on first recharge over <b>₹100</b></p></div></div><img class="bn-stars" src="${I.stars}" alt="" aria-hidden="true">`;
+  if(ab.mode==='offer') return `<div class="bandin"><img class="tag" src="${ico('discount-dark')}" alt=""><div><p class="l1">Offer expires in <span class="cdpill"><b class="cd">${cdText()}</b></span></p><p class="l2">Bonus on first recharge over <b>₹100</b></p></div></div><img class="bn-stars" src="${I.stars}" alt="" aria-hidden="true">`;
   // ASTRO50 (v3 k* copy). Line 1 is the coupon's NAME and the chip is its status — a STATIC
   // "Expiring Today", deliberately with NO `cd` class: `cd` is both the ticker's write target and
   // the hook renderBand()'s `.timed` check reads, so a `cd` here would restart a clock that isn't
@@ -1919,7 +2056,7 @@ function bandInner(){
            : `Recharge offer valid for ${cd}`;
   // deliberately does NOT name a coupon figure: the ₹50 top-up is not in this bonus table yet
   const l2 = `Extra credit lands in your wallet instantly`;
-  return `<div class="bandin"><img class="tag" src="${I.discount}" alt=""><div><p class="l1">${l1}</p><p class="l2">${l2}</p></div></div>`;
+  return `<div class="bandin"><img class="tag" src="${ico('discount')}" alt=""><div><p class="l1">${l1}</p><p class="l2">${l2}</p></div></div>`;
 }
 /* ---------- live alert-banner copy override (desktop panel, prototype scaffolding) ----------
    bandInner() stays the single source of the real copy; this only paints over the two <p>s
@@ -1979,7 +2116,7 @@ function renderBand(){
   for(const el of [A('band'),A('band3')]){
     // Only the wallet flow's gold fades out to white; elsewhere ₹50 keeps the flat gold.
     el.className=(el.id==='band'?'banner':'band3')+(red?' red':'')+(promo?' bn-promo':'')+(coup?' coupon':'')+(g?' gold':'')+(g&&ab.wflow?' gfade':'')+(timed?' bn-dark':'');
-    el.innerHTML=bandInner();
+    el.innerHTML=cur(bandInner());
     edApply(el);
   }
   // A running countdown is the one moving thing that should hold the eye, so the badges' light
@@ -2009,6 +2146,7 @@ function renderCard(animate=true,counts=true){
   A('payblock').classList.toggle('gold',g);
   A('cardE').hidden=g;                       // ₹50 earns no bonus; drop the eyebrow
   A('cardE').textContent=ab.hindi?'BADHAI HO!':'CONGRATULATIONS!';
+  A('card').querySelector('.amt .r').textContent=SYM();
   const n=A('cardN'), token=++animToken;
   const setN=x=>{ab.shown=x;n.textContent=fmt(x);alignCardRupee()};
   if(!animate||RM||b===0){setN(total);return}
@@ -2097,12 +2235,14 @@ function alignCardRupee(){
 /* payment summary */
 function renderSummary(){
   const v=ab.sel, gst=gstFor(v), pay=v+gst, b=bonusFor(v), cpn=couponFor(), total=v+b+cpn;
-  A('sumTxt').textContent=`₹${fmt(v)} + ₹${fmt(gst)} GST`;
+  // No GST, nothing to add up — the collapsed row states the amount and the breakdown below drops
+  // its calc block, rather than printing a "+ $0 GST" line nobody is charged.
+  A('sumTxt').textContent=gst?`₹${fmt(v)} + ₹${fmt(gst)} GST`:`${SYM()}${fmt(v)}`;
   const dash=c=>`<span class="ps-dash" style="--dc:${c}"></span>`;
   const row=(l,r,cls='')=>`<div class="ps-line ${cls}"><span>${l}</span><span>${r}</span></div>`;
   // What you GET leads, what you PAY follows — the order the Figma component uses
   // (Payment summary / State=Open, 4815:2493). Sep 22.
-  A('psInner').innerHTML=`
+  A('psInner').innerHTML=cur(`
     <div class="ps-credit">
       <div class="ps-box ${b+cpn?'':'plain'}"><span>To be added in your wallet</span><b>₹${fmt(total)}</b></div>
       ${b+cpn?`<div class="ps-panel">
@@ -2115,14 +2255,19 @@ function renderSummary(){
     </div>
     <div class="ps-sec">
       ${dash('#EAECF0')}
-      <div class="ps-calc">${row('Recharge amount',`₹${fmt(v)}`,'r1')}${row('GST (18%)',`₹${fmt(gst)}`,'r2')}</div>
-      ${dash('#EAECF0')}
+      ${gst?`<div class="ps-calc">${row('Recharge amount',`₹${fmt(v)}`,'r1')}${row('GST (18%)',`₹${fmt(gst)}`,'r2')}</div>
+      ${dash('#EAECF0')}`:''}
       ${row('Total payable',`₹${fmt(pay)}`,'tot')}
       ${dash('#EAECF0')}
-    </div>`;
-  A('payBtn').innerHTML=`<b>Pay ₹${fmt(pay)}</b><small> (GST incl.)</small>`;
-  A('pmPay').innerHTML=`<b>Pay ₹${fmt(pay)}</b><small> (GST incl.)</small>`;
-  A('pmCredit').innerHTML=`Pay now &amp; <b class="g">get ₹${fmt(total)} added</b> <span class="w">in your wallet</span>`;
+    </div>`);
+  // NRI's button names the outcome instead of the tax, because there is no tax to disclaim:
+  // "Pay $10 and Connect" (Figma 5168:16749).
+  const payLabel = V.nri
+    ? `<b>Pay $${fmt(pay)} and Connect</b>`
+    : `<b>Pay ₹${fmt(pay)}</b><small> (GST incl.)</small>`;
+  A('payBtn').innerHTML=payLabel;
+  A('pmPay').innerHTML=payLabel;
+  A('pmCredit').innerHTML=cur(`Pay now &amp; <b class="g">get ₹${fmt(total)} added</b> <span class="w">in your wallet</span>`);
 }
 function setSumOpen(on){
   ab.sumOpen=on;
@@ -2282,6 +2427,8 @@ function initAM(root){
     // With the payment summary open the amounts are locked — the tap just closes the summary.
     const opt=e.target.closest('[data-amt]');
     if(opt&&!ab.sumOpen){select(+opt.dataset.amt);return}
+    // No UPI app on the device, so Pay opens the QR screen instead of a payment sheet.
+    if(ab.qr&&e.target.closest('#payBtn,#pmPay')){startQR();return}
     if(e.target.closest('#seeMore')){setOpen(true);return}
     if(e.target.closest('#seeLess')){setOpen(false);return}
     if(e.target.closest('#sumToggle')){setSumOpen(!ab.sumOpen);return}
@@ -2325,9 +2472,79 @@ function popup(kind){
     :`You’ll get a <b>bonus</b> on your first recharge over <b>₹100</b>`;
   // No loop: the burst plays once as the card lands, the same as the CSS pieces it replaces.
   const bits=RM?'':`<dotlottie-wc src="${LOTTIE_CONFETTI}" autoplay></dotlottie-wc>`;
-  return `<div class="overlay" role="dialog" aria-label="${title}"><div class="confetti" aria-hidden="true">${bits}</div>
-    <div class="pop"><img class="badge" src="${I['popup-badge']}" alt="">
-      <div class="pop-card"><p class="pop-title">${title}</p><p class="pop-body">${body}</p></div></div></div>`;
+  return cur(`<div class="overlay" role="dialog" aria-label="${title}"><div class="confetti" aria-hidden="true">${bits}</div>
+    <div class="pop"><img class="badge" src="${ico('popup-badge')}" alt="">
+      <div class="pop-card"><p class="pop-title">${title}</p><p class="pop-body">${body}</p></div></div></div>`);
+}
+/* ---------- NO UPI APP -> QR ---------- */
+/* Three screens behind the Pay button when no UPI app is installed (Figma 5212:44123).
+   The amounts are read off the live selection rather than hardcoded to the Figma frame's ₹295,
+   so the QR screen always quotes the same total the Pay button did. */
+
+/* A QR code is a checksummed encoding of a payment string we do not have, so this is a stand-in:
+   real finder patterns and a fixed, seeded module field, which reads as a QR at a glance and is
+   stable across renders. It is NOT scannable, and must be swapped for a generated one before
+   anything ships. */
+function qrArt(){
+  const N=25, cell=8, pad=0;
+  let r=0x2f6e2b1; const rnd=()=>((r=(r*1103515245+12345)&0x7fffffff)/0x7fffffff);
+  const finder=(x,y)=>x<7&&y<7 || x>N-8&&y<7 || x<7&&y>N-8;
+  let d='';
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){
+    if(finder(x,y)) continue;
+    if(rnd()<.46) d+=`M${pad+x*cell} ${pad+y*cell}h${cell}v${cell}h-${cell}z`;
+  }
+  const eye=(cx,cy)=>`<rect x="${cx*cell}" y="${cy*cell}" width="${7*cell}" height="${7*cell}" rx="${cell}" fill="none" stroke="#101828" stroke-width="${cell}"/>`+
+    `<rect x="${(cx+2)*cell}" y="${(cy+2)*cell}" width="${3*cell}" height="${3*cell}" rx="${cell*.6}" fill="#101828"/>`;
+  return `<svg class="qr-img" viewBox="0 0 ${N*cell} ${N*cell}" aria-label="QR code">
+    <path d="${d}" fill="#101828"/>${eye(0,0)}${eye(N-7,0)}${eye(0,N-7)}</svg>`;
+}
+function renderQR(){
+  const v=ab.sel, pay=v+gstFor(v);
+  return cur(`<div class="screen qr">
+    <header class="nav"><div class="topnav">
+      <button class="ttl" type="button" data-qrback aria-label="Back"><span class="back"><img src="${I.back}" width="18" height="18" alt=""></span><h1>Pay via QR code</h1></button>
+    </div></header>
+    <div class="qr-body">
+      <p class="qr-lead">We couldn’t find a UPI app on this device. Scan this QR code using another phone to pay <b>₹${fmt(pay)}</b></p>
+      <div class="qr-frame">${qrArt()}<span class="qr-mark"><img src="${I['logo-a']}" alt=""></span></div>
+      <p class="qr-valid">QR code valid for <b class="qrcd">5:00</b></p>
+      <p class="qr-foot">Keep this page open until your payment is completed.</p>
+    </div>
+  </div>`);
+}
+function renderProcessing(){
+  return `<div class="screen proc"><div class="proc-in">
+    <span class="spinner" aria-hidden="true"></span>
+    <h2>Hold on, almost there !</h2>
+    <p>We are processing your payment, please do not exit.</p>
+  </div></div>`;
+}
+function renderPaid(){
+  const bits=RM?'':`<dotlottie-wc src="${LOTTIE_CONFETTI}" autoplay></dotlottie-wc>`;
+  return cur(`<div class="screen paid"><div class="confetti" aria-hidden="true">${bits}</div>
+    <div class="paid-in">
+      <span class="paid-tick" aria-hidden="true"><svg viewBox="0 0 64 64"><path d="M18 33.5 27.5 43 46 23.5"/></svg></span>
+      <h2>Payment Successful</h2>
+      <p><b>₹${fmt(creditFor(ab.sel))}</b> credited in your wallet</p>
+    </div></div>`);
+}
+/* 5 seconds on the QR, her call — long enough to read it, short enough that the flow still
+   demos in one breath. The on-screen "valid for" clock is the real 5 minutes. */
+const QR_HOLD=5000, PROC_HOLD=2200;
+function startQR(){
+  mount(renderQR(),'in-right');
+  let s=5*60;
+  ticker=setInterval(()=>{
+    s--; const el=phone.querySelector('.qrcd');
+    if(!el){clearInterval(ticker);ticker=null;return}
+    el.textContent=`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+  },1000);
+  later(()=>{
+    if(ticker){clearInterval(ticker);ticker=null}
+    mount(renderProcessing(),'in-right');
+    later(()=>mount(renderPaid(),'in-right'),PROC_HOLD);
+  },QR_HOLD);
 }
 function renderChat(){
   const m=(t,d)=>`<div class="msg ${d}">${t}<time>02:24 PM</time></div>`;
@@ -2410,6 +2627,11 @@ function mountSwapLottie(){
   }).catch(()=>{}); // the CSS fallback is already on screen, so a failure needs no handling
 }
 function openAB(mode,sel,banner=false,auto=true,extra){
+  // Routes name their opening tile in rupees. Under NRI that amount is not on the ladder, so take
+  // the tile at the same RUNG instead — ₹50/₹100/₹250 are rungs 0/1/2 either way — and the flows
+  // open on the tile they were written for rather than on whatever number happens to match.
+  const rung=BASE.findIndex(a=>a[0]===sel);
+  if(V.nri && rung>=0) sel=USD[Math.min(rung,USD.length-1)][0];
   ab={mode,sel,banner,shown:null,cd:0,dropped:new Set(),...extra};
   // The band always carries a countdown on this screen, so the default flows get one too — except
   // the coupon, whose chip is now a static "Expiring Today". Its ticker would have nothing to write.
@@ -2432,6 +2654,10 @@ function withPopup(kind,mode,onDone,extra){
 }
 function go(route,rate){
   clearTimers();
+  lastRoute=route; lastRate=rate;
+  phone.classList.toggle('v-nri',V.nri);
+  phone.classList.toggle('v-purple',V.purple);
+  phone.classList.toggle('v-noband',V.noband);
   flowRate = rate ? +rate : null; // whatever the tapped card charges; null when none was tapped
   document.getElementById('flowsSheet').classList.remove('open');
   switch(route){
@@ -2454,6 +2680,9 @@ function go(route,rate){
     // is what makes the two flows identical rather than merely similar. Reverses the Sep 22 note
     // below the `wallet` case, which said post4 must NOT pick this up.
     case 'post4': flowType='wallet'; flowAstro=''; openAB('default',100,false,true,{rows:2,wflow:true}); break;
+    // Same Add Money screen as the astrologer flow; what `qr` changes is where Pay goes — see
+    // initAM(). The three screens behind it are renderQR / renderProcessing / renderPaid.
+    case 'qr': flowType='insufficient'; flowAstro='Astro Hemali'; flowRate=flowRate||25; openAB('default',100,false,true,{cflow:true,qr:true}); break;
     // Sep 22: this band ticks again. The static "24 hours" chip is now a live `.cd` counting down
     // from a 24h window. It keeps its own .bn-promo green — renderBand()'s `timed` flag, the one
     // that adds .bn-dark, excludes promo — but the root does gain .timed now that a `.cd` exists.
@@ -2473,10 +2702,17 @@ function go(route,rate){
 // v1's global tap router. The Add Money screen binds its own handler in initAM(), so this one
 // only has to catch [data-go] and leave the rest alone.
 phone.addEventListener('click',e=>{
+  if(e.target.closest('[data-qrback]')) return go('qr');
   const t=e.target.closest('[data-go]');
   if(t) return go(t.dataset.go,t.dataset.rate);
 });
 document.querySelectorAll('[data-jump]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.jump)));
+// Flipping a switch replays the path that is already on screen rather than jumping home, so the
+// comparison is like for like — same flow, same tile, different skin.
+document.querySelectorAll('[data-variant]').forEach(c=>c.addEventListener('change',()=>{
+  V[c.dataset.variant]=c.checked;
+  go(lastRoute,lastRate);
+}));
 document.getElementById('flowsBtn').addEventListener('click',()=>document.getElementById('flowsSheet').classList.add('open'));
 document.getElementById('flowsSheet').addEventListener('click',e=>{if(e.target.id==='flowsSheet')e.currentTarget.classList.remove('open')});
 
