@@ -1094,6 +1094,37 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .screen.am.open .veilfade,.screen.am.sumopen .veilfade{opacity:1}
 .screen.am.sumopen .veilfade{height:420px}
 
+/* Summary open: everything behind the sheet goes soft, HEADER INCLUDED (Figma 5227:27592).
+   It takes two layers, not one. `.am .nav` is z-index 5 — above `.payblock` — so a backdrop
+   filter parented anywhere in the payblock can never reach it. So: `.sumveil` blurs the strip
+   from the payblock upward, and the nav blurs its own contents with a plain `filter`. The close
+   button is a SIBLING of `.topnav`, which is what keeps it sharp while the title behind it is not.
+   `bottom:100%` is what makes the veil stop exactly at the congratulations card without anyone
+   having to know how tall the payblock is in this flow. */
+.am .sumveil{position:absolute;left:0;right:0;bottom:100%;height:768px;pointer-events:none;opacity:0;transition:opacity .3s;
+  -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);
+  -webkit-mask-image:linear-gradient(180deg,#000 0 93%,transparent 100%);
+  mask-image:linear-gradient(180deg,#000 0 93%,transparent 100%)}
+.screen.am.sumopen .sumveil{opacity:1}
+/* Without this the band and the tiles sit under BOTH blurs and go visibly softer than the
+   header. The veilfade keeps its green tint — only its blur stands down. */
+.screen.am.sumopen .veilfade{-webkit-backdrop-filter:none;backdrop-filter:none}
+.am .topnav{transition:filter .3s}
+.screen.am.sumopen .topnav{filter:blur(3px)}
+/* The wallet pill and the close button want the same end of the nav, so they swap rather than
+   stack — which is also what the Figma frame shows. */
+.am .badge{transition:opacity .2s}
+.screen.am.sumopen .badge{opacity:0}
+/* 42x42, 24px in from the RIGHT edge and centred on the 64px nav row (Figma 5227:27602 sits at
+   x=294 in a 360 frame; the note on the board says "from left" but the geometry is from right). */
+.am .sumx{position:absolute;right:24px;top:11px;width:42px;height:42px;display:flex;align-items:center;justify-content:center;
+  background:#fff;border:1px solid var(--gray-300);border-radius:50%;cursor:pointer;
+  opacity:0;visibility:hidden;transform:scale(.88);
+  transition:opacity .2s,transform .2s var(--ease-out),visibility 0s .2s}
+.screen.am.sumopen .sumx{opacity:1;visibility:visible;transform:none;
+  transition:opacity .22s,transform .28s var(--ease-out),visibility 0s}
+.am .sumx img{display:block;width:16px;height:16px}
+
 /* wallet card (B3) */
 /* square along the bottom so the card sits flush on the sheet below it */
 .am .ac{position:relative;width:268px;height:108px;border-radius:18px 18px 0 0;padding:1.5px;display:flex;align-items:center;justify-content:center;isolation:isolate;
@@ -1144,7 +1175,9 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 /* payment summary (original expanded content) */
 /* 16px gutter so "Payment Summary" starts on the same edge as "Pay with", the receipt
    card and the Pay button */
-.am .summary{position:relative;z-index:2;background:#fff;padding:0 16px}
+/* touch-action:none so a downward drag on the open panel is a dismiss gesture rather than the
+   browser's own scroll/overscroll — see the pointer handlers in initAM(). */
+.am .summary{position:relative;z-index:2;background:#fff;padding:0 16px;touch-action:none}
 .am .sumrow{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 0 14px}
 .am .sumrow .sl{font-size:13.5px;line-height:var(--lh-xs);color:var(--gray-500);white-space:nowrap}
 .am .sumrow .sr{display:flex;align-items:center;gap:4px;font-size:13.5px;line-height:var(--lh-xs);color:var(--gray-500);white-space:nowrap}
@@ -1370,6 +1403,11 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .v-purple .am #arcG stop:nth-child(2){stop-color:#C9A9F8}
 .v-purple .am .veilfade{background:linear-gradient(180deg,rgba(247,242,254,0) 0%,rgba(243,236,252,.08) 8%,rgba(237,227,250,.22) 38.9%,rgba(231,220,247,.56) 74%,rgba(226,214,247,.94) 94%,#E2D6F7 100%)}
 .v-purple .am .pm-credit .g{color:#6B33B8}
+/* The open payment summary is green too — the "To be added in your wallet" box and the Extra
+   Bonus figure. Missed on the first purple pass; `.plain` keeps its grey, it is not a green
+   surface. */
+.v-purple .am .ps-box:not(.plain){border-color:#6B33B8;color:#6B33B8}
+.v-purple .am .ps-line.pg span{color:#6B33B8!important}
 /* Both popups. The header wash is the green one's stops moved onto the purple ramp — Figma has
    no purple variant of 5150:15945, so the light tint is Violet/300's neighbour on this ramp. */
 .v-purple .pop-title{background:linear-gradient(84deg,rgba(185,164,228,.55) 0%,rgba(185,164,228,.14) 44.7%,rgba(255,255,255,.1) 100%)}
@@ -1707,6 +1745,7 @@ function renderAB(){
         <button class="ttl" type="button" data-go="home" aria-label="Back to home"><span class="back"><img src="${I.back}" width="18" height="18" alt=""></span><h1>Add Money</h1></button>
         <span class="badge"><img src="${I.wallet}" width="20" height="20" alt=""><p>${SYM()}0</p></span>
       </div>
+      <button class="sumx" type="button" id="sumX" aria-label="Close payment summary"><img src="${I.close}" alt=""></button>
     </header>
 
     <section class="collapsed" id="collapsed">
@@ -1734,6 +1773,7 @@ function renderAB(){
     </section>
 
     <section class="payblock" id="payblock">
+      <span class="sumveil" aria-hidden="true"></span>
       <div class="cardwrap">
         <span class="veilfade" id="veil"></span>
         <div class="ac green" id="card">
@@ -2269,6 +2309,40 @@ function renderSummary(){
   A('pmPay').innerHTML=payLabel;
   A('pmCredit').innerHTML=cur(`Pay now &amp; <b class="g">get ₹${fmt(total)} added</b> <span class="w">in your wallet</span>`);
 }
+/* Drag the open summary downward to dismiss it (Figma 5227:27592, "Draggable close").
+   The sheet follows at a third of the finger and stops at 28px: it is a dismiss gesture with
+   weight behind it, not a 1:1 handle, and the Pay button must not be dragged off its own screen.
+   Under 6px nothing happens at all, so the row keeps its plain tap-to-toggle. */
+const SUM_DRAG_GRAB=6, SUM_DRAG_CLOSE=44, SUM_DRAG_FOLLOW=.35, SUM_DRAG_MAX=28;
+let sumDragged=false;
+function initSumDrag(){
+  const pb=A('payblock'), sum=A('summary');
+  let y0=null, dy=0, live=false;
+  const end=()=>{
+    if(y0===null) return;
+    const far=live&&dy>SUM_DRAG_CLOSE;
+    y0=null; live=false;
+    pb.style.transition='transform .3s var(--ease-out)';
+    pb.style.transform='';
+    setTimeout(()=>{pb.style.transition=''},320);
+    if(far) setSumOpen(false);
+  };
+  sum.addEventListener('pointerdown',e=>{
+    if(!ab.sumOpen||e.button) return;
+    y0=e.clientY; dy=0; live=false; sumDragged=false;
+    // Capture so the drag survives the finger leaving the panel. Last statement on purpose:
+    // it throws for a pointer the element never owned, and the drag state is already set.
+    try{sum.setPointerCapture(e.pointerId)}catch{}
+  });
+  sum.addEventListener('pointermove',e=>{
+    if(y0===null) return;
+    dy=e.clientY-y0;
+    if(!live&&dy>SUM_DRAG_GRAB){live=true; sumDragged=true; pb.style.transition='none'}
+    if(live) pb.style.transform=`translateY(${Math.min(dy*SUM_DRAG_FOLLOW,SUM_DRAG_MAX)}px)`;
+  });
+  sum.addEventListener('pointerup',end);
+  sum.addEventListener('pointercancel',end);
+}
 function setSumOpen(on){
   ab.sumOpen=on;
   amRoot.classList.toggle('sumopen',on);
@@ -2423,6 +2497,7 @@ function initAM(root){
   // mountCoins(), which renderTiles() has just called.
   initCoins();
   A('openscroll').addEventListener('scroll',layoutOpen,{passive:true});
+  initSumDrag();
   root.addEventListener('click',e=>{
     // With the payment summary open the amounts are locked — the tap just closes the summary.
     const opt=e.target.closest('[data-amt]');
@@ -2431,7 +2506,10 @@ function initAM(root){
     if(ab.qr&&e.target.closest('#payBtn,#pmPay')){startQR();return}
     if(e.target.closest('#seeMore')){setOpen(true);return}
     if(e.target.closest('#seeLess')){setOpen(false);return}
-    if(e.target.closest('#sumToggle')){setSumOpen(!ab.sumOpen);return}
+    if(e.target.closest('#sumX')){setSumOpen(false);return}
+    // A drag that ended without closing still fires a click on the row it started on; without
+    // this guard the spring-back would be followed by the row toggling itself shut.
+    if(e.target.closest('#sumToggle')){if(sumDragged){sumDragged=false;return} setSumOpen(!ab.sumOpen);return}
     if(e.target.closest('#payWith')){setPM(true);return}
     if(e.target.closest('[data-pmclose]')){setPM(false);return}
     const pm=e.target.closest('[data-pm]');
