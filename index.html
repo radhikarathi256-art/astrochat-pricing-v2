@@ -1175,10 +1175,14 @@ body.mobile .phone{border-radius:0;box-shadow:none}
   62%{transform:rotateX(-3.5deg) rotateY(2.5deg) scale(1.006)}
   100%{transform:none}}
 .am .ac .c{position:relative;z-index:2;text-align:center;padding:2px 18px 0}
-.am .ac .e{font-size:11.5px;font-weight:700;letter-spacing:.7px}
-.am .ac.green .e{color:var(--success-800)}
-.am .ac.gold .e{color:#8A6A24}
-.am .ac .amt{position:relative;width:fit-content;margin:8px auto 0;display:flex;align-items:flex-start;justify-content:center;gap:3px}
+/* Figma 4812:2508. The eyebrow used to be an uppercase letterspaced CONGRATULATIONS! in the
+   card's own hue; it is now sentence-case Body X Small (12/18) in Gray/800, and only the
+   leading "Nice!" is bold and green. Both bands of the card share one ink now, so there is no
+   longer a per-variant .e colour — the variant shows in the <b>, which gold drops entirely. */
+.am .ac .e{font-size:12px;font-weight:500;line-height:18px;letter-spacing:0;color:var(--gray-800)}
+.am .ac .e b{font-weight:700;color:var(--success-800)}
+/* 14 = Figma's 6px flex gap plus the amount block's own 8px lead-in. */
+.am .ac .amt{position:relative;width:fit-content;margin:14px auto 0;display:flex;align-items:flex-start;justify-content:center;gap:3px}
 /* the tile's "+₹50" chip lifts off, arcs down and drops into the card; the bonus starts
    counting on at the moment it lands. Built in JS so it can measure both ends. */
 .am .flyer{position:absolute;z-index:8;pointer-events:none;display:flex;align-items:center;justify-content:center;
@@ -1190,11 +1194,12 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 /* the amount takes the hit as the chip lands */
 .am .ac .amt.absorb{animation:absorb .52s cubic-bezier(.24,1.6,.36,1)}
 @keyframes absorb{0%{transform:none}24%{transform:scale(1.14)}58%{transform:scale(.975)}100%{transform:none}}
-.am .ac.green .amt{color:#04301F}
-.am .ac.gold .amt{color:#3F3417}
+/* One ink for both variants now (Gray/800 at 90%), where green used to take #04301F and gold
+   #3F3417. The figure no longer tries to be part of the foil — the foil is behind it. */
+.am .ac .amt{color:var(--gray-800);opacity:.9}
 .am .ac .amt .r{font-size:17px;font-weight:700;line-height:1}
-.am .ac .amt .n{font-size:31px;font-weight:800;letter-spacing:-1px;line-height:1;font-variant-numeric:tabular-nums}
-.am .ac .t{margin-top:8px;font-size:12.5px;font-weight:500;color:var(--gray-800)}
+.am .ac .amt .n{font-size:30px;font-weight:700;letter-spacing:0;line-height:1;font-variant-numeric:tabular-nums}
+.am .ac .t{margin-top:6px;font-size:12px;font-weight:500;line-height:18px;color:var(--gray-800)}
 
 /* payment summary (original expanded content) */
 /* 16px gutter so "Payment Summary" starts on the same edge as "Pay with", the receipt
@@ -1812,9 +1817,9 @@ function renderAB(){
         <span class="veilfade" id="veil"></span>
         <div class="ac green" id="card">
           <span class="skin"><span class="spin"></span></span>
-          <div class="c"><p class="e" id="cardE">CONGRATULATIONS!</p>
+          <div class="c"><p class="e" id="cardE"><b>Nice!</b> Pay now &amp; get</p>
             <p class="amt"><span class="r">₹</span><span class="n" id="cardN">110</span></p>
-            <p class="t">will be added to your wallet</p></div>
+            <p class="t">added in your wallet</p></div>
         </div>
         <svg class="arc" viewBox="0 0 360 24" preserveAspectRatio="none" aria-hidden="true">
           <defs><linearGradient id="arcG" x1="0" y1="0" x2="360" y2="0" gradientUnits="userSpaceOnUse">
@@ -2221,8 +2226,14 @@ function renderCard(animate=true,counts=true){
   const v=ab.sel, b=bonusFor(v), cpn=couponFor(), total=v+b+cpn, g=(b+cpn)===0;
   A('card').className='ac '+(g?'gold':'green');
   A('payblock').classList.toggle('gold',g);
-  A('cardE').hidden=g;                       // ₹50 earns no bonus; drop the eyebrow
-  A('cardE').textContent=ab.hindi?'BADHAI HO!':'CONGRATULATIONS!';
+  // Gold KEEPS the eyebrow now (Figma 4812:2508) — it just loses the "Nice!". ₹50 earns no
+  // bonus, so there is nothing to congratulate, but "Pay now & get" is still the instruction.
+  // Hindi has no approved string for the new line yet, so it holds the old one; swapping in a
+  // machine translation of a line this prominent is not a call to make in code.
+  A('cardE').hidden=false;
+  A('cardE').innerHTML=ab.hindi
+    ? 'BADHAI HO!'
+    : (g?'':'<b>Nice!</b> ')+'Pay now &amp; get';
   A('card').querySelector('.amt .r').textContent=SYM();
   const n=A('cardN'), token=++animToken;
   const setN=x=>{ab.shown=x;n.textContent=fmt(x);alignCardRupee()};
