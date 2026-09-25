@@ -1369,6 +1369,10 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 /* NRI: "Pay $10 and Connect" is ~40px wider than "Pay ₹118 (GST incl.)", and the button is the
    one fixed-width thing in a flex row, so let it take the room it needs. */
 .v-nri .am .paybtn{width:auto;min-width:200px}
+/* QR flow: no payment method to choose, so Pay is the only control and fills the row
+   (Figma 5212:44135). Overrides .v-nri's auto width too — the row is full-bleed either way. */
+.am.qronly .payw{display:none}
+.am.qronly .paybtn,.v-nri .am.qronly .paybtn{width:100%}
 
 /* No alert banner (Figma 5212:44126). The band is absolutely positioned at 80, the card at 139,
    and the gap between the nav and the band is 15 — so dropping the band and moving the card to
@@ -1423,7 +1427,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
     <button data-jump="home">Home</button>
     <button data-jump="wallet">Wallet pill</button>
     <button data-jump="listingChat">Listing → Chat</button>
-    <button data-jump="today">Today page</button>
+    <button data-jump="today">Today continue chat</button>
     <button data-jump="again">Chat again (coupon)</button>
     <button data-jump="history">View history (offer)</button>
     <button data-jump="post4">Post 4th recharge</button>
@@ -1486,7 +1490,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
     <button data-jump="home">Home<small>Start of the flow</small></button>
     <button data-jump="wallet">Wallet pill<small>Add Money to Wallet, standard bonuses</small></button>
     <button data-jump="listingChat">Listing → Chat<small>Low balance → Add Money to Wallet</small></button>
-    <button data-jump="today">Today page<small>Continue Chat runs the low-balance flow</small></button>
+    <button data-jump="today">Today continue chat<small>Continue Chat runs the low-balance flow</small></button>
     <button data-jump="again">Chat again<small>Coupon applied → coupon bonuses</small></button>
     <button data-jump="history">View history<small>Continue chat → ₹12/min offer</small></button>
     <button data-jump="post4">Post 4th recharge<small>Two rows of SKUs, coins on ₹500</small></button>
@@ -2051,14 +2055,14 @@ function v3Band(){
      carries the `cd` class, which is what the ticker writes into and what renderBand() reads to
      mark the screen `.timed`; that is correct here because this clock really is running. */
   if(ab.lt) l1=`Limited-time bonus<span class="cdpill"><b class="cd">${cdText()}</b></span>`;
-  // Only the wallet's ₹50 earns the amber warning — there the band is a miss, everywhere else
-  // it is a win and carries the seal. The seal stays the plain #039855 discount.svg: the dark
-  // recolour belongs to the deep-green promo band, and a band's seal always follows its green.
-  /* Her rule: the amber bell is for ₹50 ON THE WALLET FLOW ONLY — "you're missing out" is a
-     money argument. Every other state, astrologer ₹50 included, gets the discount seal, because
-     there the sentence is about minutes and a warning bell over "only 4 mins" reads as an error.
-     So this keys on the copy branch `p`, not on `st` alone. */
-  const icon=(st==='50'&&p==='b')?`<img src="${I.warning}" alt="">`
+  // The seal stays the plain #039855 discount.svg: the dark recolour belongs to the deep-green
+  // promo band, and a band's seal always follows its green.
+  /* Sep 25, Figma 5140:15870: ₹50 now carries the amber bell on the ASTROLOGER flow too, not just
+     the wallet one. That reverses the earlier rule (bell = wallet only, because "only 4 mins"
+     under a warning read as an error); the Figma frame shows the bell over exactly that sentence,
+     so the frame wins. Still keyed on the copy branch `p` — the coupon's ₹50 earns COUPON_FLAT,
+     so it is not a zero-bonus tile and keeps its seal. */
+  const icon=(st==='50'&&(p==='b'||p==='c'))?`<img src="${I.warning}" alt="">`
     :`<img class="tag${ask?'':' still'}" src="${ico('discount')}" alt="">`;
   const deco=coup?`<img class="bn-stars" src="${I.stars}" alt="" aria-hidden="true"><span class="sweep"></span>`:'';
   return `<div class="bandin${ask?'':' noask'}">${icon}<div><p class="l1">${l1}</p><p class="l2">${l2}</p></div></div>${deco}`;
@@ -2149,10 +2153,13 @@ if(edPanel){
 }
 function renderBand(){
   const red=shortOfMin(), promo=ab.mode==='offer', coup=ab.mode==='coupon';
-  // The astrologer, promo and coupon variants own the band outright — no gold, no countdown tint.
+  // The red, promo and coupon variants own the band outright — no gold, no countdown tint.
   // The promo one deliberately overrides gold too, so ₹50 keeps the offer copy; the coupon one
   // doesn't need to, because with COUPON_FLAT applied ₹50 is no longer a zero-bonus tile.
-  const special = red||promo||coup||(ab.cflow&&flowRate);
+  // Sep 25, Figma 5140:15870: the astrologer flow's ₹50 goes gold as well — it earns no bonus
+  // there either, and the frame draws it amber with the bell. `red` still outranks it: below the
+  // 4-minute minimum ₹50 is a blocker, not a missed bonus, and that band owns the strip outright.
+  const special = red||promo||coup;
   // Sep 23, her call: the wallet band is on screen at EVERY SKU, not parked behind the card above
   // ₹50. Gold is now keyed purely on the tile earning nothing, so ₹50 warns in amber and ₹100 and
   // up sit on the standard light-green gradient (the base .banner/.band3 rule). `off` is gone with
@@ -2493,6 +2500,9 @@ function initAM(root){
   ab.open=false; ab.sumOpen=false; ab.pmOpen=false; ab.shown=null;
   // Set before the renders: .rows2 resizes .rcpt, and drawRcpt() below measures that box.
   amRoot.classList.toggle('rows2', ab.rows===2);
+  // QR flow (Figma 5212:44135): paying by scanning IS the method, so there is no method to pick.
+  // The "Pay with" selector goes and Pay takes the whole row.
+  amRoot.classList.toggle('qronly', !!ab.qr);
   renderTiles(); renderBand(); renderCard(false); renderSummary(); renderPM(); drawRcpt(); drawRc(); drawSeeBtns();
   // Redraw the open sheet's outline whenever its box changes — grid re-render, band appearing or
   // going, rotation. Scoped to this root so it dies with the screen on remount.
