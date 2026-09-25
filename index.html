@@ -1423,7 +1423,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
     <button data-jump="home">Home</button>
     <button data-jump="wallet">Wallet pill</button>
     <button data-jump="listingChat">Listing → Chat</button>
-    <button data-jump="todayChat">Today → Chat</button>
+    <button data-jump="today">Today page</button>
     <button data-jump="again">Chat again (coupon)</button>
     <button data-jump="history">View history (offer)</button>
     <button data-jump="post4">Post 4th recharge</button>
@@ -1486,7 +1486,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
     <button data-jump="home">Home<small>Start of the flow</small></button>
     <button data-jump="wallet">Wallet pill<small>Add Money to Wallet, standard bonuses</small></button>
     <button data-jump="listingChat">Listing → Chat<small>Low balance → Add Money to Wallet</small></button>
-    <button data-jump="todayChat">Today → Chat<small>Today page, then the same low-balance flow</small></button>
+    <button data-jump="today">Today page<small>Continue Chat runs the low-balance flow</small></button>
     <button data-jump="again">Chat again<small>Coupon applied → coupon bonuses</small></button>
     <button data-jump="history">View history<small>Continue chat → ₹12/min offer</small></button>
     <button data-jump="post4">Post 4th recharge<small>Two rows of SKUs, coins on ₹500</small></button>
@@ -1638,8 +1638,9 @@ function renderHome(){
     ${tabbar('Experts')}
   </div>`;
 }
-/* Today — Figma 5202:43059 "Free user chat listing". Read-only surface: the only thing that
-   navigates off it is the wallet chip and the Experts tab, which is what she asked for. */
+/* Today — Figma 5202:43059 "Free user chat listing". Three ways off it: the wallet chip, the
+   Experts tab, and Continue Chat, which runs the same low-balance flow as an astrologer card
+   (listingChat) rather than the discounted-rate offer the chat screen's own button opens. */
 function renderToday(){
   const GLYPH={
     aim:`<svg viewBox="0 0 24 24" fill="none" stroke="#F6A931" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5 8.5 15.5" stroke-linecap="round"/></svg>`,
@@ -1680,7 +1681,7 @@ function renderToday(){
               <div class="meta">
                 <p class="nm">Astro Hemali</p>
                 <div class="pr"><s>₹20/min</s><b>₹10/min</b></div>
-                <button data-go="continue" data-rate="12">Continue Chat</button>
+                <button data-go="listingChat" data-rate="10">Continue Chat</button>
               </div>
             </div>
           </div>
@@ -2755,10 +2756,6 @@ function go(route,rate){
     // red "not enough to connect" strip below the 4-min minimum, the green rate strip above it.
     // SEL is temporary, so the copy switcher can land on the tile its button labels quote.
     case 'listingChat': flowType='insufficient'; flowAstro='Astro Hemali'; flowRate=flowRate||15; mount(renderLow()); later(()=>openAB('default',SEL||100,false,true,{cflow:true}),1600); break;
-    // Same insufficient-balance run as listingChat, only entered from Today rather than the
-    // astrologer card — so it repeats that case verbatim, including the 1600ms the chat screen
-    // holds before Add Money opens. The 1400ms in front is time enough to read the Today page.
-    case 'todayChat': flowType='insufficient'; flowAstro='Astro Hemali'; flowRate=flowRate||15; mount(renderToday()); later(()=>{mount(renderLow()); later(()=>openAB('default',SEL||100,false,true,{cflow:true}),1600)},1400); break;
     case 'again': flowType='coupon'; flowAstro='Astro Vipasana'; flowRate=flowRate||5; mount(renderLow()); later(()=>withPopup('coupon','coupon',()=>later(()=>{ab.banner=true;renderBand()},800)),1600); break;
     case 'history': mount(renderChat()); break;
     // Still six tiles here, but the coins stay on ₹250 like every other flow — her call Sep 23.
