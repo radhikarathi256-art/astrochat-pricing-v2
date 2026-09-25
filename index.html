@@ -1182,8 +1182,11 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .am .ac .e{font-size:12px;font-weight:500;line-height:18px;letter-spacing:0;color:var(--gray-800)}
 .am .ac .e b{font-weight:700;color:var(--success-800)}
 /* 11 = a 3px gap under the eyebrow plus the amount block's own 8px lead-in. Figma draws 6 there;
-   on the running screen 6 floated the figure away from the line above it, so this is 3. */
-.am .ac .amt{position:relative;width:fit-content;margin:11px auto 0;display:flex;align-items:flex-start;justify-content:center;gap:3px}
+   on the running screen 6 floated the figure away from the line above it, so this is 3.
+   The `gap` is the horizontal one between the ₹ and the figure — 2, not Figma's 4: the symbol
+   is set 13px smaller than the number and sits on its cap height, so the optical gap is
+   already wider than the measured one and anything above 2 reads as two separate words. */
+.am .ac .amt{position:relative;width:fit-content;margin:11px auto 0;display:flex;align-items:flex-start;justify-content:center;gap:2px}
 /* the tile's "+₹50" chip lifts off, arcs down and drops into the card; the bonus starts
    counting on at the moment it lands. Built in JS so it can measure both ends. */
 .am .flyer{position:absolute;z-index:8;pointer-events:none;display:flex;align-items:center;justify-content:center;
