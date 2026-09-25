@@ -1181,8 +1181,9 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    longer a per-variant .e colour — the variant shows in the <b>, which gold drops entirely. */
 .am .ac .e{font-size:12px;font-weight:500;line-height:18px;letter-spacing:0;color:var(--gray-800)}
 .am .ac .e b{font-weight:700;color:var(--success-800)}
-/* 14 = Figma's 6px flex gap plus the amount block's own 8px lead-in. */
-.am .ac .amt{position:relative;width:fit-content;margin:14px auto 0;display:flex;align-items:flex-start;justify-content:center;gap:3px}
+/* 11 = a 3px gap under the eyebrow plus the amount block's own 8px lead-in. Figma draws 6 there;
+   on the running screen 6 floated the figure away from the line above it, so this is 3. */
+.am .ac .amt{position:relative;width:fit-content;margin:11px auto 0;display:flex;align-items:flex-start;justify-content:center;gap:3px}
 /* the tile's "+₹50" chip lifts off, arcs down and drops into the card; the bonus starts
    counting on at the moment it lands. Built in JS so it can measure both ends. */
 .am .flyer{position:absolute;z-index:8;pointer-events:none;display:flex;align-items:center;justify-content:center;
