@@ -27,11 +27,12 @@
   --brand-color:#EF6939;--brand-500:#F28761;--brand-900:#560000;
   --gray-25:#FCFCFD;--gray-50:#F9FAFB;--gray-100:#F2F4F7;--gray-200:#EAECF0;--gray-300:#D0D5DD;
   --gray-400:#98A2B3;--gray-500:#667085;--gray-600:#475467;--gray-700:#344054;--gray-800:#1D2939;--gray-900:#101828;
-  --success-50:#ECFDF3;--success-100:#D1FADF;--success-200:#A6F4C5;--success-400:#32D583;
+  --success-50:#ECFDF3;--success-100:#D1FADF;--success-200:#A6F4C5;--success-300:#6CE9A6;--success-400:#32D583;
   --success-500:#12B76A;--success-600:#039855;--success-700:#027A48;--success-800:#05603A;--success-900:#054F31;
+  --success-950:#04452F;               /* darkest end of the Offer / Coupon band */
   --warning-50:#FFFAEB;--warning-100:#FEF0C7;--warning-300:#FEC84B;--warning-400:#FDB022;--warning-600:#DC6803;
   --warning-700:#B54708;--warning-800:#93370D;--warning-900:#7A2E0E;
-  --error-50:#FEF3F2;--error-100:#FEE4E2;--error-500:#F04438;--error-700:#B42318;--error-800:#912018;
+  --error-50:#FEF3F2;--error-100:#FEE4E2;--error-500:#F04438;--error-700:#B42318;--error-800:#912018;--error-900:#7A271A;
   --white:#FFFFFF;--black:#000000;
   --ab-bg:#EEF0F3;                     /* phone chrome — no Figma style */
   /* Text styles: Inter, letter-spacing 0, weights 400/500/600/700 */
@@ -623,7 +624,10 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 .pop .badge{position:relative;z-index:2;width:52px;height:52px;margin-bottom:-26px;animation:wiggle 1.2s ease-in-out .3s}
 @keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-14deg) scale(1.1)}50%{transform:rotate(10deg)}75%{transform:rotate(-5deg)}}
 .pop-card{width:100%;background:#fff;border-radius:16px;padding:4px 4px 24px;display:flex;flex-direction:column;gap:12px;align-items:center}
-.pop-title{width:100%;border-radius:12px 12px 0 0;padding:32px 12px 20px;text-align:center;font-weight:700;font-size:var(--fs-lg);line-height:var(--lh-lg);color:var(--gray-800);background:linear-gradient(118.9deg,#e3cffd 22.4%,#fff 81%)}
+/* Sep 25: was a purple wash; now Figma's own popup fill (5150:15945) — Success/300 at 40% opacity
+   running out to 10% and then to white, left to right with a slight rise. The stops carry their
+   own alpha over the card's white, which is how the band stays this faint at the right-hand end. */
+.pop-title{width:100%;border-radius:12px 12px 0 0;padding:32px 12px 20px;text-align:center;font-weight:700;font-size:var(--fs-lg);line-height:var(--lh-lg);color:var(--gray-800);background:linear-gradient(84deg,rgba(108,233,166,.4) 0%,rgba(108,233,166,.1) 44.7%,rgba(255,255,255,.1) 100%)}
 .pop-body{padding:0 12px;text-align:center;font-size:var(--fs-md);line-height:var(--lh-lg);color:var(--gray-600)}
 .pop-body b{font-weight:700;color:var(--gray-800)}
 .pop-body .semi{font-weight:600}
@@ -686,15 +690,17 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    still lands on a pale background — which is why the copy has to stay short enough not to reach
    the white end. Keeps v1's timer rule: a countdown shows a stronger green, no countdown a softer
    one, keyed on the TIMER and not the mode (see renderBand). */
-/* Lightened from #E2FBEE (Sep 21). Only the UNTIMED green moves — .bn-dark below is the
-   countdown variant and stays put, since the whole point of that pair is that a running timer
-   reads stronger than a static message. Each stop is pulled the same fraction of the way to
-   white, so the ramp keeps its shape and still clears the copy before the white end. */
-/* The six band gradients. A Figma gradient stop cannot carry a paint style, so each stop is
-   written here as its style faded over white — the mapping the "Alert band — background colour
-   spec" annotation in Figma documents. Change one, change the other. */
-.am .banner,.am .band3{color:var(--success-800);background:linear-gradient(90deg,var(--success-50) 0%,color-mix(in srgb,var(--success-50) 80%,#fff) 40%,color-mix(in srgb,var(--success-50) 35%,#fff) 78%,#fff 100%);border-radius:32px 32px 0 0;transition:background .3s,transform .42s cubic-bezier(.2,.8,.2,1),margin-bottom .42s cubic-bezier(.2,.8,.2,1)}
-.am .banner.bn-dark,.am .band3.bn-dark{background:linear-gradient(90deg,var(--success-100) 0%,color-mix(in srgb,var(--success-100) 70%,#fff) 40%,color-mix(in srgb,var(--success-100) 25%,#fff) 78%,#fff 100%)}
+/* The six band gradients, taken stop-for-stop off the Figma component set "Alert band"
+   (4804:2417) on Sep 25. All six run left to right (Figma's matrix is the identity).
+   Two things changed shape in that pass and are worth knowing before you "fix" them:
+     1. The pale bands are now a TINT OF THE RAMP over white rather than a ramp step faded to
+        white, so the alpha is on the stop. Type=Bonus is Success/600 at 18% → 3% → 0%.
+     2. The two dark bands no longer fade out to white at all — they run dark green to
+        Success/600, so the old "no word may sit on the gradient" constraint is gone with them.
+   Keeps v1's timer rule: a countdown shows a stronger green, no countdown the softer one,
+   keyed on the TIMER and not the mode (see renderBand). */
+.am .banner,.am .band3{color:var(--success-800);background:linear-gradient(90deg,rgba(3,152,85,.18) 0%,rgba(3,152,85,.03) 55%,rgba(3,152,85,0) 100%);border-radius:32px 32px 0 0;transition:background .3s,transform .42s cubic-bezier(.2,.8,.2,1),margin-bottom .42s cubic-bezier(.2,.8,.2,1)}
+.am .banner.bn-dark,.am .band3.bn-dark{background:linear-gradient(90deg,#CDF8E0 0%,#DEFBEB 40%,#F2FDF8 78%,#fff 100%)}
 /* The tops below are measured from the nav's real height (64px + 1px border = 65px).
    Change anything in .nav and all four must move with it. */
 /* flush with the receipt card below it, which sits at 16px either side */
@@ -735,7 +741,8 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 /* NO colour on the bold rule: the coupon and promo bands are white-on-green and a colour here
    would have to be undone in both. */
 .am .bandin .l1 b,.am .bandin .l2 b{font-weight:700;font-variant-numeric:tabular-nums}
-.am .bandin .l2{margin-top:1px;color:var(--success-700)}
+/* Figma gives the whole band one text colour — both lines are Success/800, not a 700/800 pair. */
+.am .bandin .l2{margin-top:1px;color:var(--success-800)}
 /* The highlight, used only by the low-balance band's copy. Deliberately a class and not plain
    `b`, because every other band sets its own text colour (gold #93370D, coupon/promo white, red
    var(--error-800)) and darkening `b` globally would fight all four. b.hl outranks `.am .bandin .l2` on
@@ -747,30 +754,19 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    band now, and var(--success-800) on the coupon's dark green is invisible. On those four the highlight
    is the 800 weight alone. */
 .am .red .bandin b.hl,.am .gold .bandin b.hl,.am .coupon .bandin b.hl,.am .bn-promo .bandin b.hl{color:inherit}
-/* Astrologer flow, tile too small to connect: same left-to-right fade, red. */
-.am .banner.red,.am .band3.red{color:var(--error-800);background:linear-gradient(90deg,var(--error-100) 0%,color-mix(in srgb,var(--error-100) 60%,#fff) 40%,color-mix(in srgb,var(--error-100) 25%,#fff) 78%,#fff 100%)}
+/* Astrologer flow, tile too small to connect: same left-to-right fade, red. Figma Type=Not enough. */
+.am .banner.red,.am .band3.red{color:var(--error-800);background:linear-gradient(90deg,#FCE7E7 0%,#FDEEEE 40%,#FEF8F8 78%,#fff 100%)}
 .am .red .bandin .l1,.am .red .bandin .l2{color:var(--error-800)}
-/* Continue-chat flow (View History → Continue Chat): the first-5-minutes promo. The ONLY band
-   that is solid green with white text — every other one is a pale wash with dark text. The fade
-   still runs rightward and the copy must clear the white end, so keep this line short. */
-/* The ramp starts AFTER the copy ends (measured: the rate line runs to 86% of a 342px band), so
-   no word ever sits on the wash. An earlier 70% start put "(80% off)" on pale green and the band
-   read as damaged — the white end also swallowed its own rounded corner. Re-measure
-   `.rate`'s right edge against the band if this copy ever changes. */
-/* NAMED bn-promo, not promo: `.promo` is already v1's purple home-screen carousel card, which is
+/* Continue-chat flow (View History → Continue Chat): the first-5-minutes promo. One of the two
+   bands that is solid green with white text — the others are pale washes with dark text.
+   NAMED bn-promo, not promo: `.promo` is already v1's purple home-screen carousel card, which is
    unscoped and sets height:60px + overflow:hidden. Naming this variant `.promo` silently clamped
    the band to 60px so it stopped reaching under the receipt card. Any new band class has to be
-   checked against the v1 CSS above before it is used. */
-/* Seven stops, not four: three stops crammed into the last 12% banded visibly. The first two
-   steps are near-identical to var(--success-600), so the copy (which ends at ~86%) still sits on what reads
-   as solid green — the "no word may sit on the gradient" rule is kept while the ramp gets longer
-   and therefore smoother. */
-/* Sep 23: this band and the coupon band SWAPPED greens. It is the one carrying a live countdown
-   now, so it takes the deep green under v1's standing rule — deeper green only while a clock is
-   ticking. Only the COLOURS moved: the seven stop positions are this band's own, measured against
-   this band's copy (solid to 80% = 262px of 328), so recolouring in place can't push a word onto
-   the ramp. Never swap the stop geometry between the two bands — the copy doesn't travel with it. */
-.am .banner.bn-promo,.am .band3.bn-promo{color:#fff;background:linear-gradient(90deg,var(--success-800) 0%,var(--success-800) 80%,var(--success-800) 86%,color-mix(in srgb,var(--success-600) 78%,#fff) 90%,color-mix(in srgb,var(--success-600) 54%,#fff) 94%,color-mix(in srgb,var(--success-600) 31%,#fff) 97%,color-mix(in srgb,var(--success-600) 11%,#fff) 99%,#fff 100%)}
+   checked against the v1 CSS above before it is used.
+   Sep 25: takes Figma's Type=Offer ramp — dark green on the LEFT running out to Success/600 on
+   the right. It no longer fades to white, so the old rule about keeping the copy clear of the
+   wash no longer binds here; every stop is dark enough to hold white text end to end. */
+.am .banner.bn-promo,.am .band3.bn-promo{color:#fff;background:linear-gradient(90deg,var(--success-950) 0%,var(--success-800) 42%,var(--success-700) 78%,var(--success-600) 100%)}
 /* .l2's default is a dark green meant for the pale bands; on this solid one it has to go white,
    same as .l1. */
 .am .bn-promo .bandin .l1,.am .bn-promo .bandin .l2{color:var(--white)}
@@ -780,10 +776,10 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    The stars and the sweep are SIBLINGS of .bandin, not children, so they inherit the band's own
    32px corners; .bandin is lifted above them (everything here is positioned, so DOM order alone
    would put them on top).
-   Sep 23: LIGHTER green, because its pill now reads a static "Expiring Today" instead of a clock —
-   deep green is reserved for a band that is actually ticking. Colours only; the four stop
-   positions are still this band's own (solid to 88%). */
-.am .banner.coupon,.am .band3.coupon{color:#fff;background:linear-gradient(90deg,var(--success-600) 0%,var(--success-600) 88%,color-mix(in srgb,var(--success-600) 73%,#fff) 94%,color-mix(in srgb,var(--success-600) 25%,#fff) 97.5%,#fff 100%)}
+   Sep 25: Figma's Type=Coupon ramp. Same four colours as the Offer band above but reaching the
+   light end sooner (25% / 66.3% vs 42% / 78%), which is what tells the two dark bands apart now
+   that neither fades to white. */
+.am .banner.coupon,.am .band3.coupon{color:#fff;background:linear-gradient(90deg,var(--success-950) 0%,var(--success-800) 25%,var(--success-700) 66.3%,var(--success-600) 100%)}
 .am .coupon .bandin{z-index:1}
 .am .coupon .bandin .l1,.am .coupon .bandin .l2{color:var(--white)}
 .am .coupon .bandin .l2 b{letter-spacing:.3px}
@@ -807,12 +803,14 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    DARK GREEN band, so opacity is a straight visibility dial. UP = brighter, more visible.
    DOWN = the white fades into the green and they vanish. There is no value that is both fainter
    and more visible; if the ask is "more visible", this number must RISE.
-   Sep 23: both green bands carry the stars now, so this is shared. */
-.am .coupon .bn-stars,.am .bn-promo .bn-stars{position:absolute;right:0;top:0;width:236px;height:44px;z-index:0;object-fit:cover;object-position:right top;pointer-events:none;opacity:.2;
+   Sep 23: both green bands carry the stars now, so this is shared.
+   Sep 25: .2 → .26, Figma's own number for Type=Offer. */
+.am .coupon .bn-stars,.am .bn-promo .bn-stars{position:absolute;right:0;top:0;width:236px;height:44px;z-index:0;object-fit:cover;object-position:right top;pointer-events:none;opacity:.26;
   -webkit-mask-image:linear-gradient(to left,#000 0%,rgba(0,0,0,.5) 26%,rgba(0,0,0,.12) 52%,transparent 72%);mask-image:linear-gradient(to left,#000 0%,rgba(0,0,0,.5) 26%,rgba(0,0,0,.12) 52%,transparent 72%)}
 /* The stars are white, so their visibility is white-on-green CONTRAST, and the coupon band is the
    lighter green — .2 there reads noticeably fainter than the same .2 on the deep promo band.
-   Raised to .3 to land them at the same apparent strength, per the direction rule above. */
+   Raised to .3 to land them at the same apparent strength, per the direction rule above.
+   Figma now names both numbers explicitly — Offer 26%, Coupon 30% — so the pair is spec, not taste. */
 .am .coupon .bn-stars{opacity:.3}
 .am .bn-promo .bandin{z-index:1}
 /* Sweep stays on the coupon band ONLY. The promo band has a running clock, and the badge-sweep
@@ -822,16 +820,12 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    GONE — she asked for them removed. They were pure decoration ("the rate falls") and were
    competing with the copy for the right-hand end of the strip. `arrow-drift` is still in
    src/icons/ and so still inlined; nothing references it. */
-/* Lightened from var(--warning-100) (Sep 21). Its luminance already matched the green band's #E2FBEE almost
-   exactly — what made it read as the heavier of the two was CHROMA: var(--warning-100) spans 55 between its
-   max and min channel against the green's 25. So the blue channel is lifted and the other two are
-   left alone, which drops the spread to 32 without touching how light it is. Keep that in mind
-   before "lightening" this further by raising all three channels — that washes it out instead. */
-.am .banner.gold,.am .band3.gold{background:#FEF5DE}
-/* Wallet flow only: the gold strip fades out to white, rightward, matching the green band. */
-.am .banner.gold.gfade,.am .band3.gold.gfade{background:linear-gradient(90deg,color-mix(in srgb,var(--warning-300) 18%,#fff) 0%,color-mix(in srgb,var(--warning-300) 12%,#fff) 40%,color-mix(in srgb,var(--warning-300) 5%,#fff) 78%,#fff 100%)}
-.am .gold .bandin .l1{color:var(--warning-800)}
-.am .gold .bandin .l2{color:var(--warning-700)}
+/* Figma Type=Missing out. The first two stops carry their own alpha (60% / 70%) — that, not a
+   lighter hue, is what stops the amber reading heavier than the green band beside it. Keep the
+   alphas if you ever retune this; raising all three channels instead just washes it out. */
+.am .banner.gold,.am .band3.gold,
+.am .banner.gold.gfade,.am .band3.gold.gfade{background:linear-gradient(90deg,rgba(254,245,222,.6) 0%,rgba(254,248,233,.7) 40%,#FFFCF6 78%,#fff 100%)}
+.am .gold .bandin .l1,.am .gold .bandin .l2{color:var(--warning-800)}
 /* The amber icon is drawn amber now (warning.svg is white + var(--warning-900), the exact two
    fills the Figma "Missing out" icon slot carries). It used to be the green icon put through
    hue-rotate(255deg), which landed on a colour that is in no palette and could not be named. */
