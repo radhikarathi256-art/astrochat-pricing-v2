@@ -181,7 +181,9 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 @keyframes swapGift{0%,40%{opacity:1;transform:scale(1) rotate(0)}50%,90%{opacity:0;transform:scale(.3) rotate(-120deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
 @keyframes swapPlus{0%,40%{opacity:0;transform:scale(.3) rotate(120deg)}50%,90%{opacity:1;transform:scale(1) rotate(0)}100%{opacity:0;transform:scale(.3) rotate(120deg)}}
 .giftw{position:relative;display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;font-size:15px;line-height:1}
-.home .giftw .g{display:inline-block;transform-origin:50% 85%;animation:gift6 6s ease-in-out infinite}
+/* Today carries the same wallet chip as Home, so the gift's wobble has to be let onto both roots
+   — the CSS fallback is what plays until mountSwapLottie() upgrades it. */
+.home .giftw .g,.today .giftw .g{display:inline-block;transform-origin:50% 85%;animation:gift6 6s ease-in-out infinite}
 .giftw i{position:absolute;width:4px;height:4px;border-radius:50%;background:var(--warning-400);opacity:0;animation:spark6 6s ease-out infinite}
 .giftw i:nth-of-type(1){top:-1px;right:-2px}
 .giftw i:nth-of-type(2){top:3px;left:-3px;width:3px;height:3px;animation-delay:.1s;background:var(--success-500)}
@@ -1421,6 +1423,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
     <button data-jump="home">Home</button>
     <button data-jump="wallet">Wallet pill</button>
     <button data-jump="listingChat">Listing → Chat</button>
+    <button data-jump="todayChat">Today → Chat</button>
     <button data-jump="again">Chat again (coupon)</button>
     <button data-jump="history">View history (offer)</button>
     <button data-jump="post4">Post 4th recharge</button>
@@ -1483,6 +1486,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
     <button data-jump="home">Home<small>Start of the flow</small></button>
     <button data-jump="wallet">Wallet pill<small>Add Money to Wallet, standard bonuses</small></button>
     <button data-jump="listingChat">Listing → Chat<small>Low balance → Add Money to Wallet</small></button>
+    <button data-jump="todayChat">Today → Chat<small>Today page, then the same low-balance flow</small></button>
     <button data-jump="again">Chat again<small>Coupon applied → coupon bonuses</small></button>
     <button data-jump="history">View history<small>Continue chat → ₹12/min offer</small></button>
     <button data-jump="post4">Post 4th recharge<small>Two rows of SKUs, coins on ₹500</small></button>
@@ -1650,7 +1654,10 @@ function renderToday(){
     <div class="topnav">
       <img src="${I.hamburger}" alt="Menu" width="19.4" height="16">
       <div class="navright">
-        <button class="wchip" data-go="wallet" aria-label="Wallet ₹0. Add money"><span class="bal"><img src="${I.wallet}" alt="" width="18" height="18">₹0</span></button>
+        <button class="wchip" data-go="wallet" aria-label="Wallet ₹0. Add money and get cashback">
+          <span class="bal"><img src="${I.wallet}" alt="" width="18" height="18">₹0</span>
+          <span class="swap"><span class="lay lg"><span class="giftw" aria-hidden="true"><span class="g">🎁</span><i></i><i></i><i></i></span></span><span class="lay lp"><img src="${I.plus}" alt=""></span></span>
+        </button>
         <img src="${I['chat-top']}" alt="Messages" width="22" height="22">
       </div>
     </div>
@@ -2748,6 +2755,10 @@ function go(route,rate){
     // red "not enough to connect" strip below the 4-min minimum, the green rate strip above it.
     // SEL is temporary, so the copy switcher can land on the tile its button labels quote.
     case 'listingChat': flowType='insufficient'; flowAstro='Astro Hemali'; flowRate=flowRate||15; mount(renderLow()); later(()=>openAB('default',SEL||100,false,true,{cflow:true}),1600); break;
+    // Same insufficient-balance run as listingChat, only entered from Today rather than the
+    // astrologer card — so it repeats that case verbatim, including the 1600ms the chat screen
+    // holds before Add Money opens. The 1400ms in front is time enough to read the Today page.
+    case 'todayChat': flowType='insufficient'; flowAstro='Astro Hemali'; flowRate=flowRate||15; mount(renderToday()); later(()=>{mount(renderLow()); later(()=>openAB('default',SEL||100,false,true,{cflow:true}),1600)},1400); break;
     case 'again': flowType='coupon'; flowAstro='Astro Vipasana'; flowRate=flowRate||5; mount(renderLow()); later(()=>withPopup('coupon','coupon',()=>later(()=>{ab.banner=true;renderBand()},800)),1600); break;
     case 'history': mount(renderChat()); break;
     // Still six tiles here, but the coins stay on ₹250 like every other flow — her call Sep 23.
