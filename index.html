@@ -1821,9 +1821,9 @@ function renderAB(){
         <span class="veilfade" id="veil"></span>
         <div class="ac green" id="card">
           <span class="skin"><span class="spin"></span></span>
-          <div class="c"><p class="e" id="cardE"><b>Nice!</b> Pay now &amp; get</p>
+          <div class="c"><p class="e" id="cardE"><b>Nice!</b> Pay Now &amp; Get</p>
             <p class="amt"><span class="r">₹</span><span class="n" id="cardN">110</span></p>
-            <p class="t">added in your wallet</p></div>
+            <p class="t">Added in Your Wallet</p></div>
         </div>
         <svg class="arc" viewBox="0 0 360 24" preserveAspectRatio="none" aria-hidden="true">
           <defs><linearGradient id="arcG" x1="0" y1="0" x2="360" y2="0" gradientUnits="userSpaceOnUse">
@@ -2237,7 +2237,7 @@ function renderCard(animate=true,counts=true){
   A('cardE').hidden=false;
   A('cardE').innerHTML=ab.hindi
     ? 'BADHAI HO!'
-    : (g?'':'<b>Nice!</b> ')+'Pay now &amp; get';
+    : (g?'':'<b>Nice!</b> ')+'Pay Now &amp; Get';
   A('card').querySelector('.amt .r').textContent=SYM();
   const n=A('cardN'), token=++animToken;
   const setN=x=>{ab.shown=x;n.textContent=fmt(x);alignCardRupee()};
