@@ -233,10 +233,13 @@ TAG_ROT = [(0, 0), (62, 0), (68, -13), (74, 10), (80, -7), (86, 4), (92, -2), (1
 TAG_SCALE = [(0, 100), (62, 100), (68, 108), (74, 108), (80, 104), (86, 100), (100, 100)]
 
 
-def band_icon(name, svg, glyph_colour, title):
+def band_icon(name, svg, glyph_colour, title, wiggle=True):
     """A 24px seal on its white disc, wiggling on tagWiggle. The disc is an `el` primitive rather
-    than the SVG's own circle path — four beziers against nine bytes."""
-    frames = int(FPS * TAG_SECONDS)
+    than the SVG's own circle path — four beziers against nine bytes.
+
+    `wiggle=False` is the prototype's bells: they carry no `class="tag"`, so they never move.
+    They still export as Lottie so one player can drive the whole icon set."""
+    frames = int(FPS * TAG_SECONDS) if wiggle else 1
 
     def key(table):
         return [(frames * p / 100.0, v) for p, v in table]
@@ -248,7 +251,8 @@ def band_icon(name, svg, glyph_colour, title):
     shapes = glyph + [group([{"ty": "el", "p": static([12, 12]), "s": static([24, 24]),
                               "nm": "disc"}, fill("#FFFFFF")], "disc")]
     ks = {"o": static(100), "p": static([12, 12, 0]), "a": static([12, 12, 0]),
-          "r": anim(key(TAG_ROT)), "s": anim([(t, [v, v]) for t, v in key(TAG_SCALE)])}
+          "r": anim(key(TAG_ROT)) if wiggle else static(0),
+          "s": anim([(t, [v, v]) for t, v in key(TAG_SCALE)]) if wiggle else static([100, 100])}
     write(name, 24, 24, frames, [layer(1, "seal", shapes, ks, frames)], title)
 
 
@@ -335,5 +339,7 @@ if __name__ == "__main__":
     band_icon("band-bonus.json", "discount.svg", "#039855", "AstroChat band seal · green")
     band_icon("band-bonus-dark.json", "discount-dark.svg", "#065F41",
               "AstroChat band seal · dark green")
-    band_icon("band-alert-amber.json", "warning.svg", "#7A2E0E", "AstroChat band bell · amber")
-    band_icon("band-alert-red.json", "warning-red.svg", "#7A271A", "AstroChat band bell · red")
+    band_icon("band-alert-amber.json", "warning.svg", "#7A2E0E", "AstroChat band bell · amber",
+              wiggle=False)
+    band_icon("band-alert-red.json", "warning-red.svg", "#7A271A", "AstroChat band bell · red",
+              wiggle=False)
