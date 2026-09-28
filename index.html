@@ -996,7 +996,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
      flight: .am .chip, .am .flyer, and the .v-purple override. */
   background:linear-gradient(180deg,rgba(2,122,72,.85) 0%,rgba(2,122,72,.85) 10%,rgba(3,152,85,.85) 23.3%,rgba(3,152,85,.85) 83.9%,rgba(3,152,85,.32725) 100%),#fff}
 .am .chip p{position:relative;z-index:1;font-size:10px;font-weight:600;line-height:14px;letter-spacing:-.1px;color:#fff;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
-/* The figure carries the hierarchy; "more" and the ₹ stay at 10px/600. line-height is pinned
+/* The figure carries the hierarchy; "extra" and the ₹ stay at 10px/600. line-height is pinned
    so the bigger inline type can't grow the line box and push the pill taller — the card's
    spacing below is measured off this pill's height. */
 .am .chip p b,.am .flyer p b{font-size:var(--fs-xs);font-weight:800;line-height:14px}
@@ -1936,7 +1936,7 @@ function amTile([v], i){
     <div class="opt" role="radio" tabindex="0" aria-checked="${on}" aria-label="₹${fmt(v)}${b?`, ₹${fmt(b)} extra`:''}" data-amt="${v}">
       <div class="box ${on?'on':''}"><div class="sku"><span class="r">₹</span><span class="n">${v}</span></div>${on?CORNER:''}</div>
     </div>
-    ${b?`<div class="chip" style="--sd:${sweepDelay(i)}s"><p>+₹<b>${fmt(b)}</b> more</p></div>`:''}
+    ${b?`<div class="chip" style="--sd:${sweepDelay(i)}s"><p>+₹<b>${fmt(b)}</b> extra</p></div>`:''}
   </div>`;
 }
 // Collapsed row: ₹50 · ₹100 · ₹250, or the picked amount in the last slot when it's bigger.
@@ -2264,7 +2264,7 @@ function renderCard(animate=true,counts=true){
   const n=A('cardN'), token=++animToken;
   const setN=x=>{ab.shown=x;n.textContent=fmt(x);alignCardRupee()};
   if(!animate||RM||b===0){setN(total);return}
-  // Each amount's badge drops ONCE per visit to this screen. Pick ₹100 and its "+₹150 more"
+  // Each amount's badge drops ONCE per visit to this screen. Pick ₹100 and its "+₹150 extra"
   // flies into the card; pick ₹100 again later and only the number refreshes, no second drop.
   // The set lives on `ab`, which openAB() rebuilds, so re-entering the screen replays them all.
   if(ab.dropped.has(v)){setN(total);return}
@@ -2301,7 +2301,7 @@ function flyBonus(b,delay,dur){
   const sr=amRoot.getBoundingClientRect(), a=chip.getBoundingClientRect(), z=amt.getBoundingClientRect();
   const fly=document.createElement('div');
   fly.className='flyer';
-  fly.innerHTML=`<p>+₹<b>${fmt(b)}</b> more</p>`;   // must match the chip it flies out of
+  fly.innerHTML=`<p>+₹<b>${fmt(b)}</b> extra</p>`;   // must match the chip it flies out of
   Object.assign(fly.style,{left:(a.left-sr.left)+'px',top:(a.top-sr.top)+'px',width:a.width+'px',height:a.height+'px'});
   amRoot.appendChild(fly);
   const dx=(z.left+z.width/2)-(a.left+a.width/2), dy=(z.top+z.height/2)-(a.top+a.height/2);
