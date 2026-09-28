@@ -121,10 +121,9 @@ body.kbd :focus-visible{outline:2px solid rgba(16,24,40,.35);outline-offset:2px}
 .lot .pv{flex:none;width:32px;height:32px;border-radius:8px;background:#3d3d44;overflow:hidden}
 .lot .pv.g{background:linear-gradient(135deg,#065F41,#039855)}
 .lot .pv.w{background:#fff}
-/* the bells belong on their own band tint, not on green */
-.lot .pv.a{background:var(--warning-100)}
-.lot .pv.r{background:var(--error-100)}
 .lot a{color:#fff;font-weight:600;text-decoration:none;border-bottom:1px solid #6a6a72}
+/* the raw-file escape hatch: present, but never competing with the LottieFiles link */
+.lot a.raw{color:#8a8a93;font-weight:400;font-size:11px;border-bottom-color:#4a4a52}
 .lot small{display:block;color:#8a8a93}
 .lot .note{margin:8px 0 0;color:#8a8a93}
 body.mobile .specs{display:none}
@@ -1526,9 +1525,9 @@ body.mobile .phone{border-radius:0;box-shadow:none}
     <li>Discount banners keep their light sweep. <i>live here</i></li>
   </ol>
   <details class="lot" id="lotPanel">
-    <summary>Lottie downloads · 7</summary>
+    <summary>Lottie files · 5</summary>
     <ul id="lotList"></ul>
-    <p class="note" id="lotNote">Each one is the animation this page runs, as a .json any Lottie player reads.</p>
+    <p class="note" id="lotNote">Each one is the animation this page runs. The name opens it on LottieFiles; <i>json</i> downloads the raw file.</p>
   </details>
 </details>
 <button class="flows-btn" id="flowsBtn" aria-haspopup="dialog">Flows ▾</button>
@@ -2873,19 +2872,20 @@ document.getElementById('flowsSheet').addEventListener('click',e=>{if(e.target.i
    never the .json.
    `g` is the swatch the icon actually sits on, so the white parts read. The preview is the same
    file the link hands over, played by the reference player — if it looks right here it is right. */
+const LOT_SHARE='https://app.lottiefiles.com/share/';
 const LOTTIES=[
-  ['popup-discount.json','Popup discount seal','g','Shakes once, 0.3s after the coupon popup lands.'],
-  ['sku-selected.json','SKU selection marks','w','Border, corner and tick. Transparent — drop it on a tile.'],
-  ['band-bonus.json','Band seal · green','g','Bonus and coupon bands. Still, then a shake every 3.4s.'],
-  ['band-bonus-dark.json','Band seal · dark green','g','The offer band, on its deeper green.'],
-  ['band-alert-amber.json','Band bell · amber','a','The missing-out band. Still, like the prototype.'],
-  ['band-alert-red.json','Band bell · red','r','The not-enough-balance band. Still, like the prototype.'],
-  ['walletchip.json','Wallet chip','g','The gift ⇄ add swap in the nav.'],
+  ['popup-discount.json','Popup discount seal','g','Shakes once, 0.3s after the coupon popup lands.','6dfe8733-6eab-49bb-a164-b5e7ae9122c1'],
+  ['sku-selected.json','SKU selection marks','w','Border, corner and tick. Transparent — drop it on a tile.','7a656a30-ced3-48df-8e96-0a048cb9261b'],
+  ['band-bonus.json','Band seal · green','g','Bonus and coupon bands. Still, then a shake every 3.4s.','768bd009-85b1-4257-8fa7-5bae57e58070'],
+  ['band-bonus-dark.json','Band seal · dark green','g','The offer band, on its deeper green.','b2df3cf7-4bb7-4ccf-bdce-d91e98e6fc43'],
+  ['walletchip.json','Wallet chip','g','The gift ⇄ add swap in the nav.','d6e49e74-0011-4499-bcf6-d9ced1bc88df'],
 ];
-document.getElementById('lotList').innerHTML=LOTTIES.map(([f,name,bg,what])=>
-  `<li><span class="pv ${bg}" data-src="assets/${f}"></span><span><a href="assets/${f}" download>${name}</a><small>${what}</small></span></li>`).join('');
+/* The title goes to LottieFiles; the faint `json` beside it still hands over the raw file, for
+   anyone who cannot reach LottieFiles. `noopener` because these open in a new tab. */
+document.getElementById('lotList').innerHTML=LOTTIES.map(([f,name,bg,what,id])=>
+  `<li><span class="pv ${bg}" data-src="assets/${f}"></span><span><a href="${LOT_SHARE}${id}" target="_blank" rel="noopener">${name}</a> <a class="raw" href="assets/${f}" download>json</a><small>${what}</small></span></li>`).join('');
 /* The player is 300KB and most visits never open this drawer, so it is fetched on the first open
-   and never again. Without it the page is unchanged; the download links are plain hrefs. */
+   and never again. Without it the page is unchanged; the links are plain hrefs. */
 const lotPanel=document.getElementById('lotPanel');
 lotPanel.addEventListener('toggle',()=>{
   if(!lotPanel.open||lotPanel.dataset.loaded)return;
@@ -2894,7 +2894,7 @@ lotPanel.addEventListener('toggle',()=>{
   s.src='https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js';
   s.onload=()=>document.querySelectorAll('#lotList .pv').forEach(b=>
     lottie.loadAnimation({container:b,renderer:'svg',loop:true,autoplay:true,path:b.dataset.src}));
-  s.onerror=()=>{document.getElementById('lotNote').textContent='No internet, so the previews stay blank — the downloads still work.'};
+  s.onerror=()=>{document.getElementById('lotNote').textContent='No internet, so the previews stay blank — the links still work.'};
   document.head.append(s);
 });
 
