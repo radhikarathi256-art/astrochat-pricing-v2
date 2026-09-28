@@ -999,7 +999,10 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 /* The figure carries the hierarchy; "extra" and the ₹ stay at 10px/600. line-height is pinned
    so the bigger inline type can't grow the line box and push the pill taller — the card's
    spacing below is measured off this pill's height. */
-.am .chip p b,.am .flyer p b{font-size:var(--fs-xs);font-weight:800;line-height:14px}
+/* margin:0 1px is the badge's itemSpacing from Figma (Bonus badge / Style=Green, 4803:2367):
+   1px between "+₹", the figure and "extra". The markup must NOT put a literal space before
+   "extra" — a space at this size is ~3px and would stack on top of this margin. */
+.am .chip p b,.am .flyer p b{font-size:var(--fs-xs);font-weight:800;line-height:14px;margin:0 1px}
 /* Light sweep, collapsed row only — nine of these at once in the open grid reads as noise.
    Clipped by the pill's own overflow, and sits under the text via .chip p's z-index. */
 .am #skus .chip{overflow:hidden}
@@ -1936,7 +1939,7 @@ function amTile([v], i){
     <div class="opt" role="radio" tabindex="0" aria-checked="${on}" aria-label="₹${fmt(v)}${b?`, ₹${fmt(b)} extra`:''}" data-amt="${v}">
       <div class="box ${on?'on':''}"><div class="sku"><span class="r">₹</span><span class="n">${v}</span></div>${on?CORNER:''}</div>
     </div>
-    ${b?`<div class="chip" style="--sd:${sweepDelay(i)}s"><p>+₹<b>${fmt(b)}</b> extra</p></div>`:''}
+    ${b?`<div class="chip" style="--sd:${sweepDelay(i)}s"><p>+₹<b>${fmt(b)}</b>extra</p></div>`:''}
   </div>`;
 }
 // Collapsed row: ₹50 · ₹100 · ₹250, or the picked amount in the last slot when it's bigger.
@@ -2301,7 +2304,7 @@ function flyBonus(b,delay,dur){
   const sr=amRoot.getBoundingClientRect(), a=chip.getBoundingClientRect(), z=amt.getBoundingClientRect();
   const fly=document.createElement('div');
   fly.className='flyer';
-  fly.innerHTML=`<p>+₹<b>${fmt(b)}</b> extra</p>`;   // must match the chip it flies out of
+  fly.innerHTML=`<p>+₹<b>${fmt(b)}</b>extra</p>`;   // must match the chip it flies out of
   Object.assign(fly.style,{left:(a.left-sr.left)+'px',top:(a.top-sr.top)+'px',width:a.width+'px',height:a.height+'px'});
   amRoot.appendChild(fly);
   const dx=(z.left+z.width/2)-(a.left+a.width/2), dy=(z.top+z.height/2)-(a.top+a.height/2);
