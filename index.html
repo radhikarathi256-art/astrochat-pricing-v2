@@ -123,6 +123,10 @@ body.kbd :focus-visible{outline:2px solid rgba(16,24,40,.35);outline-offset:2px}
 .lotdl .pv{flex:none;width:32px;height:32px;border-radius:8px;background:#3d3d44;overflow:hidden}
 .lotdl .pv.g{background:linear-gradient(135deg,#065F41,#039855)}
 .lotdl .pv.w{background:#fff}
+/* A .lottie is a zipped container, which lottie-web cannot read, so those rows preview through
+   the dotlottie web component the page already loads. `cover` because the coin file is a wide
+   shower and a contained copy would be four specks in a 32px box. */
+.lotdl .pv dotlottie-wc{display:block;width:100%;height:100%}
 .lotdl a{color:#fff;font-weight:600;text-decoration:none;border-bottom:1px solid #6a6a72}
 /* the raw-file escape hatch: present, but never competing with the LottieFiles link */
 .lotdl a.raw{color:#8a8a93;font-weight:400;font-size:11px;border-bottom-color:#4a4a52}
@@ -1527,7 +1531,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
     <li>Discount banners keep their light sweep. <i>live here</i></li>
   </ol>
   <details class="lotdl" id="lotPanel">
-    <summary>Lottie files · 5</summary>
+    <summary>Lottie files · 6</summary>
     <ul id="lotList"></ul>
     <p class="note" id="lotNote">Each one is the animation this page runs. The name opens it on LottieFiles; <i>json</i> downloads the raw file.</p>
   </details>
@@ -2881,17 +2885,31 @@ const LOTTIES=[
   ['band-bonus.json','Band seal · green','g','Bonus and coupon bands. Still, then a shake every 3.4s.','768bd009-85b1-4257-8fa7-5bae57e58070'],
   ['band-bonus-dark.json','Band seal · dark green','g','The offer band, on its deeper green.','b2df3cf7-4bb7-4ccf-bdce-d91e98e6fc43'],
   ['walletchip.json','Wallet chip','g','The gift ⇄ add swap in the nav.','d6e49e74-0011-4499-bcf6-d9ced1bc88df'],
+  ['coin.lottie','Coin drop','g','The shower on the hero tile. Loops; stops once that tile is picked.','a89441ff-f147-47a4-8331-cfe4d7491cc7'],
 ];
 /* The title goes to LottieFiles; the faint `json` beside it still hands over the raw file, for
    anyone who cannot reach LottieFiles. `noopener` because these open in a new tab. */
-document.getElementById('lotList').innerHTML=LOTTIES.map(([f,name,bg,what,id])=>
-  `<li><span class="pv ${bg}" data-src="assets/${f}"></span><span><a href="${LOT_SHARE}${id}" target="_blank" rel="noopener">${name}</a> <a class="raw" href="assets/${f}" download>json</a><small>${what}</small></span></li>`).join('');
+document.getElementById('lotList').innerHTML=LOTTIES.map(([f,name,bg,what,id])=>{
+  const dot=f.endsWith('.lottie');
+  // Neither kind is mounted here. A dotlottie-wc sitting in this markup would fetch its file and
+  // run a player for every visitor, including the ones who never open the drawer — the same cost
+  // the lazy player below exists to avoid. Both are built on first open instead.
+  const pv=`<span class="pv ${bg}" data-${dot?'dot':'src'}="assets/${f}"></span>`;
+  return `<li>${pv}<span><a href="${LOT_SHARE}${id}" target="_blank" rel="noopener">${name}</a> <a class="raw" href="assets/${f}" download>${dot?'lottie':'json'}</a><small>${what}</small></span></li>`;
+}).join('');
 /* The player is 300KB and most visits never open this drawer, so it is fetched on the first open
    and never again. Without it the page is unchanged; the links are plain hrefs. */
 const lotPanel=document.getElementById('lotPanel');
 lotPanel.addEventListener('toggle',()=>{
   if(!lotPanel.open||lotPanel.dataset.loaded)return;
   lotPanel.dataset.loaded='1';
+  // .lottie rows need no script fetch — the dotlottie component is already loaded in <head> —
+  // so they can be built straight away, unlike the .json rows waiting on lottie-web below.
+  document.querySelectorAll('#lotList .pv[data-dot]').forEach(b=>{
+    const w=document.createElement('dotlottie-wc');
+    w.setAttribute('src',b.dataset.dot); w.setAttribute('autoplay',''); w.setAttribute('loop','');
+    b.append(w);
+  });
   const s=document.createElement('script');
   s.src='https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js';
   s.onload=()=>document.querySelectorAll('#lotList .pv').forEach(b=>
