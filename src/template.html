@@ -106,14 +106,27 @@ body.kbd :focus-visible{outline:2px solid rgba(16,24,40,.35);outline-offset:2px}
    nothing but the screen. Top is the editor's height plus a gutter; if the editor grows, move it. */
 .specs{position:fixed;right:16px;top:356px;z-index:50;width:250px;
   background:#2f2f33;border:1px solid #707076;border-radius:12px;padding:12px;color:#c9c9cf;
-  font-size:var(--fs-xs);line-height:16px}
+  font-size:var(--fs-xs);line-height:16px;
+  /* the Lottie list below can outgrow the window, and a fixed panel has nowhere to push to */
+  max-height:calc(100vh - 372px);overflow:auto}
 .specs summary{color:#fff;font-weight:600;cursor:pointer}
 .specs ol{margin:8px 0 0;padding-left:18px}
 .specs li{margin-bottom:6px}
 .specs i{font-style:normal;color:#8a8a93}
-.specs .dl{margin:10px 0 0;border-top:1px solid #4a4a52;padding-top:10px}
-.specs .dl a{color:#fff;font-weight:600}
-.specs .dl i{display:block;margin-top:3px;font-style:normal;color:#8a8a93}
+/* The downloadable Lotties. Closed by default on purpose: opening it is what fetches the player,
+   so a visitor who never opens it pays nothing for it. */
+.lot{margin:10px 0 0;border-top:1px solid #4a4a52;padding-top:10px}
+.lot ul{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:9px}
+.lot li{display:flex;gap:8px;align-items:center;margin:0}
+.lot .pv{flex:none;width:32px;height:32px;border-radius:8px;background:#3d3d44;overflow:hidden}
+.lot .pv.g{background:linear-gradient(135deg,#065F41,#039855)}
+.lot .pv.w{background:#fff}
+/* the bells belong on their own band tint, not on green */
+.lot .pv.a{background:var(--warning-100)}
+.lot .pv.r{background:var(--error-100)}
+.lot a{color:#fff;font-weight:600;text-decoration:none;border-bottom:1px solid #6a6a72}
+.lot small{display:block;color:#8a8a93}
+.lot .note{margin:8px 0 0;color:#8a8a93}
 body.mobile .specs{display:none}
 /* Live alert-banner copy editor, desktop only. Same dark chrome as .toolbar so it reads as
    prototype furniture and not as part of the design. */
@@ -1512,7 +1525,11 @@ body.mobile .phone{border-radius:0;box-shadow:none}
     <li>The shower plays on ₹250 only — it is the best deal. <i>live here</i></li>
     <li>Discount banners keep their light sweep. <i>live here</i></li>
   </ol>
-  <p class="dl"><a href="assets/walletchip.json" download>Download wallet-chip Lottie</a><i>The gift ⇄ add swap in the nav, as a .json any Lottie player reads.</i></p>
+  <details class="lot" id="lotPanel">
+    <summary>Lottie downloads · 7</summary>
+    <ul id="lotList"></ul>
+    <p class="note" id="lotNote">Each one is the animation this page runs, as a .json any Lottie player reads.</p>
+  </details>
 </details>
 <button class="flows-btn" id="flowsBtn" aria-haspopup="dialog">Flows ▾</button>
 <div class="flows-sheet" id="flowsSheet" role="dialog" aria-label="Jump to a path">
@@ -2848,6 +2865,38 @@ document.querySelectorAll('[data-variant]').forEach(c=>c.addEventListener('chang
 }));
 document.getElementById('flowsBtn').addEventListener('click',()=>document.getElementById('flowsSheet').classList.add('open'));
 document.getElementById('flowsSheet').addEventListener('click',e=>{if(e.target.id==='flowsSheet')e.currentTarget.classList.remove('open')});
+
+/* The downloadable Lotties.
+   These motions are written twice — once as the CSS keyframes this page runs on, and once as a
+   .json — because CSS is worth nothing off the web. `python3 src/lottie/build_icons.py` reads the
+   same icons/*.svg and the same percentages, so the two cannot drift by hand; edit the generator,
+   never the .json.
+   `g` is the swatch the icon actually sits on, so the white parts read. The preview is the same
+   file the link hands over, played by the reference player — if it looks right here it is right. */
+const LOTTIES=[
+  ['popup-discount.json','Popup discount seal','g','Shakes once, 0.3s after the coupon popup lands.'],
+  ['sku-selected.json','SKU selection marks','w','Border, corner and tick. Transparent — drop it on a tile.'],
+  ['band-bonus.json','Band seal · green','g','Bonus and coupon bands. Still, then a shake every 3.4s.'],
+  ['band-bonus-dark.json','Band seal · dark green','g','The offer band, on its deeper green.'],
+  ['band-alert-amber.json','Band bell · amber','a','The missing-out band.'],
+  ['band-alert-red.json','Band bell · red','r','The not-enough-balance band.'],
+  ['walletchip.json','Wallet chip','g','The gift ⇄ add swap in the nav.'],
+];
+document.getElementById('lotList').innerHTML=LOTTIES.map(([f,name,bg,what])=>
+  `<li><span class="pv ${bg}" data-src="assets/${f}"></span><span><a href="assets/${f}" download>${name}</a><small>${what}</small></span></li>`).join('');
+/* The player is 300KB and most visits never open this drawer, so it is fetched on the first open
+   and never again. Without it the page is unchanged; the download links are plain hrefs. */
+const lotPanel=document.getElementById('lotPanel');
+lotPanel.addEventListener('toggle',()=>{
+  if(!lotPanel.open||lotPanel.dataset.loaded)return;
+  lotPanel.dataset.loaded='1';
+  const s=document.createElement('script');
+  s.src='https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js';
+  s.onload=()=>document.querySelectorAll('#lotList .pv').forEach(b=>
+    lottie.loadAnimation({container:b,renderer:'svg',loop:true,autoplay:true,path:b.dataset.src}));
+  s.onerror=()=>{document.getElementById('lotNote').textContent='No internet, so the previews stay blank — the downloads still work.'};
+  document.head.append(s);
+});
 
 fit();
 const start=new URLSearchParams(location.search).get('start');
