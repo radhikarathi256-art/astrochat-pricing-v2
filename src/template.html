@@ -114,18 +114,20 @@ body.kbd :focus-visible{outline:2px solid rgba(16,24,40,.35);outline-offset:2px}
 .specs li{margin-bottom:6px}
 .specs i{font-style:normal;color:#8a8a93}
 /* The downloadable Lotties. Closed by default on purpose: opening it is what fetches the player,
-   so a visitor who never opens it pays nothing for it. */
-.lot{margin:10px 0 0;border-top:1px solid #4a4a52;padding-top:10px}
-.lot ul{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:9px}
-.lot li{display:flex;gap:8px;align-items:center;margin:0}
-.lot .pv{flex:none;width:32px;height:32px;border-radius:8px;background:#3d3d44;overflow:hidden}
-.lot .pv.g{background:linear-gradient(135deg,#065F41,#039855)}
-.lot .pv.w{background:#fff}
-.lot a{color:#fff;font-weight:600;text-decoration:none;border-bottom:1px solid #6a6a72}
+   so a visitor who never opens it pays nothing for it.
+   NOT named .lot — that class already means "the swap Lottie has mounted" on the wallet chip,
+   and the border-top below was painting a stray line across it. */
+.lotdl{margin:10px 0 0;border-top:1px solid #4a4a52;padding-top:10px}
+.lotdl ul{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:9px}
+.lotdl li{display:flex;gap:8px;align-items:center;margin:0}
+.lotdl .pv{flex:none;width:32px;height:32px;border-radius:8px;background:#3d3d44;overflow:hidden}
+.lotdl .pv.g{background:linear-gradient(135deg,#065F41,#039855)}
+.lotdl .pv.w{background:#fff}
+.lotdl a{color:#fff;font-weight:600;text-decoration:none;border-bottom:1px solid #6a6a72}
 /* the raw-file escape hatch: present, but never competing with the LottieFiles link */
-.lot a.raw{color:#8a8a93;font-weight:400;font-size:11px;border-bottom-color:#4a4a52}
-.lot small{display:block;color:#8a8a93}
-.lot .note{margin:8px 0 0;color:#8a8a93}
+.lotdl a.raw{color:#8a8a93;font-weight:400;font-size:11px;border-bottom-color:#4a4a52}
+.lotdl small{display:block;color:#8a8a93}
+.lotdl .note{margin:8px 0 0;color:#8a8a93}
 body.mobile .specs{display:none}
 /* Live alert-banner copy editor, desktop only. Same dark chrome as .toolbar so it reads as
    prototype furniture and not as part of the design. */
@@ -1524,7 +1526,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
     <li>The shower plays on ₹250 only — it is the best deal. <i>live here</i></li>
     <li>Discount banners keep their light sweep. <i>live here</i></li>
   </ol>
-  <details class="lot" id="lotPanel">
+  <details class="lotdl" id="lotPanel">
     <summary>Lottie files · 5</summary>
     <ul id="lotList"></ul>
     <p class="note" id="lotNote">Each one is the animation this page runs. The name opens it on LottieFiles; <i>json</i> downloads the raw file.</p>
