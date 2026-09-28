@@ -986,7 +986,10 @@ body.mobile .phone{border-radius:0;box-shadow:none}
 /* max-width caps the pill at the tile it hangs off, so a long bonus ellipsises instead of
    spilling past the SKU. Vertical padding holds the pill at its old 26px height so the
    spacing below it — and therefore the card height — is unaffected by the smaller type. */
-.am .chip{position:relative;z-index:4;margin-top:-11px;max-width:100%;display:flex;align-items:center;justify-content:center;padding:6px 8px;border-radius:12px;
+/* padding 4px 5px and radius 12 are Figma's, and the pill stays 26px tall: it used to be
+   6 + 14 + 6, it is now 4 + 18 + 4. Keep that sum at 26 — the card's spacing below is
+   measured off this pill's height. */
+.am .chip{position:relative;z-index:4;margin-top:-11px;max-width:100%;display:flex;align-items:center;justify-content:center;padding:4px 5px;border-radius:12px;
   /* Figma "Bonus badge / Style=Green" (4803:2367). Top-to-bottom, and the fill's own layer
      opacity is baked into every stop's alpha with #fff underneath — same pixels, but it keeps
      working if the pill ever sits on a non-white surface. Last stop is Success/600 at 38.5%
@@ -995,14 +998,16 @@ body.mobile .phone{border-radius:0;box-shadow:none}
      milky against the card.) Change it in all three places or the badge shifts colour in
      flight: .am .chip, .am .flyer, and the .v-purple override. */
   background:linear-gradient(180deg,rgba(2,122,72,.85) 0%,rgba(2,122,72,.85) 10%,rgba(3,152,85,.85) 23.3%,rgba(3,152,85,.85) 83.9%,rgba(3,152,85,.32725) 100%),#fff}
-.am .chip p{position:relative;z-index:1;font-size:10px;font-weight:600;line-height:14px;letter-spacing:-.1px;color:#fff;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
-/* The figure carries the hierarchy; "extra" and the ₹ stay at 10px/600. line-height is pinned
-   so the bigger inline type can't grow the line box and push the pill taller — the card's
-   spacing below is measured off this pill's height. */
-/* margin:0 1px is the badge's itemSpacing from Figma (Bonus badge / Style=Green, 4803:2367):
-   1px between "+₹", the figure and "extra". The markup must NOT put a literal space before
-   "extra" — a space at this size is ~3px and would stack on top of this margin. */
-.am .chip p b,.am .flyer p b{font-size:var(--fs-xs);font-weight:800;line-height:14px;margin:0 1px}
+/* Type is Figma's "Body X Small 12/Regular" on every part of the badge — the var() pair IS
+   that style. Nothing here is 10px any more: the badge does not shrink its own type, the
+   figure is separated by weight alone. */
+.am .chip p{position:relative;z-index:1;font-size:var(--fs-xs);font-weight:400;line-height:var(--lh-xs);letter-spacing:0;color:#fff;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
+/* "Body X Small 12/Bold" — same size and line box as its neighbours, weight 700 only.
+   margin-right:1px is the badge's itemSpacing (Figma 4803:2367). It is on the RIGHT only:
+   in Figma "+" and "₹500" sit in a nested 0-gap frame, so the single 1px gap falls between
+   the figure and "extra". The markup must NOT also put a literal space before "extra" — a
+   space at 12px is ~3px and would stack on top of this. */
+.am .chip p b,.am .flyer p b{font-size:var(--fs-xs);font-weight:700;line-height:var(--lh-xs);margin:0 1px 0 0}
 /* Light sweep, collapsed row only — nine of these at once in the open grid reads as noise.
    Clipped by the pill's own overflow, and sits under the text via .chip p's z-index. */
 .am #skus .chip{overflow:hidden}
@@ -1215,7 +1220,9 @@ body.mobile .phone{border-radius:0;box-shadow:none}
   /* Same fill as .am .chip — this IS that pill, lifted off the tile, so any drift between the
      two would read as a colour change mid-flight. */
   background:linear-gradient(180deg,rgba(2,122,72,.85) 0%,rgba(2,122,72,.85) 10%,rgba(3,152,85,.85) 23.3%,rgba(3,152,85,.85) 83.9%,rgba(3,152,85,.32725) 100%),#fff}
-.am .flyer p{font-size:10px;font-weight:600;line-height:14px;letter-spacing:-.1px;color:#fff;white-space:nowrap}
+/* Type and padding must track .am .chip exactly — this IS that pill in flight, and any
+   difference would make it visibly resize as it leaves the tile. */
+.am .flyer p{font-size:var(--fs-xs);font-weight:400;line-height:var(--lh-xs);letter-spacing:0;color:#fff;white-space:nowrap}
 /* the amount takes the hit as the chip lands */
 .am .ac .amt.absorb{animation:absorb .52s cubic-bezier(.24,1.6,.36,1)}
 @keyframes absorb{0%{transform:none}24%{transform:scale(1.14)}58%{transform:scale(.975)}100%{transform:none}}
