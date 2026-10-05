@@ -1008,10 +1008,13 @@ body.mobile .phone{border-radius:0;box-shadow:none}
    the figure and "extra". The markup must NOT also put a literal space before "extra" — a
    space at 12px is ~3px and would stack on top of this. */
 .am .chip p b,.am .flyer p b{font-size:var(--fs-xs);font-weight:700;line-height:var(--lh-xs);margin:0 1px 0 0}
-/* Light sweep, collapsed row only — nine of these at once in the open grid reads as noise.
+/* Light sweep on the bonus badges — collapsed row AND the open grid. It used to be `#skus` only,
+   on the worry that nine at once would read as noise; Oct 5 she reported it missing on the grid
+   at ₹50, so the grid is in. The noise worry is already answered by amTile's per-index stagger
+   (--sd = i*.38s), which sends them across as a wave rather than nine in unison.
    Clipped by the pill's own overflow, and sits under the text via .chip p's z-index. */
-.am #skus .chip{overflow:hidden}
-.am #skus .chip::after{content:"";position:absolute;top:0;bottom:0;left:0;width:38%;pointer-events:none;
+.am :is(#skus,#grid) .chip{overflow:hidden}
+.am :is(#skus,#grid) .chip::after{content:"";position:absolute;top:0;bottom:0;left:0;width:38%;pointer-events:none;
   background:linear-gradient(100deg,rgba(255,255,255,0),rgba(255,255,255,.4) 50%,rgba(255,255,255,0));
   animation:chipSweep 3.2s linear infinite;animation-delay:var(--sd,0s)}
 @keyframes chipSweep{0%{transform:translateX(-120%)}42%,100%{transform:translateX(300%)}}
@@ -1023,7 +1026,7 @@ body.mobile .phone{border-radius:0;box-shadow:none}
       the badges go still; you have already taken the bonus, so there is nothing left to point at.
    (2) happens to subsume (1) today, since renderBand can never set both at once. Both are kept
    because they are separate decisions of hers and the flags they read are independent. */
-.am.timed #skus .chip::after,.am:not(.lure) #skus .chip::after{display:none}
+.am.timed :is(#skus,#grid) .chip::after,.am:not(.lure) :is(#skus,#grid) .chip::after{display:none}
 
 /* Coin shower — a dotLottie drawn onto one canvas, created once in initCoins() and re-parented
    into whichever ₹250 tile is on screen.
@@ -1141,8 +1144,11 @@ body.mobile .phone{border-radius:0;box-shadow:none}
   mask-image:linear-gradient(180deg,transparent 0,rgba(0,0,0,.14) 26%,rgba(0,0,0,.45) 48%,rgba(0,0,0,.8) 68%,#000 84%);
   background:linear-gradient(180deg,rgba(236,253,243,0) 0%,rgba(230,250,239,.30) 34%,rgba(214,244,229,.72) 66%,rgba(201,239,220,.94) 86%,#C6EEDB 100%)}
 .am .payblock.gold .veilfade{background:linear-gradient(180deg,rgba(251,246,234,0) 0%,rgba(250,243,228,.34) 34%,rgba(246,236,210,.74) 66%,rgba(242,230,200,.94) 86%,#F1E4C4 100%)}
-.screen.am.open .veilfade,.screen.am.sumopen .veilfade{opacity:1}
-.screen.am.sumopen .veilfade{height:420px}
+/* Summary OPEN only. It used to come on with the SKU grid too (`.screen.am.open`), which put the
+   tint and blur behind the open grid whenever the sheet was expanded. Figma 5092:6842 — the
+   congratulations card with the summary closed — carries the "veil fade" layer as hidden, so the
+   grid-open state must not show it. Her call, Sep 30. */
+.screen.am.sumopen .veilfade{opacity:1;height:420px}
 
 /* Summary open: everything behind the sheet goes soft, HEADER INCLUDED (Figma 5227:27592).
    It takes two layers, not one. `.am .nav` is z-index 5 — above `.payblock` — so a backdrop
